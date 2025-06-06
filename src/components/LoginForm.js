@@ -15,21 +15,16 @@ export default function LoginForm({ setUser }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${API_URL}/login`, { email, password });
+      const res = await axios.post(`${API_URL}/api/login`, { email, password });
       const { token } = res.data;
       localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(res.data.user)); // <-- store user info in localStorage
 
       // Fetch user info after login
-      const userRes = await fetch(`${API_URL}/user`, {
+      const userRes = await fetch(`${API_URL}/api/user`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const user = await userRes.json();
       if (setUser) setUser(user);
-
-      console.log('User found:', user.email);
-      const isMatch = await bcrypt.compare(password, user.password);
-      console.log('Password match:', isMatch);
 
       Swal.fire({
         icon: 'success',
@@ -37,7 +32,7 @@ export default function LoginForm({ setUser }) {
         timer: 1200,
         showConfirmButton: false
       });
-      setTimeout(() => navigate('/dashboard'), 1200); // <-- redirect to dashboard
+      setTimeout(() => navigate('/dashboard'), 1200);
     } catch (error) {
       const msg = error.response?.data?.error || 'Login failed. Check your email or password.';
       Swal.fire({
