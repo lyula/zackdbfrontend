@@ -47,7 +47,7 @@ export default function DatabaseExplorer() {
   React.useEffect(() => {
     fetch('https://ipapi.co/json/')
       .then(res => res.json())
-      .then data => setCountry(data.country_code))
+      .then(data => setCountry(data.country_code))
       .catch(() => {
         // fallback to locale if geolocation fails
         const locale = Intl.DateTimeFormat().resolvedOptions().locale;
