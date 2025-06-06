@@ -235,6 +235,8 @@ export default function DatabaseExplorer() {
           icon: 'error',
           title: 'Database Fetch Failed',
           text: data.error || 'Failed to fetch databases.'
+        }).then(() => {
+          navigate('/dashboard');
         });
         setError(data.error || 'Failed to fetch databases.');
         return;
