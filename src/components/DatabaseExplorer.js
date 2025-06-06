@@ -17,7 +17,7 @@ function getCountryFlag(countryCode) {
 
 export default function DatabaseExplorer() {
   const { state } = useLocation();
-  const { connectionString, databases } = state || {};
+  const { connectionString, databases: initialDatabases } = state || {};
   const [collections, setCollections] = useState([]);
   const [selectedDb, setSelectedDb] = useState('');
   const [error, setError] = useState('');
@@ -32,6 +32,7 @@ export default function DatabaseExplorer() {
   const dbsPerPage = 5;
   const colsPerPage = 3;
   const navigate = useNavigate();
+  const [databases, setDatabases] = useState(initialDatabases || []);
 
   // For live time display
   const [now, setNow] = useState(new Date());
@@ -46,7 +47,7 @@ export default function DatabaseExplorer() {
   React.useEffect(() => {
     fetch('https://ipapi.co/json/')
       .then(res => res.json())
-      .then(data => setCountry(data.country_code))
+      .then data => setCountry(data.country_code))
       .catch(() => {
         // fallback to locale if geolocation fails
         const locale = Intl.DateTimeFormat().resolvedOptions().locale;
@@ -238,7 +239,7 @@ export default function DatabaseExplorer() {
         setError(data.error || 'Failed to fetch databases.');
         return;
       }
-      setDatabases(data); // or whatever your state is called
+      setDatabases(data);
     } catch {
       Swal.fire({
         icon: 'error',
@@ -248,6 +249,13 @@ export default function DatabaseExplorer() {
       setError('Failed to fetch databases.');
     }
   };
+
+  React.useEffect(() => {
+    if (connectionString) {
+      handleFetchDatabases(connectionString);
+    }
+    // eslint-disable-next-line
+  }, [connectionString]);
 
   return (
     <div style={{
