@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 // Add a hamburger icon SVG
 const HamburgerIcon = ({ open, ...props }) => (
@@ -42,7 +45,7 @@ export default function Dashboard({ user }) {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) return;
-    fetch('/api/saved-connections', {
+    fetch(`${API_URL}/api/saved-connections`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -59,7 +62,7 @@ export default function Dashboard({ user }) {
     setError('');
     try {
       if (connStr && !savedConnections.includes(connStr)) {
-        await fetch('/api/saved-connections', {
+        await fetch(`${API_URL}/api/saved-connections`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -69,7 +72,7 @@ export default function Dashboard({ user }) {
         });
         setSavedConnections([...savedConnections, connStr]);
       }
-      const res = await fetch('/api/list-databases', {
+      const res = await fetch(`${API_URL}/api/list-databases`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ connectionString: connStr })
@@ -84,7 +87,7 @@ export default function Dashboard({ user }) {
   const handleUseConnection = async (connStr) => {
     setError('');
     try {
-      const res = await fetch('/api/list-databases', {
+      const res = await fetch(`${API_URL}/api/list-databases`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ connectionString: connStr })

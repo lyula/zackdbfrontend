@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 // Import SweetAlert2
 import Swal from 'sweetalert2';
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 export default function RegisterForm() {
   const [username, setUsername] = useState('');
@@ -40,19 +43,17 @@ export default function RegisterForm() {
       return;
     }
     try {
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password })
+      const res = await axios.post(`${API_URL}/api/register`, {
+        username,
+        email,
+        password
       });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        const msg = data?.error || 'Registration failed. Try a different email.';
-        setError(msg);
+      if (res.data.error) {
+        setError(res.data.error);
         Swal.fire({
           icon: 'error',
           title: 'Registration Failed',
-          text: msg
+          text: res.data.error
         });
         return;
       }
@@ -64,7 +65,7 @@ export default function RegisterForm() {
         showConfirmButton: false
       });
       setTimeout(() => navigate('/login'), 1800);
-    } catch {
+    } catch (err) {
       setError('Registration failed. Try a different email.');
       Swal.fire({
         icon: 'error',

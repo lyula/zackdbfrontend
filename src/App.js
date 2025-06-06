@@ -6,6 +6,8 @@ import MongoConnect from './components/MongoConnect';
 import DatabaseExplorer from './components/DatabaseExplorer';
 import Dashboard from './components/Dashboard';
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 function App() {
   const [user, setUser] = useState(null);
   const [connections, setConnections] = useState([]);
@@ -13,13 +15,13 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      fetch('/api/user', {
+      fetch(`${API_URL}/api/user`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => res.ok ? res.json() : null)
         .then(data => { if (data) setUser(data); });
 
-      fetch('/api/saved-connections', {
+      fetch(`${API_URL}/api/saved-connections`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => res.json())

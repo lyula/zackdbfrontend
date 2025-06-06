@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 // Helper to get country flag emoji from geolocation (if available), fallback to locale
 function getCountryFlag(countryCode) {
@@ -67,7 +70,7 @@ export default function DatabaseExplorer() {
     setColPage(1);
     setError('');
     try {
-      const res = await fetch('/api/list-collections', {
+      const res = await fetch(`${API_URL}/api/list-collections`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dbName, connectionString })
@@ -84,7 +87,7 @@ export default function DatabaseExplorer() {
     setError('');
     setCurrentPage(1); // Reset to first page on new collection
     try {
-      const res = await fetch('/api/documents', {
+      const res = await fetch(`${API_URL}/api/documents`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

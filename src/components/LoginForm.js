@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 export default function LoginForm({ setUser }) {
   const [email, setEmail] = useState('');
@@ -11,26 +14,12 @@ export default function LoginForm({ setUser }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        const msg = data?.error || 'Login failed. Check your email or password.';
-        Swal.fire({
-          icon: 'error',
-          title: 'Login Failed',
-          text: msg.replace(/username/gi, 'email')
-        });
-        return;
-      }
-      const { token } = await res.json();
+      const res = await axios.post(`${API_URL}/login`, { email, password });
+      const { token } = res.data;
       localStorage.setItem('token', token);
 
       // Fetch user info after login
-      const userRes = await fetch('/api/user', {
+      const userRes = await fetch(`${API_URL}/user`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const user = await userRes.json();
@@ -43,11 +32,12 @@ export default function LoginForm({ setUser }) {
         showConfirmButton: false
       });
       setTimeout(() => navigate('/dashboard'), 1200); // <-- redirect to dashboard
-    } catch {
+    } catch (error) {
+      const msg = error.response?.data?.error || 'Login failed. Check your email or password.';
       Swal.fire({
         icon: 'error',
         title: 'Login Failed',
-        text: 'Login failed. Please check your email or password and try again.'
+        text: msg.replace(/username/gi, 'email')
       });
     }
   };
