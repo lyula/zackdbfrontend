@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -217,6 +218,35 @@ export default function DatabaseExplorer() {
     height: 38,
     background: 'rgba(255,255,255,0.85)',
     color: '#23272f'
+  };
+
+  const handleFetchDatabases = async (connectionString) => {
+    setError('');
+    try {
+      const res = await fetch(`${API_URL}/api/list-databases`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ connectionString })
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Database Fetch Failed',
+          text: data.error || 'Failed to fetch databases.'
+        });
+        setError(data.error || 'Failed to fetch databases.');
+        return;
+      }
+      setDatabases(data); // or whatever your state is called
+    } catch {
+      Swal.fire({
+        icon: 'error',
+        title: 'Database Fetch Failed',
+        text: 'Failed to fetch databases.'
+      });
+      setError('Failed to fetch databases.');
+    }
   };
 
   return (
