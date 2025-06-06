@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import bcrypt from 'bcryptjs';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -17,6 +18,7 @@ export default function LoginForm({ setUser }) {
       const res = await axios.post(`${API_URL}/login`, { email, password });
       const { token } = res.data;
       localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(res.data.user)); // <-- store user info in localStorage
 
       // Fetch user info after login
       const userRes = await fetch(`${API_URL}/user`, {
@@ -24,6 +26,10 @@ export default function LoginForm({ setUser }) {
       });
       const user = await userRes.json();
       if (setUser) setUser(user);
+
+      console.log('User found:', user.email);
+      const isMatch = await bcrypt.compare(password, user.password);
+      console.log('Password match:', isMatch);
 
       Swal.fire({
         icon: 'success',
