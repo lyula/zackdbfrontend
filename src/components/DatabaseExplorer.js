@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import Swal from 'sweetalert2';
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -247,6 +246,8 @@ export default function DatabaseExplorer() {
         icon: 'error',
         title: 'Database Fetch Failed',
         text: 'Failed to fetch databases.'
+      }).then(() => {
+        navigate('/dashboard');
       });
       setError('Failed to fetch databases.');
     }
