@@ -57,6 +57,16 @@ export default function RegisterForm() {
         });
         return;
       }
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        const msg = data?.message || 'Registration failed. Try a different email.';
+        Swal.fire({
+          icon: 'error',
+          title: 'Registration Failed',
+          text: msg
+        });
+        return;
+      }
       Swal.fire({
         icon: 'success',
         title: 'Registration Successful!',
