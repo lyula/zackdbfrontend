@@ -43,20 +43,13 @@ export default function RegisterForm() {
       return;
     }
     try {
-      const res = await axios.post(`${API_URL}/api/register`, {
-        username,
-        email,
-        password
+      const res = await fetch(`${API_URL}/api/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password })
       });
-      if (res.data.error) {
-        setError(res.data.error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Registration Failed',
-          text: res.data.error
-        });
-        return;
-      }
+
+      // If registration failed
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         const msg = data?.message || 'Registration failed. Try a different email.';
@@ -67,6 +60,8 @@ export default function RegisterForm() {
         });
         return;
       }
+
+      // Registration succeeded
       Swal.fire({
         icon: 'success',
         title: 'Registration Successful!',
@@ -75,12 +70,12 @@ export default function RegisterForm() {
         showConfirmButton: false
       });
       setTimeout(() => navigate('/login'), 1800);
+
     } catch (err) {
-      setError('Registration failed. Try a different email.');
       Swal.fire({
         icon: 'error',
         title: 'Registration Failed',
-        text: 'Registration failed. Try a different email.'
+        text: 'An unexpected error occurred. Please try again.'
       });
     }
   };
