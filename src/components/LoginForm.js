@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import axios from 'axios';
-import bcrypt from 'bcryptjs';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
