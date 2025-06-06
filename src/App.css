@@ -1,0 +1,200 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f0f0;
+}
+
+.form-box {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+.form-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.button {
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.blue-button {
+  background-color: #1e40af;
+}
+
+.blue-button:hover {
+  background-color: #1e3a8a;
+}
+
+.green-button {
+  background-color: #16a34a;
+}
+
+.green-button:hover {
+  background-color: #15803d;
+}
+
+.red-button {
+  background-color: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-left: 20px;
+}
+
+.red-button:hover {
+  background-color: #c0392b;
+}
+
+.main-container {
+  padding: 20px;
+  background-color: #f0f0f0;
+  min-height: 100vh;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  margin: 0;
+  font-size: 2rem;
+  color: #333;
+}
+
+.create-db-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.folder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  max-width: 1200px;
+}
+
+.folder-button {
+  background-color: #1e40af;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  height: 40px;
+}
+
+.folder-button:hover {
+  background-color: #1e3a8a;
+}
+
+.folder-icon {
+  font-size: 20px;
+}
+
+.collections-section, .data-section {
+  margin-top: 20px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  border: 1px solid #ccc;
+}
+
+.data-table th, .data-table td {
+  padding: 8px;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+.data-table th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+.switch-link {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.link {
+  color: #1e40af;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.link:hover {
+  color: #1e3a8a;
+}
+
+/* Add to App.css */
+.input-eye-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.input-eye-wrapper .input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #888;
+  user-select: none;
+  z-index: 2;
+}
