@@ -54,12 +54,14 @@ export default function DatabaseExplorer() {
   }, []);
 
   // Pagination for databases and collections
-  const totalDbPages = Math.ceil((databases?.length || 0) / dbsPerPage);
-  const paginatedDbs = databases
+  const totalDbPages = Math.ceil((Array.isArray(databases) ? databases.length : 0) / dbsPerPage);
+  const paginatedDbs = Array.isArray(databases)
     ? databases.slice((dbPage - 1) * dbsPerPage, dbPage * dbsPerPage)
     : [];
-  const totalColPages = Math.ceil(collections.length / colsPerPage);
-  const paginatedCols = collections.slice((colPage - 1) * colsPerPage, colPage * colsPerPage);
+  const totalColPages = Math.ceil((Array.isArray(collections) ? collections.length : 0) / colsPerPage);
+  const paginatedCols = Array.isArray(collections)
+    ? collections.slice((colPage - 1) * colsPerPage, colPage * colsPerPage)
+    : [];
 
   const handleSelectDb = async (dbName) => {
     setSelectedDb(dbName);
@@ -77,7 +79,7 @@ export default function DatabaseExplorer() {
       });
       const cols = await res.json();
       setCollections(cols);
-    } catch {
+    } catch (err) {
       setError('Failed to fetch collections.');
     }
   };
