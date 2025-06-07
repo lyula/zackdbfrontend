@@ -27,6 +27,7 @@ export default function Dashboard({ user }) {
   const [error, setError] = useState('');
   const [connPage, setConnPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [confirmDelete, setConfirmDelete] = useState(null); // holds the connection string to confirm
   const connectionsPerPage = 5;
   const navigate = useNavigate();
 
@@ -511,24 +512,78 @@ export default function Dashboard({ user }) {
                       <span role="img" aria-label="rocket" style={{ marginRight: 7 }}>🚀</span>
                       Use
                     </button>
-                    <button
-                      style={{
-                        marginLeft: 8,
-                        background: 'none',
-                        border: 'none',
-                        color: '#ef4444',
-                        fontSize: 20,
-                        cursor: 'pointer'
-                      }}
-                      title="Delete"
-                      onClick={() => {
-                        if (window.confirm('Are you sure you want to delete this connection?')) {
-                          handleDeleteConnection(conn.connectionString);
-                        }
-                      }}
-                    >
-                      🗑️
-                    </button>
+                    <div style={{ position: 'relative', display: 'inline-block' }}>
+                      <button
+                        style={{
+                          marginLeft: 8,
+                          background: 'none',
+                          border: 'none',
+                          color: '#ef4444',
+                          fontSize: 20,
+                          cursor: 'pointer'
+                        }}
+                        title="Delete"
+                        onClick={() => setConfirmDelete(conn.connectionString)}
+                      >
+                        🗑️
+                      </button>
+                      {confirmDelete === conn.connectionString && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            bottom: '120%',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                            color: '#fff',
+                            padding: '14px 18px',
+                            borderRadius: 10,
+                            boxShadow: '0 2px 12px #6366f133',
+                            zIndex: 10,
+                            minWidth: 220,
+                            textAlign: 'center'
+                          }}
+                        >
+                          <div style={{ marginBottom: 10, fontWeight: 600 }}>
+                            Delete this connection?
+                          </div>
+                          <button
+                            style={{
+                              background: '#ef4444',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: 6,
+                              padding: '6px 18px',
+                              fontWeight: 700,
+                              fontSize: 15,
+                              cursor: 'pointer',
+                              marginRight: 10
+                            }}
+                            onClick={() => {
+                              handleDeleteConnection(conn.connectionString);
+                              setConfirmDelete(null);
+                            }}
+                          >
+                            Delete
+                          </button>
+                          <button
+                            style={{
+                              background: '#fff',
+                              color: '#6366f1',
+                              border: '1.5px solid #6366f1',
+                              borderRadius: 6,
+                              padding: '6px 18px',
+                              fontWeight: 700,
+                              fontSize: 15,
+                              cursor: 'pointer'
+                            }}
+                            onClick={() => setConfirmDelete(null)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>
