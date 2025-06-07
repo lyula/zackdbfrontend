@@ -25,6 +25,19 @@ export default function Dashboard({ user }) {
   const [clusterName, setClusterName] = useState('');
   const [savedConnections, setSavedConnections] = useState([]);
   const [error, setError] = useState('');
+  const errorTimeoutRef = useRef();
+
+  // Auto-hide error after 3 seconds
+  useEffect(() => {
+    if (error) {
+      if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+      errorTimeoutRef.current = setTimeout(() => setError(''), 3000);
+    }
+    return () => {
+      if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+    };
+  }, [error]);
+
   const [connPage, setConnPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(null); // holds the connection string to confirm
@@ -438,15 +451,16 @@ export default function Dashboard({ user }) {
               </button>
               {error && (
                 <div style={{
-                  color: '#fff',
-                  background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                  // border: '1.5px solid #fca5a5', // Removed border
-                  borderRadius: 8,
-                  padding: '10px 16px',
+                  color: '#6366f1',
+                  background: 'none',
+                  border: 'none',
+                  borderRadius: 0,
+                  padding: 0,
                   marginTop: 12,
-                  fontWeight: 600,
+                  fontWeight: 700,
                   fontSize: 15,
-                  textAlign: 'center'
+                  textAlign: 'center',
+                  transition: 'opacity 0.3s'
                 }}>
                   {error}
                 </div>
