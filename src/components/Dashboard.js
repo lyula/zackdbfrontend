@@ -1,20 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
-// Add a hamburger icon SVG
 const HamburgerIcon = ({ open, ...props }) => (
   <span {...props} style={{ cursor: 'pointer', fontSize: 28, marginRight: 18, ...props.style }}>
     {open ? (
-      // Close icon (X)
       <svg width="28" height="28" viewBox="0 0 28 28">
         <line x1="7" y1="7" x2="21" y2="21" stroke="#6366f1" strokeWidth="3" strokeLinecap="round"/>
         <line x1="21" y1="7" x2="7" y2="21" stroke="#6366f1" strokeWidth="3" strokeLinecap="round"/>
       </svg>
     ) : (
-      // Hamburger icon
       <svg width="28" height="28" viewBox="0 0 28 28">
         <rect x="5" y="8" width="18" height="3" rx="1.5" fill="#6366f1"/>
         <rect x="5" y="13" width="18" height="3" rx="1.5" fill="#6366f1"/>
@@ -26,6 +22,7 @@ const HamburgerIcon = ({ open, ...props }) => (
 
 export default function Dashboard({ user }) {
   const [input, setInput] = useState('');
+  const [clusterName, setClusterName] = useState('');
   const [savedConnections, setSavedConnections] = useState([]);
   const [error, setError] = useState('');
   const [connPage, setConnPage] = useState(1);
@@ -33,10 +30,8 @@ export default function Dashboard({ user }) {
   const connectionsPerPage = 5;
   const navigate = useNavigate();
 
-  // Only redirect to login if token is missing, not on every refresh
   useEffect(() => {
     const token = localStorage.getItem('token');
-    // Only redirect if token is missing AND user is not present
     if (!token && !user) {
       navigate('/login');
     }
@@ -58,19 +53,31 @@ export default function Dashboard({ user }) {
     connPage * connectionsPerPage
   );
 
-  const handleConnect = async (connStr) => {
+  const handleConnect = async (connStr, name) => {
     setError('');
+    if (!connStr || !name) {
+      setError('Please enter both a cluster name and connection string.');
+      return;
+    }
     try {
-      if (connStr && !savedConnections.includes(connStr)) {
+      // Prevent duplicate cluster names
+      if (
+        !savedConnections.some(
+          conn => conn.clusterName && conn.clusterName.toLowerCase() === name.toLowerCase()
+        )
+      ) {
         await fetch(`${API_URL}/api/saved-connections`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
           },
-          body: JSON.stringify({ connectionString: connStr })
+          body: JSON.stringify({ connectionString: connStr, clusterName: name })
         });
-        setSavedConnections([...savedConnections, connStr]);
+        setSavedConnections([
+          ...savedConnections,
+          { connectionString: connStr, clusterName: name }
+        ]);
       }
       const res = await fetch(`${API_URL}/api/list-databases`, {
         method: 'POST',
@@ -331,6 +338,26 @@ export default function Dashboard({ user }) {
               </div>
               <input
                 type="text"
+                placeholder="Cluster Name"
+                value={clusterName}
+                onChange={e => setClusterName(e.target.value)}
+                style={{
+                  width: '100%',
+                  maxWidth: 340,
+                  padding: '16px 22px',
+                  fontSize: 17,
+                  borderRadius: 10,
+                  border: '1.5px solid #6366f1',
+                  outline: 'none',
+                  background: 'rgba(255,255,255,0.85)',
+                  color: '#23272f',
+                  marginBottom: 12,
+                  boxShadow: '0 2px 12px #6366f122',
+                  transition: 'border 0.2s'
+                }}
+              />
+              <input
+                type="text"
                 placeholder="Paste your MongoDB connection string here"
                 value={input}
                 onChange={e => setInput(e.target.value)}
@@ -350,7 +377,7 @@ export default function Dashboard({ user }) {
                 }}
               />
               <button
-                onClick={() => handleConnect(input)}
+                onClick={() => handleConnect(input, clusterName)}
                 style={{
                   background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
                   color: '#fff',
@@ -365,6 +392,7 @@ export default function Dashboard({ user }) {
                   letterSpacing: '0.5px',
                   transition: 'background 0.2s'
                 }}
+                disabled={!input || !clusterName}
               >
                 <span role="img" aria-label="rocket" style={{ marginRight: 8 }}>🚀</span>
                 Save & Connect
@@ -407,7 +435,7 @@ export default function Dashboard({ user }) {
                   <li style={{ color: '#6366f1', textAlign: 'center', padding: '14px 0' }}>No saved connections yet.</li>
                 )}
                 {paginatedConnections.map((conn, idx) => (
-                  <li key={conn._id || idx} style={{
+                  <li key={conn.clusterName || idx} style={{
                     display: 'flex',
                     alignItems: 'center',
                     marginBottom: 10,
@@ -421,8 +449,9 @@ export default function Dashboard({ user }) {
                       textOverflow: 'ellipsis',
                       display: 'inline-block',
                       fontSize: 16,
-                      color: '#23272f'
-                    }}>{conn.connectionString}</span>
+                      color: '#23272f',
+                      fontWeight: 700
+                    }}>{conn.clusterName || 'Unnamed Cluster'}</span>
                     <button
                       style={{
                         marginLeft: 14,
