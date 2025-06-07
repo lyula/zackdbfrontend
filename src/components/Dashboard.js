@@ -117,6 +117,33 @@ export default function Dashboard({ user }) {
     }
   };
 
+  const handleDeleteConnection = async (connectionString) => {
+    setError('');
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(
+        `${API_URL}/api/saved-connections/${encodeURIComponent(connectionString)}`,
+        {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.message || 'Failed to delete connection.');
+        return;
+      }
+      // Refresh saved connections after delete
+      const connectionsRes = await fetch(`${API_URL}/api/saved-connections`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const connectionsData = await connectionsRes.json();
+      setSavedConnections(connectionsData);
+    } catch (err) {
+      setError('Failed to delete connection.');
+    }
+  };
+
   // Layout constants
   const HEADER_HEIGHT = 64;
   const SIDEBAR_WIDTH = 260;
@@ -483,6 +510,20 @@ export default function Dashboard({ user }) {
                     >
                       <span role="img" aria-label="rocket" style={{ marginRight: 7 }}>🚀</span>
                       Use
+                    </button>
+                    <button
+                      style={{
+                        marginLeft: 8,
+                        background: 'none',
+                        border: 'none',
+                        color: '#ef4444',
+                        fontSize: 20,
+                        cursor: 'pointer'
+                      }}
+                      title="Delete"
+                      onClick={() => handleDeleteConnection(conn.connectionString)}
+                    >
+                      🗑️
                     </button>
                   </li>
                 ))}
