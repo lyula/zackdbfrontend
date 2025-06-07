@@ -41,6 +41,9 @@ export default function DatabaseExplorer() {
   const [isLoadingCollections, setIsLoadingCollections] = useState(false);
   const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
 
+  // Auto refresh state
+  const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
+
   // Ref to store interval ID for auto-refresh
   const refreshIntervalRef = useRef(null);
 
@@ -80,6 +83,7 @@ export default function DatabaseExplorer() {
     setColPage(1);
     setError('');
     setIsLoadingCollections(true);
+    stopAutoRefresh(); // Stop auto refresh if running
     try {
       const res = await fetch(`${API_URL}/api/list-collections`, {
         method: 'POST',
@@ -99,8 +103,9 @@ export default function DatabaseExplorer() {
     }
   };
 
-  // Fetch documents for a collection with a large limit to get all documents
+  // Fetch documents for a collection
   const fetchDocuments = async (dbName, collectionName) => {
+    if (!dbName || !collectionName) return;
     setIsLoadingDocuments(true);
     setError('');
     try {
@@ -111,7 +116,7 @@ export default function DatabaseExplorer() {
           connectionString,
           dbName,
           collectionName,
-          limit: 10000 // Request up to 10,000 documents (adjust as needed)
+          limit: 10000 // Adjust as needed or implement pagination
         })
       });
       if (!res.ok) {
@@ -145,18 +150,26 @@ export default function DatabaseExplorer() {
     setSelectedCollection(collectionName);
     setError('');
     setCurrentPage(1); // Reset to first page on new collection
+    stopAutoRefresh(); // Stop auto refresh when selecting new collection
+    fetchDocuments(selectedDb, collectionName);
+  };
 
-    // Clear any existing interval before fetching new documents
+  // Start auto refresh interval
+  const startAutoRefresh = () => {
+    if (refreshIntervalRef.current) return; // already running
+    refreshIntervalRef.current = setInterval(() => {
+      fetchDocuments(selectedDb, selectedCollection);
+    }, 5000);
+    setIsAutoRefreshing(true);
+  };
+
+  // Stop auto refresh interval
+  const stopAutoRefresh = () => {
     if (refreshIntervalRef.current) {
       clearInterval(refreshIntervalRef.current);
+      refreshIntervalRef.current = null;
     }
-
-    fetchDocuments(selectedDb, collectionName);
-
-    // Set up auto-refresh interval every 5 seconds
-    refreshIntervalRef.current = setInterval(() => {
-      fetchDocuments(selectedDb, collectionName);
-    }, 5000);
+    setIsAutoRefreshing(false);
   };
 
   // Clear interval on unmount or when selectedCollection changes
@@ -164,6 +177,7 @@ export default function DatabaseExplorer() {
     return () => {
       if (refreshIntervalRef.current) {
         clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
       }
     };
   }, [selectedCollection]);
@@ -265,6 +279,20 @@ export default function DatabaseExplorer() {
     height: 38,
     background: 'rgba(255,255,255,0.85)',
     color: '#23272f'
+  };
+
+  const buttonStyle = {
+    padding: '6px 14px',
+    fontSize: 14,
+    fontWeight: 700,
+    borderRadius: 6,
+    border: 'none',
+    cursor: 'pointer',
+    background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+    color: '#fff',
+    boxShadow: '0 2px 8px #6366f133',
+    userSelect: 'none',
+    minWidth: 130,
   };
 
   const handleFetchDatabases = async (connectionString) => {
@@ -542,7 +570,7 @@ export default function DatabaseExplorer() {
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between', // space between title and refresh button
+                justifyContent: 'space-between', // space between title and buttons
                 marginBottom: 10,
                 marginTop: 0,
                 width: '100%' // take full width of card
@@ -565,26 +593,36 @@ export default function DatabaseExplorer() {
                     backgroundClip: 'initial'
                   }}>{selectedCollection}</span>
                 </h4>
-                <button
-                  onClick={() => fetchDocuments(selectedDb, selectedCollection)}
-                  disabled={isLoadingDocuments}
-                  style={{
-                    marginLeft: 16,
-                    padding: '6px 14px',
-                    fontSize: 14,
-                    fontWeight: 700,
-                    borderRadius: 6,
-                    border: 'none',
-                    cursor: isLoadingDocuments ? 'not-allowed' : 'pointer',
-                    background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                    color: '#fff',
-                    boxShadow: '0 2px 8px #6366f133',
-                    userSelect: 'none'
-                  }}
-                  title="Refresh Data"
-                >
-                  {isLoadingDocuments ? 'Refreshing...' : '🔄 Refresh'}
-                </button>
+                <div style={{ marginLeft: 16, display: 'flex', gap: 12 }}>
+                  {!isAutoRefreshing ? (
+                    <>
+                      <button
+                        onClick={() => fetchDocuments(selectedDb, selectedCollection)}
+                        disabled={isLoadingDocuments || !selectedCollection}
+                        style={buttonStyle}
+                        title="Manual Refresh"
+                      >
+                        {isLoadingDocuments ? 'Refreshing...' : '🔄 Manual Refresh'}
+                      </button>
+                      <button
+                        onClick={startAutoRefresh}
+                        disabled={isLoadingDocuments || !selectedCollection}
+                        style={buttonStyle}
+                        title="Start Auto Refresh"
+                      >
+                        🔁 Auto Refresh
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={stopAutoRefresh}
+                      style={buttonStyle}
+                      title="Stop Auto Refresh"
+                    >
+                      ⏹️ Stop Auto Refresh
+                    </button>
+                  )}
+                </div>
               </div>
               {/* Table */}
               <div style={{
