@@ -72,7 +72,7 @@ export default function Dashboard({ user }) {
       if (res.headers.get('content-type')?.includes('application/json')) {
         data = await res.json();
       }
-      if (!res.ok) throw new Error(data.message || 'Failed to save connection');
+      if (!res.ok) throw new Error(data.message || 'You have this connection string saved!Check your connection strings list.');
 
       // Refresh saved connections after successful save
       const token = localStorage.getItem('token');
