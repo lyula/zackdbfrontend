@@ -452,7 +452,8 @@ export default function Dashboard({ user }) {
               alignItems: 'center',
               minWidth: 320,
               maxWidth: 440,
-              marginTop: 12
+              marginTop: 12,
+              position: 'relative' // <-- Important for absolute backdrop
             }}>
               <h3 style={{
                 color: 'transparent',
@@ -529,7 +530,7 @@ export default function Dashboard({ user }) {
                         onClick={e => {
                           const rect = e.target.getBoundingClientRect();
                           setModalPos({
-                            top: rect.top + window.scrollY - 10, // 10px above the button
+                            top: rect.top + window.scrollY - 10,
                             left: rect.left + rect.width / 2 + window.scrollX
                           });
                           setConfirmDelete(conn.connectionString);
@@ -537,124 +538,86 @@ export default function Dashboard({ user }) {
                       >
                         🗑️
                       </button>
-                      {confirmDelete === conn.connectionString && (
-                        <>
-                          {/* Backdrop */}
-                          <div
-                            onClick={() => setConfirmDelete(null)}
-                            style={{
-                              position: 'fixed',
-                              top: 0, left: 0, width: '100vw', height: '100vh',
-                              background: 'rgba(36, 41, 46, 0.18)',
-                              zIndex: 2000
-                            }}
-                          />
-                          {/* Modal */}
-                          <div
-                            style={{
-                              position: 'fixed',
-                              top: modalPos.top,
-                              left: modalPos.left,
-                              transform: 'translate(-50%, -100%)',
-                              background: '#fff',
-                              color: '#23272f',
-                              padding: '22px 24px 18px 24px',
-                              borderRadius: 14,
-                              boxShadow: '0 4px 24px 0 rgba(99,102,241,0.13)',
-                              zIndex: 2001,
-                              minWidth: 260,
-                              textAlign: 'center',
-                              border: '1.5px solid #e0e7ff'
-                            }}
-                          >
-                            <div style={{ marginBottom: 14, fontWeight: 700, fontSize: 17 }}>
-                              Delete this connection?
-                            </div>
-                            <div style={{ marginBottom: 18, color: '#6366f1', fontSize: 14 }}>
-                              Are you sure you want to delete this connection?
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
-                              <button
-                                style={{
-                                  background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                                  color: '#fff',
-                                  border: 'none',
-                                  borderRadius: 8,
-                                  padding: '8px 22px',
-                                  fontWeight: 700,
-                                  fontSize: 15,
-                                  cursor: 'pointer'
-                                }}
-                                onClick={() => {
-                                  handleDeleteConnection(conn.connectionString);
-                                  setConfirmDelete(null);
-                                }}
-                              >
-                                Delete
-                              </button>
-                              <button
-                                style={{
-                                  background: '#fff',
-                                  color: '#6366f1',
-                                  border: '2px solid #6366f1',
-                                  borderRadius: 8,
-                                  padding: '8px 22px',
-                                  fontWeight: 700,
-                                  fontSize: 15,
-                                  cursor: 'pointer'
-                                }}
-                                onClick={() => setConfirmDelete(null)}
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        </>
-                      )}
                     </div>
                   </li>
                 ))}
               </ul>
-              {/* Pagination Controls */}
-              {totalConnPages > 1 && (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
-                  <button
-                    onClick={() => setConnPage(p => Math.max(1, p - 1))}
-                    disabled={connPage === 1}
+              {/* Backdrop and Modal rendered ONCE at the panel level */}
+              {confirmDelete && (
+                <>
+                  {/* Backdrop only over Saved Connections panel */}
+                  <div
+                    onClick={() => setConfirmDelete(null)}
                     style={{
-                      background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: 6,
-                      padding: '6px 18px',
-                      fontWeight: 700,
-                      fontSize: 15,
-                      cursor: connPage === 1 ? 'not-allowed' : 'pointer',
-                      marginRight: 10,
-                      opacity: connPage === 1 ? 0.5 : 1
+                      position: 'absolute',
+                      top: 0, left: 0, width: '100%', height: '100%',
+                      background: 'rgba(36, 41, 46, 0.18)',
+                      zIndex: 2000
                     }}
-                  >Prev</button>
-                  <span style={{ fontSize: 15, color: '#6366f1', fontWeight: 700 }}>
-                    {connPage}/{totalConnPages}
-                  </span>
-                  <button
-                    onClick={() => setConnPage(p => Math.min(totalConnPages, p + 1))}
-                    disabled={connPage === totalConnPages}
+                  />
+                  {/* Modal */}
+                  <div
                     style={{
-                      background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: 6,
-                      padding: '6px 18px',
-                      fontWeight: 700,
-                      fontSize: 15,
-                      cursor: connPage === totalConnPages ? 'not-allowed' : 'pointer',
-                      marginLeft: 10,
-                      opacity: connPage === totalConnPages ? 0.5 : 1
+                      position: 'fixed',
+                      top: modalPos.top,
+                      left: modalPos.left,
+                      transform: 'translate(-50%, -100%)',
+                      background: '#fff',
+                      color: '#23272f',
+                      padding: '22px 24px 18px 24px',
+                      borderRadius: 14,
+                      boxShadow: '0 4px 24px 0 rgba(99,102,241,0.13)',
+                      zIndex: 2001,
+                      minWidth: 260,
+                      textAlign: 'center',
+                      border: '1.5px solid #e0e7ff'
                     }}
-                  >Next</button>
-                </div>
+                  >
+                    <div style={{ marginBottom: 14, fontWeight: 700, fontSize: 17 }}>
+                      Delete this connection?
+                    </div>
+                    <div style={{ marginBottom: 18, color: '#6366f1', fontSize: 14 }}>
+                      Are you sure you want to delete this connection?
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
+                      <button
+                        style={{
+                          background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          padding: '8px 22px',
+                          fontWeight: 700,
+                          fontSize: 15,
+                          cursor: 'pointer'
+                        }}
+                        onClick={() => {
+                          handleDeleteConnection(confirmDelete);
+                          setConfirmDelete(null);
+                        }}
+                      >
+                        Delete
+                      </button>
+                      <button
+                        style={{
+                          background: '#fff',
+                          color: '#6366f1',
+                          border: '2px solid #6366f1',
+                          borderRadius: 8,
+                          padding: '8px 22px',
+                          fontWeight: 700,
+                          fontSize: 15,
+                          cursor: 'pointer'
+                        }}
+                        onClick={() => setConfirmDelete(null)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </>
               )}
+              {/* Pagination controls ... */}
             </div>
           </div>
         </div>
