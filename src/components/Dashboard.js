@@ -516,24 +516,35 @@ export default function Dashboard({ user }) {
                         >
                           Use
                         </button>
-                        <button
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          aria-label="delete"
+                          title="Delete"
                           ref={el => deleteBtnRefs.current[conn.connectionString] = el}
                           onClick={() => setConfirmDelete(conn.connectionString)}
+                          onKeyPress={e => {
+                            if (e.key === 'Enter' || e.key === ' ') setConfirmDelete(conn.connectionString);
+                          }}
                           style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
                             background: '#f87171',
                             color: '#fff',
-                            border: 'none',
                             borderRadius: 8,
-                            padding: '7px 14px',
-                            fontWeight: 700,
-                            fontSize: 15,
+                            width: 36,
+                            height: 36,
+                            fontSize: 20,
                             cursor: 'pointer',
-                            boxShadow: '0 2px 8px #f8717111'
+                            boxShadow: '0 2px 8px #f8717111',
+                            outline: 'none',
+                            border: 'none',
+                            userSelect: 'none'
                           }}
                         >
-                          <span role="img" aria-label="delete" style={{ marginRight: 4 }}>🗑️</span>
-                          Delete
-                        </button>
+                          🗑️
+                        </span>
                       </div>
                     </li>
                   ))}
