@@ -530,17 +530,18 @@ export default function Dashboard({ user }) {
                             display: 'inline-flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            background: '#f87171',
-                            color: '#fff',
-                            borderRadius: 8,
-                            width: 36,
-                            height: 36,
-                            fontSize: 20,
+                            color: '#f87171', // icon color only
+                            width: 28,
+                            height: 28,
+                            fontSize: 22,
                             cursor: 'pointer',
-                            boxShadow: '0 2px 8px #f8717111',
-                            outline: 'none',
+                            background: 'none',
                             border: 'none',
-                            userSelect: 'none'
+                            outline: 'none',
+                            boxShadow: 'none',
+                            userSelect: 'none',
+                            padding: 0,
+                            margin: 0
                           }}
                         >
                           🗑️
