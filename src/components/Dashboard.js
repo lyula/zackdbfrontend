@@ -68,11 +68,18 @@ export default function Dashboard({ user }) {
         },
         body: JSON.stringify({ connectionString: connStr, clusterName: name })
       });
+
       let data = {};
-      if (res.headers.get('content-type')?.includes('application/json')) {
+      try {
         data = await res.json();
+      } catch {
+        // If response is not JSON, keep data as empty object
       }
-      if (!res.ok) throw new Error(data.message || 'You have this connection string saved!Check your connection strings list.');
+
+      if (!res.ok) {
+        setError(data.message || 'Failed to save connection string.');
+        return;
+      }
 
       // Refresh saved connections after successful save
       const token = localStorage.getItem('token');
@@ -91,7 +98,7 @@ export default function Dashboard({ user }) {
       await handleUseConnection(connStr);
 
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to save connection string.');
     }
   };
 
