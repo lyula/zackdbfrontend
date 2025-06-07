@@ -577,79 +577,96 @@ export default function Dashboard({ user }) {
                   </div>
                 )}
               </div>
-              {/* Modal appears above the card */}
+              {/* Modal and backdrop appear above the card only */}
               {confirmDelete && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    minWidth: 320,
-                    maxWidth: 400,
-                    background: '#fff',
-                    borderRadius: 16,
-                    boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
-                    zIndex: 10,
-                    padding: '36px 28px 28px 28px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center'
-                  }}
-                >
+                <>
+                  {/* Local backdrop */}
+                  <div
+                    onClick={() => setConfirmDelete(null)}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      background: 'rgba(44, 62, 80, 0.15)',
+                      borderRadius: 22,
+                      zIndex: 9
+                    }}
+                  />
+                  {/* Modal */}
                   <div
                     style={{
-                      fontWeight: 800,
-                      fontSize: 20,
-                      marginBottom: 10,
-                      background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                      color: 'transparent'
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      minWidth: 320,
+                      maxWidth: 400,
+                      background: '#fff',
+                      borderRadius: 16,
+                      boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
+                      zIndex: 10,
+                      padding: '36px 28px 28px 28px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center'
                     }}
                   >
-                    Confirm Delete
-                  </div>
-                  <div style={{ color: '#23272f', fontSize: 15, marginBottom: 26, textAlign: 'center' }}>
-                    Are you sure you want to delete this connection?
-                  </div>
-                  <div style={{ display: 'flex', gap: 18 }}>
-                    <button
-                      onClick={() => {
-                        handleDeleteConnection(confirmDelete);
-                        setConfirmDelete(null);
-                      }}
+                    <div
                       style={{
-                        background: '#f87171',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 8,
-                        padding: '10px 22px',
-                        fontWeight: 700,
-                        fontSize: 15,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Delete
-                    </button>
-                    <button
-                      onClick={() => setConfirmDelete(null)}
-                      style={{
+                        fontWeight: 800,
+                        fontSize: 20,
+                        marginBottom: 10,
                         background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 8,
-                        padding: '10px 22px',
-                        fontWeight: 700,
-                        fontSize: 15,
-                        cursor: 'pointer'
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                        color: 'transparent'
                       }}
                     >
-                      Cancel
-                    </button>
+                      Confirm Delete
+                    </div>
+                    <div style={{ color: '#23272f', fontSize: 15, marginBottom: 26, textAlign: 'center' }}>
+                      Are you sure you want to delete this connection?
+                    </div>
+                    <div style={{ display: 'flex', gap: 18 }}>
+                      <button
+                        onClick={() => {
+                          handleDeleteConnection(confirmDelete);
+                          setConfirmDelete(null);
+                        }}
+                        style={{
+                          background: '#f87171',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          padding: '10px 22px',
+                          fontWeight: 700,
+                          fontSize: 15,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Delete
+                      </button>
+                      <button
+                        onClick={() => setConfirmDelete(null)}
+                        style={{
+                          background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          padding: '10px 22px',
+                          fontWeight: 700,
+                          fontSize: 15,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </>
               )}
             </div>
           </div>
