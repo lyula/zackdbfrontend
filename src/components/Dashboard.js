@@ -518,14 +518,19 @@ export default function Dashboard({ user }) {
                     }}>
                       <div>
                         {/* Cluster name with theme gradient */}
-                        <div style={{
-                          fontWeight: 700,
-                          fontSize: 17,
-                          background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                          WebkitBackgroundClip: 'text',
-                          backgroundClip: 'text',
-                          color: 'transparent'
-                        }}>
+                        <div
+                          style={{
+                            fontWeight: 700,
+                            fontSize: 17,
+                            background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                            color: '#fff',
+                            padding: '4px 16px',
+                            borderRadius: 8,
+                            display: 'inline-block',
+                            boxShadow: '0 2px 8px #6366f122',
+                            letterSpacing: '0.5px'
+                          }}
+                        >
                           {conn.clusterName || getClusterName(conn.connectionString)}
                         </div>
                         {/* Optionally, remove or hide the connection string */}
