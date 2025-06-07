@@ -33,7 +33,6 @@ function isValidMongoAtlasConnectionString(str) {
 
 export default function Dashboard({ user }) {
   const [input, setInput] = useState('');
-  const [clusterName, setClusterName] = useState('');
   const [savedConnections, setSavedConnections] = useState([]);
   const [error, setError] = useState('');
   const errorTimeoutRef = useRef();
@@ -79,17 +78,18 @@ export default function Dashboard({ user }) {
     connPage * connectionsPerPage
   );
 
-  const handleConnect = async (connStr, name) => {
+  const handleConnect = async (connStr) => {
     setError('');
-    if (!connStr || !name) {
-      setError('Please enter both a cluster name and connection string.');
+    if (!connStr) {
+      setError('Please enter a connection string.');
       return;
     }
-    // Validate MongoDB Atlas connection string
     if (!isValidMongoAtlasConnectionString(connStr)) {
       setError('Please enter a valid MongoDB Atlas connection string.');
       return;
     }
+    // Extract cluster name from connection string
+    const name = getClusterName(connStr);
     try {
       const res = await fetch(`${API_URL}/api/saved-connections`, {
         method: 'POST',
@@ -122,7 +122,6 @@ export default function Dashboard({ user }) {
 
       // Optionally clear input fields
       setInput('');
-      setClusterName('');
       setError('');
 
       // Redirect to explore page with databases
@@ -406,26 +405,6 @@ export default function Dashboard({ user }) {
               </div>
               <input
                 type="text"
-                placeholder="Enter a Cluster Name e.g MyCool App"
-                value={clusterName}
-                onChange={e => setClusterName(e.target.value)}
-                style={{
-                  width: '100%',
-                  maxWidth: 340,
-                  padding: '16px 22px',
-                  fontSize: 17,
-                  borderRadius: 10,
-                  border: '1.5px solid #6366f1',
-                  outline: 'none',
-                  background: 'rgba(255,255,255,0.85)',
-                  color: '#23272f',
-                  marginBottom: 12,
-                  boxShadow: '0 2px 12px #6366f122',
-                  transition: 'border 0.2s'
-                }}
-              />
-              <input
-                type="text"
                 placeholder="Paste your MongoDB connection string here"
                 value={input}
                 onChange={e => setInput(e.target.value)}
@@ -445,7 +424,7 @@ export default function Dashboard({ user }) {
                 }}
               />
               <button
-                onClick={() => handleConnect(input, clusterName)}
+                onClick={() => handleConnect(input)}
                 style={{
                   background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
                   color: '#fff',
@@ -460,7 +439,7 @@ export default function Dashboard({ user }) {
                   letterSpacing: '0.5px',
                   transition: 'background 0.2s'
                 }}
-                disabled={!input || !clusterName}
+                disabled={!input}
               >
                 <span role="img" aria-label="rocket" style={{ marginRight: 8 }}>🚀</span>
                 Save & Connect
