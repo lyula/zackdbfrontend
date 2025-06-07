@@ -464,157 +464,160 @@ export default function Dashboard({ user }) {
                 fontSize: 24,
                 letterSpacing: '-0.5px'
               }}>Saved Connections</h3>
-              <ul style={{
-                paddingLeft: 0,
-                listStyle: 'none',
-                marginBottom: 22,
-                width: '100%',
-                maxHeight: 260,
-                overflowY: 'auto'
-              }}>
-                {paginatedConnections.length === 0 && (
-                  <li style={{ color: '#6366f1', textAlign: 'center', padding: '14px 0' }}>No saved connections yet.</li>
-                )}
-                {paginatedConnections.filter(Boolean).map((conn, idx) => (
-                  <li key={conn._id || idx} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    marginBottom: 10,
-                    background: 'rgba(236,239,255,0.85)',
-                    borderRadius: 8,
-                    padding: '10px 14px'
-                  }}>
-                    <span style={{
-                      maxWidth: 220,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: 'inline-block',
-                      fontSize: 16,
-                      color: '#23272f',
-                      fontWeight: 700
-                    }}>{conn.clusterName || 'Unnamed Cluster'}</span>
-                    <button
-                      style={{
-                        marginLeft: 14,
-                        background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 8,
-                        padding: '7px 22px',
-                        fontWeight: 700,
-                        fontSize: 15,
-                        cursor: 'pointer',
-                        boxShadow: '0 2px 8px #6366f133',
-                        display: 'flex',
-                        alignItems: 'center',
-                        transition: 'background 0.2s'
-                      }}
-                      onClick={() => handleUseConnection(conn.connectionString)}
-                    >
-                      <span role="img" aria-label="rocket" style={{ marginRight: 7 }}>🚀</span>
-                      Use
-                    </button>
-                    <div style={{ position: 'relative', display: 'inline-block' }}>
+              <div style={{ position: 'relative', width: '100%' }}>
+                <ul style={{
+                  paddingLeft: 0,
+                  listStyle: 'none',
+                  marginBottom: 22,
+                  width: '100%',
+                  maxHeight: 260,
+                  overflowY: 'auto'
+                }}>
+                  {paginatedConnections.length === 0 && (
+                    <li style={{ color: '#6366f1', textAlign: 'center', padding: '14px 0' }}>No saved connections yet.</li>
+                  )}
+                  {paginatedConnections.filter(Boolean).map((conn, idx) => (
+                    <li key={conn._id || idx} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginBottom: 10,
+                      background: 'rgba(236,239,255,0.85)',
+                      borderRadius: 8,
+                      padding: '10px 14px'
+                    }}>
+                      <span style={{
+                        maxWidth: 220,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: 'inline-block',
+                        fontSize: 16,
+                        color: '#23272f',
+                        fontWeight: 700
+                      }}>{conn.clusterName || 'Unnamed Cluster'}</span>
                       <button
-                        ref={el => deleteBtnRefs.current[conn.connectionString] = el}
                         style={{
-                          marginLeft: 8,
-                          background: 'none',
+                          marginLeft: 14,
+                          background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                          color: '#fff',
                           border: 'none',
-                          color: '#ef4444',
-                          fontSize: 20,
-                          cursor: 'pointer'
+                          borderRadius: 8,
+                          padding: '7px 22px',
+                          fontWeight: 700,
+                          fontSize: 15,
+                          cursor: 'pointer',
+                          boxShadow: '0 2px 8px #6366f133',
+                          display: 'flex',
+                          alignItems: 'center',
+                          transition: 'background 0.2s'
                         }}
-                        title="Delete"
-                        onClick={e => {
-                          const rect = e.target.getBoundingClientRect();
-                          setModalPos({
-                            top: rect.top + window.scrollY - 10, // 10px above the button
-                            left: rect.left + rect.width / 2 + window.scrollX
-                          });
-                          setConfirmDelete(conn.connectionString);
-                        }}
+                        onClick={() => handleUseConnection(conn.connectionString)}
                       >
-                        🗑️
+                        <span role="img" aria-label="rocket" style={{ marginRight: 7 }}>🚀</span>
+                        Use
                       </button>
-                      {confirmDelete === conn.connectionString && (
-                        <>
-                          {/* Backdrop */}
-                          <div
-                            onClick={() => setConfirmDelete(null)}
-                            style={{
-                              position: 'fixed',
-                              top: 0, left: 0, width: '100vw', height: '100vh',
-                              background: 'rgba(36, 41, 46, 0.18)',
-                              zIndex: 2000
-                            }}
-                          />
-                          {/* Modal */}
-                          <div
-                            style={{
-                              position: 'fixed',
-                              top: modalPos.top,
-                              left: modalPos.left,
-                              transform: 'translate(-50%, -100%)',
-                              background: '#fff',
-                              color: '#23272f',
-                              padding: '22px 24px 18px 24px',
-                              borderRadius: 14,
-                              boxShadow: '0 4px 24px 0 rgba(99,102,241,0.13)',
-                              zIndex: 2001,
-                              minWidth: 260,
-                              textAlign: 'center',
-                              border: '1.5px solid #e0e7ff'
-                            }}
-                          >
-                            <div style={{ marginBottom: 14, fontWeight: 700, fontSize: 17 }}>
-                              Delete this connection?
-                            </div>
-                            <div style={{ marginBottom: 18, color: '#6366f1', fontSize: 14 }}>
-                              Are you sure you want to delete this connection?
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
-                              <button
-                                style={{
-                                  background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                                  color: '#fff',
-                                  border: 'none',
-                                  borderRadius: 8,
-                                  padding: '8px 22px',
-                                  fontWeight: 700,
-                                  fontSize: 15,
-                                  cursor: 'pointer'
-                                }}
-                                onClick={() => {
-                                  handleDeleteConnection(conn.connectionString);
-                                  setConfirmDelete(null);
-                                }}
-                              >
-                                Delete
-                              </button>
-                              <button
-                                style={{
-                                  background: '#fff',
-                                  color: '#6366f1',
-                                  border: '2px solid #6366f1',
-                                  borderRadius: 8,
-                                  padding: '8px 22px',
-                                  fontWeight: 700,
-                                  fontSize: 15,
-                                  cursor: 'pointer'
-                                }}
-                                onClick={() => setConfirmDelete(null)}
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        </>
-                      )}
+                      <div style={{ position: 'relative', display: 'inline-block' }}>
+                        <button
+                          ref={el => deleteBtnRefs.current[conn.connectionString] = el}
+                          style={{
+                            marginLeft: 8,
+                            background: 'none',
+                            border: 'none',
+                            color: '#ef4444',
+                            fontSize: 20,
+                            cursor: 'pointer'
+                          }}
+                          title="Delete"
+                          onClick={e => {
+                            const rect = e.target.getBoundingClientRect();
+                            setModalPos({
+                              top: rect.top + window.scrollY - 10,
+                              left: rect.left + rect.width / 2 + window.scrollX
+                            });
+                            setConfirmDelete(conn.connectionString);
+                          }}
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                {/* Backdrop and Modal */}
+                {confirmDelete && (
+                  <>
+                    {/* Backdrop only over Saved Connections panel */}
+                    <div
+                      onClick={() => setConfirmDelete(null)}
+                      style={{
+                        position: 'absolute',
+                        top: 0, left: 0, width: '100%', height: '100%',
+                        background: 'rgba(36, 41, 46, 0.18)',
+                        zIndex: 2000
+                      }}
+                    />
+                    {/* Modal */}
+                    <div
+                      style={{
+                        position: 'fixed',
+                        top: modalPos.top,
+                        left: modalPos.left,
+                        transform: 'translate(-50%, -100%)',
+                        background: '#fff',
+                        color: '#23272f',
+                        padding: '22px 24px 18px 24px',
+                        borderRadius: 14,
+                        boxShadow: '0 4px 24px 0 rgba(99,102,241,0.13)',
+                        zIndex: 2001,
+                        minWidth: 260,
+                        textAlign: 'center',
+                        border: '1.5px solid #e0e7ff'
+                      }}
+                    >
+                      <div style={{ marginBottom: 14, fontWeight: 700, fontSize: 17 }}>
+                        Delete this connection?
+                      </div>
+                      <div style={{ marginBottom: 18, color: '#6366f1', fontSize: 14 }}>
+                        Are you sure you want to delete this connection?
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
+                        <button
+                          style={{
+                            background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: 8,
+                            padding: '8px 22px',
+                            fontWeight: 700,
+                            fontSize: 15,
+                            cursor: 'pointer'
+                          }}
+                          onClick={() => {
+                            handleDeleteConnection(confirmDelete);
+                            setConfirmDelete(null);
+                          }}
+                        >
+                          Delete
+                        </button>
+                        <button
+                          style={{
+                            background: '#fff',
+                            color: '#6366f1',
+                            border: '2px solid #6366f1',
+                            borderRadius: 8,
+                            padding: '8px 22px',
+                            fontWeight: 700,
+                            fontSize: 15,
+                            cursor: 'pointer'
+                          }}
+                          onClick={() => setConfirmDelete(null)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
-                  </li>
-                ))}
-              </ul>
+                  </>
+                )}
+              </div>
               {/* Pagination Controls */}
               {totalConnPages > 1 && (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
