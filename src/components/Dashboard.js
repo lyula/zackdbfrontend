@@ -28,7 +28,6 @@ export default function Dashboard({ user }) {
   const [connPage, setConnPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(null); // holds the connection string to confirm
-  const [modalPos, setModalPos] = useState({ top: 0, left: 0 });
   const deleteBtnRefs = useRef({});
   const connectionsPerPage = 5;
   const navigate = useNavigate();
@@ -454,18 +453,23 @@ export default function Dashboard({ user }) {
               )}
             </div>
             {/* Right: Saved Connections */}
-            <div style={{
-              ...glass,
-              flex: 1,
-              borderRadius: 22,
-              padding: '44px 36px 36px 36px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              minWidth: 320,
-              maxWidth: 440,
-              marginTop: 12
-            }}>
+            <div
+              className="saved-connections-card"
+              style={{
+                ...glass,
+                flex: 1,
+                borderRadius: 22,
+                padding: '44px 36px 36px 36px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                minWidth: 320,
+                maxWidth: 440,
+                marginTop: 12,
+                position: 'relative', // Needed for absolute modal/backdrop
+                overflow: 'visible'
+              }}
+            >
               <div style={{
                 fontSize: 26,
                 fontWeight: 800,
@@ -591,89 +595,93 @@ export default function Dashboard({ user }) {
                   </button>
                 </div>
               )}
+
+              {/* Modal Backdrop and Modal (inside the card, absolutely positioned) */}
+              {confirmDelete && (
+                <>
+                  {/* Backdrop */}
+                  <div
+                    className="modal-backdrop"
+                    onClick={() => setConfirmDelete(null)}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      background: 'rgba(44, 62, 80, 0.18)',
+                      zIndex: 20,
+                      borderRadius: 22
+                    }}
+                  />
+                  {/* Modal */}
+                  <div
+                    className="modal"
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      minWidth: 280,
+                      maxWidth: 340,
+                      background: '#fff',
+                      borderRadius: 16,
+                      boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
+                      zIndex: 21,
+                      padding: '32px 22px 22px 22px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 10, color: '#6366f1' }}>
+                      Confirm Delete
+                    </div>
+                    <div style={{ color: '#23272f', fontSize: 15, marginBottom: 26, textAlign: 'center' }}>
+                      Are you sure you want to delete this connection?
+                    </div>
+                    <div style={{ display: 'flex', gap: 18 }}>
+                      <button
+                        onClick={() => {
+                          handleDeleteConnection(confirmDelete);
+                          setConfirmDelete(null);
+                        }}
+                        style={{
+                          background: '#f87171',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          padding: '10px 22px',
+                          fontWeight: 700,
+                          fontSize: 15,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Delete
+                      </button>
+                      <button
+                        onClick={() => setConfirmDelete(null)}
+                        style={{
+                          background: '#e0e7ff',
+                          color: '#6366f1',
+                          border: 'none',
+                          borderRadius: 8,
+                          padding: '10px 22px',
+                          fontWeight: 700,
+                          fontSize: 15,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
       </div>
-      {/* Modal Backdrop and Modal */}
-      {confirmDelete && (
-        <>
-          {/* Backdrop */}
-          <div
-            onClick={() => setConfirmDelete(null)}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              background: 'rgba(44, 62, 80, 0.35)',
-              zIndex: 1000
-            }}
-          />
-          {/* Modal */}
-          <div
-            style={{
-              position: 'fixed',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              minWidth: 320,
-              maxWidth: 400,
-              background: '#fff',
-              borderRadius: 16,
-              boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
-              zIndex: 1001,
-              padding: '36px 28px 28px 28px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center'
-            }}
-          >
-            <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 10, color: '#f87171' }}>
-              Confirm Delete
-            </div>
-            <div style={{ color: '#23272f', fontSize: 15, marginBottom: 26, textAlign: 'center' }}>
-              Are you sure you want to delete this connection?
-            </div>
-            <div style={{ display: 'flex', gap: 18 }}>
-              <button
-                onClick={() => {
-                  handleDeleteConnection(confirmDelete);
-                  setConfirmDelete(null);
-                }}
-                style={{
-                  background: '#f87171',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '10px 22px',
-                  fontWeight: 700,
-                  fontSize: 15,
-                  cursor: 'pointer'
-                }}
-              >
-                Delete
-              </button>
-              <button
-                onClick={() => setConfirmDelete(null)}
-                style={{
-                  background: '#e0e7ff',
-                  color: '#6366f1',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '10px 22px',
-                  fontWeight: 700,
-                  fontSize: 15,
-                  cursor: 'pointer'
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </>
-      )}
     </div>
   );
 }
