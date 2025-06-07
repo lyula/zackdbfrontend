@@ -120,12 +120,12 @@ export default function Dashboard({ user }) {
     }
   };
 
-  const handleDeleteConnection = async (connectionString) => {
+  const handleDeleteConnection = async (id) => {
     setError('');
     const token = localStorage.getItem('token');
     try {
       const res = await fetch(
-        `${API_URL}/api/saved-connections/${encodeURIComponent(connectionString)}`,
+        `${API_URL}/api/saved-connections/${id}`,
         {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` }
@@ -518,7 +518,13 @@ export default function Dashboard({ user }) {
                         </button>
                         <button
                           ref={el => deleteBtnRefs.current[conn.connectionString] = el}
-                          onClick={() => setConfirmDelete(conn.connectionString)}
+                          onClick={e => {
+                            setModalPos({
+                              top: e.target.getBoundingClientRect().top - e.target.closest('.saved-connections-panel').getBoundingClientRect().top - 10,
+                              left: e.target.getBoundingClientRect().left - e.target.closest('.saved-connections-panel').getBoundingClientRect().left + e.target.offsetWidth / 2
+                            });
+                            setConfirmDelete(conn._id); // Use _id instead of connectionString
+                          }}
                           style={{
                             background: '#f87171',
                             color: '#fff',
@@ -627,7 +633,7 @@ export default function Dashboard({ user }) {
             <div style={{ display: 'flex', gap: 18 }}>
               <button
                 onClick={() => {
-                  handleDeleteConnection(confirmDelete);
+                  handleDeleteConnection(confirmDelete); // confirmDelete is now _id
                   setConfirmDelete(null);
                 }}
                 style={{
