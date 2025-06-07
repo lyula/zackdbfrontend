@@ -60,44 +60,19 @@ export default function Dashboard({ user }) {
       return;
     }
     try {
-      // Prevent duplicate cluster names
-      if (
-        !savedConnections.some(
-          conn => conn.clusterName && conn.clusterName.toLowerCase() === name.toLowerCase()
-        )
-      ) {
-        const res = await fetch(`${API_URL}/api/saved-connections`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({ connectionString: connStr, clusterName: name })
-        });
-        if (!res.ok) {
-          const err = await res.json();
-          setError(err.message || 'Failed to save connection.');
-          return;
-        }
-        // Always fetch the updated list after saving
-        const token = localStorage.getItem('token');
-        const refreshed = await fetch(`${API_URL}/api/saved-connections`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await refreshed.json();
-        setSavedConnections(data);
-        setInput('');
-        setClusterName('');
-      }
-      const res = await fetch(`${API_URL}/api/list-databases`, {
+      const res = await fetch('/api/saved-connections', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ connectionString: connStr })
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ connectionString: connStr, clusterName: name })
       });
-      const dbs = await res.json();
-      navigate('/explore', { state: { connectionString: connStr, databases: dbs } });
-    } catch {
-      setError('Failed to save or connect.');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to save connection');
+      // Optionally refresh connections list here
+    } catch (err) {
+      setError(err.message);
     }
   };
 
