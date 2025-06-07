@@ -534,53 +534,58 @@ export default function Dashboard({ user }) {
                             bottom: '120%',
                             left: '50%',
                             transform: 'translateX(-50%)',
-                            background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                            color: '#fff',
-                            padding: '14px 18px',
-                            borderRadius: 10,
-                            boxShadow: '0 2px 12px #6366f133',
-                            zIndex: 10,
-                            minWidth: 220,
-                            textAlign: 'center'
+                            background: '#fff',
+                            color: '#23272f',
+                            padding: '22px 24px 18px 24px',
+                            borderRadius: 14,
+                            boxShadow: '0 4px 24px 0 rgba(99,102,241,0.13)',
+                            zIndex: 100,
+                            minWidth: 240,
+                            textAlign: 'center',
+                            border: '1.5px solid #e0e7ff'
                           }}
                         >
-                          <div style={{ marginBottom: 10, fontWeight: 600 }}>
+                          <div style={{ marginBottom: 14, fontWeight: 700, fontSize: 17 }}>
                             Delete this connection?
                           </div>
-                          <button
-                            style={{
-                              background: '#ef4444',
-                              color: '#fff',
-                              border: 'none',
-                              borderRadius: 6,
-                              padding: '6px 18px',
-                              fontWeight: 700,
-                              fontSize: 15,
-                              cursor: 'pointer',
-                              marginRight: 10
-                            }}
-                            onClick={() => {
-                              handleDeleteConnection(conn.connectionString);
-                              setConfirmDelete(null);
-                            }}
-                          >
-                            Delete
-                          </button>
-                          <button
-                            style={{
-                              background: '#fff',
-                              color: '#6366f1',
-                              border: '1.5px solid #6366f1',
-                              borderRadius: 6,
-                              padding: '6px 18px',
-                              fontWeight: 700,
-                              fontSize: 15,
-                              cursor: 'pointer'
-                            }}
-                            onClick={() => setConfirmDelete(null)}
-                          >
-                            Cancel
-                          </button>
+                          <div style={{ marginBottom: 18, color: '#6366f1', fontSize: 14 }}>
+                            Are you sure you want to delete this connection?
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
+                            <button
+                              style={{
+                                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: 8,
+                                padding: '8px 22px',
+                                fontWeight: 700,
+                                fontSize: 15,
+                                cursor: 'pointer'
+                              }}
+                              onClick={() => {
+                                handleDeleteConnection(conn.connectionString);
+                                setConfirmDelete(null);
+                              }}
+                            >
+                              Delete
+                            </button>
+                            <button
+                              style={{
+                                background: '#fff',
+                                color: '#6366f1',
+                                border: '2px solid #6366f1',
+                                borderRadius: 8,
+                                padding: '8px 22px',
+                                fontWeight: 700,
+                                fontSize: 15,
+                                cursor: 'pointer'
+                              }}
+                              onClick={() => setConfirmDelete(null)}
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         </div>
                       )}
                     </div>
