@@ -390,7 +390,7 @@ export default function Dashboard({ user }) {
               </div>
               <input
                 type="text"
-                placeholder="Cluster Name e.g MyCool App"
+                placeholder="Enter a Cluster Name e.g MyCool App"
                 value={clusterName}
                 onChange={e => setClusterName(e.target.value)}
                 style={{
