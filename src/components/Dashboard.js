@@ -530,7 +530,6 @@ export default function Dashboard({ user }) {
                             display: 'inline-flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: '#f87171', // icon color only
                             width: 28,
                             height: 28,
                             fontSize: 22,
