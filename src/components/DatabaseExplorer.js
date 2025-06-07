@@ -56,7 +56,7 @@ export default function DatabaseExplorer() {
   useEffect(() => {
     fetch('https://ipapi.co/json/')
       .then(res => res.json())
-      .then data => setCountry(data.country_code))
+      .then(data => setCountry(data.country_code))
       .catch(() => {
         // fallback to locale if geolocation fails
         const locale = Intl.DateTimeFormat().resolvedOptions().locale;
@@ -663,7 +663,7 @@ export default function DatabaseExplorer() {
                           }}
                         >
                           <td style={{ ...tdStyle, height: 38 }}>
-                            {documents.length - absoluteIdx}
+                            {absoluteIdx + 1}
                           </td>
                           {visibleColumns.map(col => (
                             <td key={col} style={{ ...tdStyle, height: 38 }}>
