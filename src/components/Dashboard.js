@@ -621,7 +621,7 @@ export default function Dashboard({ user }) {
                 </div>
               )}
 
-              {/* Modal Backdrop and Modal (inside the card, absolutely positioned) */}
+              {/* Modal Backdrop and Modal (inside the card, absolutely  positioned) */}
               {confirmDelete && (
                 <>
                   {/* Backdrop */}
