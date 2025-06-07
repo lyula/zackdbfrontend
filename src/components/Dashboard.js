@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -28,6 +28,8 @@ export default function Dashboard({ user }) {
   const [connPage, setConnPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(null); // holds the connection string to confirm
+  const [modalPos, setModalPos] = useState({ top: 0, left: 0 });
+  const deleteBtnRefs = useRef({});
   const connectionsPerPage = 5;
   const navigate = useNavigate();
 
@@ -514,6 +516,7 @@ export default function Dashboard({ user }) {
                     </button>
                     <div style={{ position: 'relative', display: 'inline-block' }}>
                       <button
+                        ref={el => deleteBtnRefs.current[conn.connectionString] = el}
                         style={{
                           marginLeft: 8,
                           background: 'none',
@@ -523,7 +526,14 @@ export default function Dashboard({ user }) {
                           cursor: 'pointer'
                         }}
                         title="Delete"
-                        onClick={() => setConfirmDelete(conn.connectionString)}
+                        onClick={e => {
+                          const rect = e.target.getBoundingClientRect();
+                          setModalPos({
+                            top: rect.top + window.scrollY - 10, // 10px above the button
+                            left: rect.left + rect.width / 2 + window.scrollX
+                          });
+                          setConfirmDelete(conn.connectionString);
+                        }}
                       >
                         🗑️
                       </button>
@@ -536,22 +546,22 @@ export default function Dashboard({ user }) {
                               position: 'fixed',
                               top: 0, left: 0, width: '100vw', height: '100vh',
                               background: 'rgba(36, 41, 46, 0.18)',
-                              zIndex: 1000
+                              zIndex: 2000
                             }}
                           />
                           {/* Modal */}
                           <div
                             style={{
                               position: 'fixed',
-                              left: '50%',
-                              top: 'calc(50% - 80px)',
+                              top: modalPos.top,
+                              left: modalPos.left,
                               transform: 'translate(-50%, -100%)',
                               background: '#fff',
                               color: '#23272f',
                               padding: '22px 24px 18px 24px',
                               borderRadius: 14,
                               boxShadow: '0 4px 24px 0 rgba(99,102,241,0.13)',
-                              zIndex: 1001,
+                              zIndex: 2001,
                               minWidth: 260,
                               textAlign: 'center',
                               border: '1.5px solid #e0e7ff'
