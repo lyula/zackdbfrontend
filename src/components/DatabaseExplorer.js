@@ -107,7 +107,13 @@ export default function DatabaseExplorer() {
 
   // Fetch documents for a collection (with pagination)
   const fetchDocuments = async (dbName, collectionName, page = 1) => {
-    if (!dbName || !collectionName) return;
+    if (!connectionString || !dbName || !collectionName) {
+      setError('Missing connection info.');
+      setDocuments([]);
+      setColumns([]);
+      setColumnVisibility({});
+      return;
+    }
     setIsLoadingDocuments(true);
     setError('');
     try {
