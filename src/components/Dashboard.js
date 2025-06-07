@@ -73,7 +73,23 @@ export default function Dashboard({ user }) {
         data = await res.json();
       }
       if (!res.ok) throw new Error(data.message || 'Failed to save connection');
-      // Optionally refresh connections list here
+
+      // Refresh saved connections after successful save
+      const token = localStorage.getItem('token');
+      const connectionsRes = await fetch(`${API_URL}/api/saved-connections`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const connectionsData = await connectionsRes.json();
+      setSavedConnections(connectionsData);
+
+      // Optionally clear input fields
+      setInput('');
+      setClusterName('');
+      setError('');
+
+      // Redirect to explore page with databases
+      await handleUseConnection(connStr);
+
     } catch (err) {
       setError(err.message);
     }
