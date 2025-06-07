@@ -120,12 +120,12 @@ export default function Dashboard({ user }) {
     }
   };
 
-  const handleDeleteConnection = async (id) => {
+  const handleDeleteConnection = async (connectionString) => {
     setError('');
     const token = localStorage.getItem('token');
     try {
       const res = await fetch(
-        `${API_URL}/api/saved-connections/${id}`,
+        `${API_URL}/api/saved-connections/${encodeURIComponent(connectionString)}`,
         {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` }
@@ -518,25 +518,20 @@ export default function Dashboard({ user }) {
                         </button>
                         <button
                           ref={el => deleteBtnRefs.current[conn.connectionString] = el}
-                          onClick={e => {
-                            setModalPos({
-                              top: e.target.getBoundingClientRect().top - e.target.closest('.saved-connections-panel').getBoundingClientRect().top - 10,
-                              left: e.target.getBoundingClientRect().left - e.target.closest('.saved-connections-panel').getBoundingClientRect().left + e.target.offsetWidth / 2
-                            });
-                            setConfirmDelete(conn._id); // Use _id for deletion
-                          }}
+                          onClick={() => setConfirmDelete(conn.connectionString)}
                           style={{
-                            background: 'none',
+                            background: '#f87171',
+                            color: '#fff',
                             border: 'none',
-                            color: '#ef4444',
-                            fontSize: 20,
+                            borderRadius: 8,
+                            padding: '7px 14px',
+                            fontWeight: 700,
+                            fontSize: 15,
                             cursor: 'pointer',
-                            padding: 0,
-                            marginLeft: 8
+                            boxShadow: '0 2px 8px #f8717111'
                           }}
-                          title="Delete"
                         >
-                          <span role="img" aria-label="delete">🗑️</span>
+                          Delete
                         </button>
                       </div>
                     </li>
@@ -632,7 +627,7 @@ export default function Dashboard({ user }) {
             <div style={{ display: 'flex', gap: 18 }}>
               <button
                 onClick={() => {
-                  handleDeleteConnection(confirmDelete); // confirmDelete is now _id
+                  handleDeleteConnection(confirmDelete);
                   setConfirmDelete(null);
                 }}
                 style={{
