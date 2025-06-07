@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
@@ -37,13 +37,20 @@ export default function DatabaseExplorer() {
   const [now, setNow] = useState(new Date());
   const [country, setCountry] = useState('');
 
-  React.useEffect(() => {
+  // Loading states
+  const [isLoadingCollections, setIsLoadingCollections] = useState(false);
+  const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
+
+  // Ref to store interval ID for auto-refresh
+  const refreshIntervalRef = useRef(null);
+
+  useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
   // Get user's country using geolocation API
-  React.useEffect(() => {
+  useEffect(() => {
     fetch('https://ipapi.co/json/')
       .then(res => res.json())
       .then(data => setCountry(data.country_code))
@@ -72,33 +79,43 @@ export default function DatabaseExplorer() {
     setColumnVisibility({});
     setColPage(1);
     setError('');
+    setIsLoadingCollections(true);
     try {
       const res = await fetch(`${API_URL}/api/list-collections`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dbName, connectionString })
       });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
       const cols = await res.json();
       setCollections(cols);
     } catch (err) {
       setError('Failed to fetch collections.');
+      setCollections([]);
+    } finally {
+      setIsLoadingCollections(false);
     }
   };
 
-  const handleSelectCollection = async (collectionName) => {
-    setSelectedCollection(collectionName);
+  // Fetch documents for a collection
+  const fetchDocuments = async (dbName, collectionName) => {
+    setIsLoadingDocuments(true);
     setError('');
-    setCurrentPage(1); // Reset to first page on new collection
     try {
       const res = await fetch(`${API_URL}/api/documents`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           connectionString,
-          dbName: selectedDb,
+          dbName,
           collectionName
         })
       });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
       const docs = await res.json();
       setDocuments(docs);
       const cols = docs.length > 0 ? Object.keys(docs[0]) : [];
@@ -118,8 +135,37 @@ export default function DatabaseExplorer() {
       setColumns([]);
       setColumnVisibility({});
       setError('Failed to fetch documents.');
+    } finally {
+      setIsLoadingDocuments(false);
     }
   };
+
+  const handleSelectCollection = (collectionName) => {
+    setSelectedCollection(collectionName);
+    setError('');
+    setCurrentPage(1); // Reset to first page on new collection
+
+    // Clear any existing interval before fetching new documents
+    if (refreshIntervalRef.current) {
+      clearInterval(refreshIntervalRef.current);
+    }
+
+    fetchDocuments(selectedDb, collectionName);
+
+    // Set up auto-refresh interval every 5 seconds
+    refreshIntervalRef.current = setInterval(() => {
+      fetchDocuments(selectedDb, collectionName);
+    }, 5000);
+  };
+
+  // Clear interval on unmount or when selectedCollection changes
+  useEffect(() => {
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+    };
+  }, [selectedCollection]);
 
   // Toggle column visibility
   const toggleColumn = (col) => {
@@ -253,7 +299,7 @@ export default function DatabaseExplorer() {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (connectionString) {
       handleFetchDatabases(connectionString);
     }
@@ -495,7 +541,7 @@ export default function DatabaseExplorer() {
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center', // center horizontally
+                justifyContent: 'space-between', // space between title and refresh button
                 marginBottom: 10,
                 marginTop: 0,
                 width: '100%' // take full width of card
@@ -518,6 +564,26 @@ export default function DatabaseExplorer() {
                     backgroundClip: 'initial'
                   }}>{selectedCollection}</span>
                 </h4>
+                <button
+                  onClick={() => fetchDocuments(selectedDb, selectedCollection)}
+                  disabled={isLoadingDocuments}
+                  style={{
+                    marginLeft: 16,
+                    padding: '6px 14px',
+                    fontSize: 14,
+                    fontWeight: 700,
+                    borderRadius: 6,
+                    border: 'none',
+                    cursor: isLoadingDocuments ? 'not-allowed' : 'pointer',
+                    background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                    color: '#fff',
+                    boxShadow: '0 2px 8px #6366f133',
+                    userSelect: 'none'
+                  }}
+                  title="Refresh Data"
+                >
+                  {isLoadingDocuments ? 'Refreshing...' : '🔄 Refresh'}
+                </button>
               </div>
               {/* Table */}
               <div style={{
@@ -643,6 +709,11 @@ export default function DatabaseExplorer() {
               }}>
                 &copy; {new Date().getFullYear()} All Rights Reserved | ZACKDB
               </footer>
+            </div>
+          )}
+          {(isLoadingCollections || isLoadingDocuments) && (
+            <div style={{ marginTop: 20, fontWeight: 600, color: '#6366f1' }}>
+              Loading...
             </div>
           )}
         </div>
