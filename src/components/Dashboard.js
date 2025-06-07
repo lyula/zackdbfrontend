@@ -21,24 +21,7 @@ const HamburgerIcon = ({ open, ...props }) => (
 );
 
 const BinIcon = ({ style = {}, ...props }) => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 20 20"
-    fill="none"
-    style={style}
-    {...props}
-  >
-    {/* Bin body */}
-    <rect x="5" y="7" width="10" height="8" rx="2" fill="#6366f1"/>
-    {/* Bin lid */}
-    <rect x="4" y="5.5" width="12" height="2" rx="1" fill="#818cf8"/>
-    {/* Handle */}
-    <rect x="8.5" y="3.5" width="3" height="2" rx="1" fill="#6366f1"/>
-    {/* Bin lines */}
-    <rect x="8" y="9" width="1" height="4" rx="0.5" fill="#fff" opacity="0.7"/>
-    <rect x="11" y="9" width="1" height="4" rx="0.5" fill="#fff" opacity="0.7"/>
-  </svg>
+  <span role="img" aria-label="delete" style={{ fontSize: 20, ...style }} {...props}>🗑️</span>
 );
 
 export default function Dashboard({ user }) {
