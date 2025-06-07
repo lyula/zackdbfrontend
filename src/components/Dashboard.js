@@ -25,6 +25,12 @@ function getClusterName(connectionString) {
   return match ? match[1] : '';
 }
 
+// Add this function near the top, after getClusterName
+function isValidMongoAtlasConnectionString(str) {
+  // Basic check for MongoDB Atlas SRV connection string
+  return /^mongodb\+srv:\/\/[^:]+:[^@]+@[^.]+(\.[^.]+)+\/?.*/.test(str);
+}
+
 export default function Dashboard({ user }) {
   const [input, setInput] = useState('');
   const [clusterName, setClusterName] = useState('');
@@ -77,6 +83,11 @@ export default function Dashboard({ user }) {
     setError('');
     if (!connStr || !name) {
       setError('Please enter both a cluster name and connection string.');
+      return;
+    }
+    // Validate MongoDB Atlas connection string
+    if (!isValidMongoAtlasConnectionString(connStr)) {
+      setError('Please enter a valid MongoDB Atlas connection string.');
       return;
     }
     try {
