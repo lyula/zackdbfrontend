@@ -438,9 +438,9 @@ export default function Dashboard({ user }) {
               </button>
               {error && (
                 <div style={{
-                  color: '#f87171',
-                  background: '#fef2f2',
-                  border: '1.5px solid #fca5a5',
+                  color: '#fff',
+                  background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                  // border: '1.5px solid #fca5a5', // Removed border
                   borderRadius: 8,
                   padding: '10px 16px',
                   marginTop: 12,
