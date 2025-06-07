@@ -442,19 +442,22 @@ export default function Dashboard({ user }) {
             </div>
 
             {/* Right: Saved Connections */}
-            <div style={{
-              ...glass,
-              flex: 1,
-              borderRadius: 22,
-              padding: '44px 36px 36px 36px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              minWidth: 320,
-              maxWidth: 440,
-              marginTop: 12,
-              position: 'relative' // <-- Important for absolute backdrop
-            }}>
+            <div
+              className="saved-connections-panel"
+              style={{
+                ...glass,
+                flex: 1,
+                borderRadius: 22,
+                padding: '44px 36px 36px 36px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                minWidth: 320,
+                maxWidth: 440,
+                marginTop: 12,
+                position: 'relative'
+              }}
+            >
               <h3 style={{
                 color: 'transparent',
                 background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
@@ -528,10 +531,11 @@ export default function Dashboard({ user }) {
                         }}
                         title="Delete"
                         onClick={e => {
-                          const rect = e.target.getBoundingClientRect();
+                          const panelRect = e.currentTarget.closest('.saved-connections-panel').getBoundingClientRect();
+                          const btnRect = e.currentTarget.getBoundingClientRect();
                           setModalPos({
-                            top: rect.top + window.scrollY - 10,
-                            left: rect.left + rect.width / 2 + window.scrollX
+                            top: btnRect.top - panelRect.top - 10, // 10px above the button, relative to panel
+                            left: btnRect.left - panelRect.left + btnRect.width / 2
                           });
                           setConfirmDelete(conn.connectionString);
                         }}
@@ -545,7 +549,6 @@ export default function Dashboard({ user }) {
               {/* Backdrop and Modal rendered ONCE at the panel level */}
               {confirmDelete && (
                 <>
-                  {/* Backdrop only over Saved Connections panel */}
                   <div
                     onClick={() => setConfirmDelete(null)}
                     style={{
@@ -555,10 +558,9 @@ export default function Dashboard({ user }) {
                       zIndex: 2000
                     }}
                   />
-                  {/* Modal */}
                   <div
                     style={{
-                      position: 'fixed',
+                      position: 'absolute',
                       top: modalPos.top,
                       left: modalPos.left,
                       transform: 'translate(-50%, -100%)',
