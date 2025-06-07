@@ -66,7 +66,7 @@ export default function Dashboard({ user }) {
           conn => conn.clusterName && conn.clusterName.toLowerCase() === name.toLowerCase()
         )
       ) {
-        await fetch(`${API_URL}/api/saved-connections`, {
+        const res = await fetch(`${API_URL}/api/saved-connections`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -74,10 +74,13 @@ export default function Dashboard({ user }) {
           },
           body: JSON.stringify({ connectionString: connStr, clusterName: name })
         });
-        setSavedConnections([
-          ...savedConnections,
-          { connectionString: connStr, clusterName: name }
-        ]);
+        if (!res.ok) {
+          const err = await res.json();
+          setError(err.message || 'Failed to save connection.');
+          return;
+        }
+        const saved = await res.json();
+        setSavedConnections([saved.connection, ...savedConnections]);
       }
       const res = await fetch(`${API_URL}/api/list-databases`, {
         method: 'POST',
