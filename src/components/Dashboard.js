@@ -523,21 +523,20 @@ export default function Dashboard({ user }) {
                               top: e.target.getBoundingClientRect().top - e.target.closest('.saved-connections-panel').getBoundingClientRect().top - 10,
                               left: e.target.getBoundingClientRect().left - e.target.closest('.saved-connections-panel').getBoundingClientRect().left + e.target.offsetWidth / 2
                             });
-                            setConfirmDelete(conn._id); // Use _id instead of connectionString
+                            setConfirmDelete(conn._id); // Use _id for deletion
                           }}
                           style={{
-                            background: '#f87171',
-                            color: '#fff',
+                            background: 'none',
                             border: 'none',
-                            borderRadius: 8,
-                            padding: '7px 14px',
-                            fontWeight: 700,
-                            fontSize: 15,
+                            color: '#ef4444',
+                            fontSize: 20,
                             cursor: 'pointer',
-                            boxShadow: '0 2px 8px #f8717111'
+                            padding: 0,
+                            marginLeft: 8
                           }}
+                          title="Delete"
                         >
-                          Delete
+                          <span role="img" aria-label="delete">🗑️</span>
                         </button>
                       </div>
                     </li>
