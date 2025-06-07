@@ -116,7 +116,7 @@ export default function DatabaseExplorer() {
           connectionString,
           dbName,
           collectionName,
-          limit: 10000 // Adjust as needed or implement pagination
+          limit: 0 // 0 means no limit, fetch all documents
         })
       });
       if (!res.ok) {
