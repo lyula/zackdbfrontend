@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
@@ -41,6 +41,12 @@ export default function DatabaseExplorer() {
   const [isLoadingCollections, setIsLoadingCollections] = useState(false);
   const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
 
+  // Auto refresh state
+  const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
+
+  // Ref to store interval ID for auto-refresh
+  const refreshIntervalRef = useRef(null);
+
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
@@ -52,6 +58,7 @@ export default function DatabaseExplorer() {
       .then(res => res.json())
       .then(data => setCountry(data.country_code))
       .catch(() => {
+        // fallback to locale if geolocation fails
         const locale = Intl.DateTimeFormat().resolvedOptions().locale;
         setCountry(locale.split('-')[1] || 'US');
       });
@@ -76,6 +83,7 @@ export default function DatabaseExplorer() {
     setColPage(1);
     setError('');
     setIsLoadingCollections(true);
+    stopAutoRefresh(); // Stop auto refresh if running
     try {
       const res = await fetch(`${API_URL}/api/list-collections`, {
         method: 'POST',
@@ -118,6 +126,7 @@ export default function DatabaseExplorer() {
       setDocuments(docs);
       const cols = docs.length > 0 ? Object.keys(docs[0]) : [];
       setColumns(cols);
+      // By default, hide 'password', columns starting with '-', and '_V' column
       const initialVisibility = {};
       cols.forEach(col => {
         if (col === 'password' || col === '_V' || col.startsWith('-')) {
@@ -140,9 +149,38 @@ export default function DatabaseExplorer() {
   const handleSelectCollection = (collectionName) => {
     setSelectedCollection(collectionName);
     setError('');
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page on new collection
+    stopAutoRefresh(); // Stop auto refresh when selecting new collection
     fetchDocuments(selectedDb, collectionName);
   };
+
+  // Start auto refresh interval
+  const startAutoRefresh = () => {
+    if (refreshIntervalRef.current) return; // already running
+    refreshIntervalRef.current = setInterval(() => {
+      fetchDocuments(selectedDb, selectedCollection);
+    }, 5000);
+    setIsAutoRefreshing(true);
+  };
+
+  // Stop auto refresh interval
+  const stopAutoRefresh = () => {
+    if (refreshIntervalRef.current) {
+      clearInterval(refreshIntervalRef.current);
+      refreshIntervalRef.current = null;
+    }
+    setIsAutoRefreshing(false);
+  };
+
+  // Clear interval on unmount or when selectedCollection changes
+  useEffect(() => {
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+    };
+  }, [selectedCollection]);
 
   // Toggle column visibility
   const toggleColumn = (col) => {
@@ -157,11 +195,12 @@ export default function DatabaseExplorer() {
 
   // Pagination logic for table
   const totalPages = Math.ceil(documents.length / recordsPerPage);
+  // When paginating documents, reverse the array so latest user is first
   const paginatedDocs = [...documents]
     .reverse()
     .slice((currentPage - 1) * recordsPerPage, currentPage * recordsPerPage);
 
-  // --- Styling ---
+  // --- Styling --- ULTRA MODERN THEME ---
   const glass = {
     background: 'rgba(255,255,255,0.72)',
     boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.13)',
@@ -254,7 +293,6 @@ export default function DatabaseExplorer() {
     boxShadow: '0 2px 8px #6366f133',
     userSelect: 'none',
     minWidth: 130,
-    marginLeft: 16
   };
 
   const handleFetchDatabases = async (connectionString) => {
@@ -355,7 +393,6 @@ export default function DatabaseExplorer() {
           </span>
         </div>
       </div>
-
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -388,9 +425,7 @@ export default function DatabaseExplorer() {
           </div>
         )}
       </div>
-
       {error && <div style={{ color: '#ff5252', marginBottom: 12, fontWeight: 600 }}>{error}</div>}
-
       <div style={{ display: 'flex', alignItems: 'flex-start' }}>
         {/* Sidebar */}
         <div style={sidebarStyle}>
@@ -414,6 +449,7 @@ export default function DatabaseExplorer() {
                 {db}
               </span>
             ))}
+            {/* Database Pagination */}
             {totalDbPages > 1 && (
               <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
                 <button
@@ -454,7 +490,6 @@ export default function DatabaseExplorer() {
               </div>
             )}
           </div>
-
           {collections.length > 0 && (
             <div>
               <h3 style={{
@@ -477,6 +512,7 @@ export default function DatabaseExplorer() {
                   {col}
                 </span>
               ))}
+              {/* Collections Pagination */}
               {totalColPages > 1 && (
                 <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
                   <button
@@ -519,7 +555,6 @@ export default function DatabaseExplorer() {
             </div>
           )}
         </div>
-
         {/* Main Table Area */}
         <div style={{
           flex: 1,
@@ -535,10 +570,10 @@ export default function DatabaseExplorer() {
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
+                justifyContent: 'space-between', // space between title and buttons
                 marginBottom: 10,
                 marginTop: 0,
-                width: '100%'
+                width: '100%' // take full width of card
               }}>
                 <h4 style={{
                   color: 'transparent',
@@ -548,8 +583,8 @@ export default function DatabaseExplorer() {
                   fontWeight: 800,
                   fontSize: 20,
                   margin: 0,
-                  textAlign: 'center',
-                  width: '100%'
+                  textAlign: 'center', // center text
+                  width: '100%' // ensure h4 takes full width
                 }}>
                   Table: <span style={{
                     color: '#6366f1',
@@ -558,16 +593,37 @@ export default function DatabaseExplorer() {
                     backgroundClip: 'initial'
                   }}>{selectedCollection}</span>
                 </h4>
-                <button
-                  onClick={() => fetchDocuments(selectedDb, selectedCollection)}
-                  disabled={isLoadingDocuments || !selectedCollection}
-                  style={buttonStyle}
-                  title="Refresh Data"
-                >
-                  {isLoadingDocuments ? 'Refreshing...' : '🔄 Refresh'}
-                </button>
+                <div style={{ marginLeft: 16, display: 'flex', gap: 12 }}>
+                  {!isAutoRefreshing ? (
+                    <>
+                      <button
+                        onClick={() => fetchDocuments(selectedDb, selectedCollection)}
+                        disabled={isLoadingDocuments || !selectedCollection}
+                        style={buttonStyle}
+                        title="Manual Refresh"
+                      >
+                        {isLoadingDocuments ? 'Refreshing...' : '🔄 Manual Refresh'}
+                      </button>
+                      <button
+                        onClick={startAutoRefresh}
+                        disabled={isLoadingDocuments || !selectedCollection}
+                        style={buttonStyle}
+                        title="Start Auto Refresh"
+                      >
+                        🔁 Auto Refresh
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={stopAutoRefresh}
+                      style={buttonStyle}
+                      title="Stop Auto Refresh"
+                    >
+                      ⏹️ Stop Auto Refresh
+                    </button>
+                  )}
+                </div>
               </div>
-
               {/* Table */}
               <div style={{
                 flex: 1,
@@ -589,6 +645,7 @@ export default function DatabaseExplorer() {
                   </thead>
                   <tbody>
                     {paginatedDocs.map((doc, idx) => {
+                      // Now absoluteIdx counts from the reversed array
                       const absoluteIdx = (currentPage - 1) * recordsPerPage + idx;
                       return (
                         <tr
@@ -605,12 +662,12 @@ export default function DatabaseExplorer() {
                             <td key={col} style={{ ...tdStyle, height: 38 }}>
                               {(col === 'createdAt' || col === 'updatedAt')
                                 ? (doc[col]
-                                    ? new Date(doc[col]).toLocaleString(undefined, {
-                                        year: 'numeric',
-                                        month: 'short',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
+                                    ? new Date(doc[col]).toLocaleString(undefined, { 
+                                        year: 'numeric', 
+                                        month: 'short', 
+                                        day: 'numeric', 
+                                        hour: '2-digit', 
+                                        minute: '2-digit', 
                                         second: '2-digit',
                                         hour12: false,
                                         timeZoneName: 'short'
@@ -627,7 +684,6 @@ export default function DatabaseExplorer() {
                   </tbody>
                 </table>
               </div>
-
               {/* Pagination Controls */}
               {totalPages > 1 && (
                 <div style={{
@@ -678,8 +734,7 @@ export default function DatabaseExplorer() {
                   </button>
                 </div>
               )}
-
-              {/* Footer */}
+              {/* Footer directly below the table */}
               <footer style={{
                 width: '100%',
                 textAlign: 'center',
@@ -695,7 +750,6 @@ export default function DatabaseExplorer() {
               </footer>
             </div>
           )}
-
           {(isLoadingCollections || isLoadingDocuments) && (
             <div style={{ marginTop: 20, fontWeight: 600, color: '#6366f1' }}>
               Loading...
