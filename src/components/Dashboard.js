@@ -60,7 +60,7 @@ export default function Dashboard({ user }) {
       return;
     }
     try {
-      const res = await fetch('/api/saved-connections', {
+      const res = await fetch(`${API_URL}/api/saved-connections`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +68,10 @@ export default function Dashboard({ user }) {
         },
         body: JSON.stringify({ connectionString: connStr, clusterName: name })
       });
-      const data = await res.json();
+      let data = {};
+      if (res.headers.get('content-type')?.includes('application/json')) {
+        data = await res.json();
+      }
       if (!res.ok) throw new Error(data.message || 'Failed to save connection');
       // Optionally refresh connections list here
     } catch (err) {
