@@ -449,130 +449,206 @@ export default function Dashboard({ user }) {
               )}
             </div>
             {/* Right: Saved Connections */}
-            <div style={{
-              ...glass,
-              flex: 1,
-              borderRadius: 22,
-              padding: '44px 36px 36px 36px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              minWidth: 320,
-              maxWidth: 440,
-              marginTop: 12
-            }}>
+            <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div style={{
-                fontSize: 26,
-                fontWeight: 800,
-                marginBottom: 18,
-                color: 'transparent',
-                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text'
+                ...glass,
+                width: '100%',
+                borderRadius: 22,
+                padding: '44px 36px 36px 36px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                minWidth: 320,
+                maxWidth: 440,
+                marginTop: 12
               }}>
-                Saved Connections
-              </div>
-              {paginatedConnections.length === 0 ? (
-                <div style={{ color: '#888', fontSize: 16, marginTop: 24 }}>No saved connections yet.</div>
-              ) : (
-                <ul style={{ width: '100%', padding: 0, margin: 0, listStyle: 'none' }}>
-                  {paginatedConnections.map((conn, idx) => (
-                    <li key={conn.connectionString} style={{
-                      background: 'rgba(245,245,255,0.88)',
-                      borderRadius: 12,
-                      marginBottom: 14,
-                      padding: '18px 16px',
-                      boxShadow: '0 2px 8px #6366f111',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: 10
-                    }}>
-                      <div>
-                        <div style={{ fontWeight: 700, fontSize: 17 }}>{conn.clusterName}</div>
-                        <div style={{ fontSize: 14, color: '#6366f1', wordBreak: 'break-all', opacity: 0.85 }}>
-                          {conn.connectionString}
+                <div style={{
+                  fontSize: 26,
+                  fontWeight: 800,
+                  marginBottom: 18,
+                  color: 'transparent',
+                  background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text'
+                }}>
+                  Saved Connections
+                </div>
+                {paginatedConnections.length === 0 ? (
+                  <div style={{ color: '#888', fontSize: 16, marginTop: 24 }}>No saved connections yet.</div>
+                ) : (
+                  <ul style={{ width: '100%', padding: 0, margin: 0, listStyle: 'none' }}>
+                    {paginatedConnections.map((conn, idx) => (
+                      <li key={conn.connectionString} style={{
+                        background: 'rgba(245,245,255,0.88)',
+                        borderRadius: 12,
+                        marginBottom: 14,
+                        padding: '18px 16px',
+                        boxShadow: '0 2px 8px #6366f111',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 10
+                      }}>
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: 17 }}>{conn.clusterName}</div>
+                          <div style={{ fontSize: 14, color: '#6366f1', wordBreak: 'break-all', opacity: 0.85 }}>
+                            {conn.connectionString}
+                          </div>
                         </div>
-                      </div>
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button
-                          onClick={() => handleUseConnection(conn.connectionString)}
-                          style={{
-                            background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: 8,
-                            padding: '7px 18px',
-                            fontWeight: 700,
-                            fontSize: 15,
-                            cursor: 'pointer',
-                            boxShadow: '0 2px 8px #6366f122'
-                          }}
-                        >
-                          Use
-                        </button>
-                        <button
-                          ref={el => deleteBtnRefs.current[conn.connectionString] = el}
-                          onClick={() => setConfirmDelete(conn.connectionString)}
-                          style={{
-                            background: 'transparent',
-                            border: 'none',
-                            borderRadius: 8,
-                            padding: '7px 10px',
-                            cursor: 'pointer',
-                            boxShadow: 'none',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                          title="Delete"
-                        >
-                          <BinIcon />
-                        </button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button
+                            onClick={() => handleUseConnection(conn.connectionString)}
+                            style={{
+                              background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: 8,
+                              padding: '7px 18px',
+                              fontWeight: 700,
+                              fontSize: 15,
+                              cursor: 'pointer',
+                              boxShadow: '0 2px 8px #6366f122'
+                            }}
+                          >
+                            Use
+                          </button>
+                          <button
+                            ref={el => deleteBtnRefs.current[conn.connectionString] = el}
+                            onClick={() => setConfirmDelete(conn.connectionString)}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              borderRadius: 8,
+                              padding: '7px 10px',
+                              cursor: 'pointer',
+                              boxShadow: 'none',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                            title="Delete"
+                          >
+                            <BinIcon />
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
 
-              {/* Pagination */}
-              {totalConnPages > 1 && (
-                <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
-                  <button
-                    onClick={() => setConnPage(p => Math.max(1, p - 1))}
-                    disabled={connPage === 1}
+                {/* Pagination */}
+                {totalConnPages > 1 && (
+                  <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
+                    <button
+                      onClick={() => setConnPage(p => Math.max(1, p - 1))}
+                      disabled={connPage === 1}
+                      style={{
+                        background: '#e0e7ff',
+                        color: '#6366f1',
+                        border: 'none',
+                        borderRadius: 8,
+                        padding: '6px 14px',
+                        fontWeight: 700,
+                        fontSize: 15,
+                        cursor: connPage === 1 ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      Prev
+                    </button>
+                    <span style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
+                      {connPage} / {totalConnPages}
+                    </span>
+                    <button
+                      onClick={() => setConnPage(p => Math.min(totalConnPages, p + 1))}
+                      disabled={connPage === totalConnPages}
+                      style={{
+                        background: '#e0e7ff',
+                        color: '#6366f1',
+                        border: 'none',
+                        borderRadius: 8,
+                        padding: '6px 14px',
+                        fontWeight: 700,
+                        fontSize: 15,
+                        cursor: connPage === totalConnPages ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </div>
+              {/* Modal appears above the card */}
+              {confirmDelete && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    minWidth: 320,
+                    maxWidth: 400,
+                    background: '#fff',
+                    borderRadius: 16,
+                    boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
+                    zIndex: 10,
+                    padding: '36px 28px 28px 28px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center'
+                  }}
+                >
+                  <div
                     style={{
-                      background: '#e0e7ff',
-                      color: '#6366f1',
-                      border: 'none',
-                      borderRadius: 8,
-                      padding: '6px 14px',
-                      fontWeight: 700,
-                      fontSize: 15,
-                      cursor: connPage === 1 ? 'not-allowed' : 'pointer'
+                      fontWeight: 800,
+                      fontSize: 20,
+                      marginBottom: 10,
+                      background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                      color: 'transparent'
                     }}
                   >
-                    Prev
-                  </button>
-                  <span style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
-                    {connPage} / {totalConnPages}
-                  </span>
-                  <button
-                    onClick={() => setConnPage(p => Math.min(totalConnPages, p + 1))}
-                    disabled={connPage === totalConnPages}
-                    style={{
-                      background: '#e0e7ff',
-                      color: '#6366f1',
-                      border: 'none',
-                      borderRadius: 8,
-                      padding: '6px 14px',
-                      fontWeight: 700,
-                      fontSize: 15,
-                      cursor: connPage === totalConnPages ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    Next
-                  </button>
+                    Confirm Delete
+                  </div>
+                  <div style={{ color: '#23272f', fontSize: 15, marginBottom: 26, textAlign: 'center' }}>
+                    Are you sure you want to delete this connection?
+                  </div>
+                  <div style={{ display: 'flex', gap: 18 }}>
+                    <button
+                      onClick={() => {
+                        handleDeleteConnection(confirmDelete);
+                        setConfirmDelete(null);
+                      }}
+                      style={{
+                        background: '#f87171',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 8,
+                        padding: '10px 22px',
+                        fontWeight: 700,
+                        fontSize: 15,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Delete
+                    </button>
+                    <button
+                      onClick={() => setConfirmDelete(null)}
+                      style={{
+                        background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 8,
+                        padding: '10px 22px',
+                        fontWeight: 700,
+                        fontSize: 15,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
