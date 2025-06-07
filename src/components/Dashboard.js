@@ -517,8 +517,15 @@ export default function Dashboard({ user }) {
                       gap: 10
                     }}>
                       <div>
-                        {/* Display cluster name extracted from connection string */}
-                        <div style={{ fontWeight: 700, fontSize: 17 }}>
+                        {/* Cluster name with theme gradient */}
+                        <div style={{
+                          fontWeight: 700,
+                          fontSize: 17,
+                          background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                          WebkitBackgroundClip: 'text',
+                          backgroundClip: 'text',
+                          color: 'transparent'
+                        }}>
                           {conn.clusterName || getClusterName(conn.connectionString)}
                         </div>
                         {/* Optionally, remove or hide the connection string */}
