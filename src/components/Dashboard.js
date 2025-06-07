@@ -29,9 +29,15 @@ const BinIcon = ({ style = {}, ...props }) => (
     style={style}
     {...props}
   >
-    <rect x="5" y="8" width="10" height="7" rx="2" fill="#f87171"/>
-    <rect x="8" y="4" width="4" height="2" rx="1" fill="#f87171"/>
-    <rect x="3" y="6" width="14" height="2" rx="1" fill="#f87171"/>
+    {/* Bin body */}
+    <rect x="5" y="7" width="10" height="8" rx="2" fill="#6366f1"/>
+    {/* Bin lid */}
+    <rect x="4" y="5.5" width="12" height="2" rx="1" fill="#818cf8"/>
+    {/* Handle */}
+    <rect x="8.5" y="3.5" width="3" height="2" rx="1" fill="#6366f1"/>
+    {/* Bin lines */}
+    <rect x="8" y="9" width="1" height="4" rx="0.5" fill="#fff" opacity="0.7"/>
+    <rect x="11" y="9" width="1" height="4" rx="0.5" fill="#fff" opacity="0.7"/>
   </svg>
 );
 
@@ -625,7 +631,19 @@ export default function Dashboard({ user }) {
               alignItems: 'center'
             }}
           >
-            <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 10, color: '#f87171' }}>
+            <div
+              style={{
+                fontWeight: 800,
+                fontSize: 20,
+                marginBottom: 10,
+                // Gradient text for theme color
+                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                color: 'transparent'
+              }}
+            >
               Confirm Delete
             </div>
             <div style={{ color: '#23272f', fontSize: 15, marginBottom: 26, textAlign: 'center' }}>
