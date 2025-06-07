@@ -77,7 +77,7 @@ export default function Dashboard({ user }) {
       }
 
       if (!res.ok) {
-        setError(data.message || 'Failed to save connection string.');
+        setError(data.message || 'Connection string already exists, check saved connections list');
         return;
       }
 
