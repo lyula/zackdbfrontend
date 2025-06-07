@@ -98,7 +98,7 @@ export default function Dashboard({ user }) {
       await handleUseConnection(connStr);
 
     } catch (err) {
-      setError(err.message || 'Failed to save connection string.');
+      setError(err.message || 'Failed to save Connection string already exists, check saved connections listconnection string.');
     }
   };
 
