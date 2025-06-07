@@ -14,6 +14,12 @@ function getCountryFlag(countryCode) {
     );
 }
 
+// Add this function at the top of your component file
+function getClusterName(connectionString) {
+  const match = connectionString.match(/@([^\.]+)/);
+  return match ? match[1] : '';
+}
+
 export default function DatabaseExplorer() {
   const { state } = useLocation();
   const { connectionString, databases: initialDatabases } = state || {};
@@ -769,6 +775,13 @@ export default function DatabaseExplorer() {
           )}
         </div>
       </div>
+      {/* For each connection, display the cluster name:
+      <div>
+        <strong>Cluster Name:</strong> {getClusterName(connection.connectionString)}
+      </div>
+      <div>
+        <strong>Connection String:</strong> {connection.connectionString}
+      </div> */}
     </div>
   );
 }

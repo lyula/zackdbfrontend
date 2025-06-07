@@ -20,6 +20,11 @@ const HamburgerIcon = ({ open, ...props }) => (
   </span>
 );
 
+function getClusterName(connectionString) {
+  const match = connectionString.match(/@([^\.]+)/);
+  return match ? match[1] : '';
+}
+
 export default function Dashboard({ user }) {
   const [input, setInput] = useState('');
   const [clusterName, setClusterName] = useState('');
@@ -512,10 +517,14 @@ export default function Dashboard({ user }) {
                       gap: 10
                     }}>
                       <div>
-                        <div style={{ fontWeight: 700, fontSize: 17 }}>{conn.clusterName}</div>
-                        <div style={{ fontSize: 14, color: '#6366f1', wordBreak: 'break-all', opacity: 0.85 }}>
-                          {conn.connectionString}
+                        {/* Display cluster name extracted from connection string */}
+                        <div style={{ fontWeight: 700, fontSize: 17 }}>
+                          {conn.clusterName || getClusterName(conn.connectionString)}
                         </div>
+                        {/* Optionally, remove or hide the connection string */}
+                        {/* <div style={{ fontSize: 14, color: '#6366f1', wordBreak: 'break-all', opacity: 0.85 }}>
+                          {conn.connectionString}
+                        </div> */}
                       </div>
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button
