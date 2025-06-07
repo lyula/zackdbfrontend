@@ -561,7 +561,7 @@ export default function Dashboard({ user }) {
                   <div
                     style={{
                       position: 'absolute',
-                      top: modalPos.top,
+                      top: Math.max(20, modalPos.top), // Clamp to at least 20px from top
                       left: modalPos.left,
                       transform: 'translate(-50%, -100%)',
                       background: '#fff',
