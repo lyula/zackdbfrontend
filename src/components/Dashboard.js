@@ -521,7 +521,11 @@ export default function Dashboard({ user }) {
                         cursor: 'pointer'
                       }}
                       title="Delete"
-                      onClick={() => handleDeleteConnection(conn.connectionString)}
+                      onClick={() => {
+                        if (window.confirm('Are you sure you want to delete this connection?')) {
+                          handleDeleteConnection(conn.connectionString);
+                        }
+                      }}
                     >
                       🗑️
                     </button>
