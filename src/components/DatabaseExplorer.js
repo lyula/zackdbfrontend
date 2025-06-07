@@ -103,8 +103,10 @@ export default function DatabaseExplorer() {
     }
   };
 
-  // Fetch documents for a collection
-  const fetchDocuments = async (dbName, collectionName) => {
+  const [totalDocuments, setTotalDocuments] = useState(0);
+
+  // Fetch documents for a collection (with pagination)
+  const fetchDocuments = async (dbName, collectionName, page = 1) => {
     if (!dbName || !collectionName) return;
     setIsLoadingDocuments(true);
     setError('');
@@ -116,14 +118,16 @@ export default function DatabaseExplorer() {
           connectionString,
           dbName,
           collectionName,
-          limit: 0 // 0 means no limit, fetch all documents
+          page,
+          pageSize: recordsPerPage
         })
       });
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
-      const docs = await res.json();
+      const { documents: docs, total } = await res.json();
       setDocuments(docs);
+      setTotalDocuments(total);
       const cols = docs.length > 0 ? Object.keys(docs[0]) : [];
       setColumns(cols);
       // By default, hide 'password', columns starting with '-', and '_V' column
@@ -144,14 +148,6 @@ export default function DatabaseExplorer() {
     } finally {
       setIsLoadingDocuments(false);
     }
-  };
-
-  const handleSelectCollection = (collectionName) => {
-    setSelectedCollection(collectionName);
-    setError('');
-    setCurrentPage(1); // Reset to first page on new collection
-    stopAutoRefresh(); // Stop auto refresh when selecting new collection
-    fetchDocuments(selectedDb, collectionName);
   };
 
   // Start auto refresh interval
@@ -194,7 +190,7 @@ export default function DatabaseExplorer() {
   const visibleColumns = columns.filter(col => columnVisibility[col]);
 
   // Pagination logic for table
-  const totalPages = Math.ceil(documents.length / recordsPerPage);
+  const totalPages = Math.ceil(totalDocuments / recordsPerPage);
   // When paginating documents, reverse the array so latest user is first
   const paginatedDocs = [...documents]
     .reverse()
