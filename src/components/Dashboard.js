@@ -20,6 +20,21 @@ const HamburgerIcon = ({ open, ...props }) => (
   </span>
 );
 
+const BinIcon = ({ style = {}, ...props }) => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 20 20"
+    fill="none"
+    style={style}
+    {...props}
+  >
+    <rect x="5" y="8" width="10" height="7" rx="2" fill="#f87171"/>
+    <rect x="8" y="4" width="4" height="2" rx="1" fill="#f87171"/>
+    <rect x="3" y="6" width="14" height="2" rx="1" fill="#f87171"/>
+  </svg>
+);
+
 export default function Dashboard({ user }) {
   const [input, setInput] = useState('');
   const [clusterName, setClusterName] = useState('');
@@ -230,42 +245,33 @@ export default function Dashboard({ user }) {
             <div style={{ color: '#fff', fontWeight: 600, fontSize: 15, marginBottom: 12, opacity: 0.85 }}>
               MongoDB Enthusiast
             </div>
-            <div style={{ color: '#fff', fontSize: 14, textAlign: 'center', opacity: 0.7, marginTop: 10 }}>
-              <span style={{ fontWeight: 400 }}>Save and visualize your database connections with ease.</span>
-            </div>
-            <div style={{ flex: 1 }} />
-            <div style={{ color: '#e0e7ff', fontSize: 13, opacity: 0.7, marginBottom: 18 }}>
-              <span>zackdb &copy; 2025</span>
-            </div>
+            <button
+              onClick={() => {
+                localStorage.removeItem('token');
+                navigate('/login');
+              }}
+              style={{
+                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 22,
+                padding: sidebarOpen ? '10px 32px' : '10px 12px',
+                fontWeight: 800,
+                fontSize: 16,
+                cursor: 'pointer',
+                boxShadow: '0 2px 12px #6366f133',
+                transition: 'all 0.2s',
+                marginBottom: sidebarOpen ? 24 : 0,
+                marginLeft: sidebarOpen ? 0 : 0,
+                alignSelf: sidebarOpen ? 'center' : 'flex-start'
+              }}
+              title="Logout"
+            >
+              <span role="img" aria-label="logout" style={{ marginRight: sidebarOpen ? 8 : 0 }}>🔒</span>
+              {sidebarOpen && 'Logout'}
+            </button>
           </>
         )}
-        {/* Logout button always visible, moves left when collapsed */}
-        <button
-          onClick={() => {
-            // Clear token and redirect to login
-            localStorage.removeItem('token');
-            navigate('/login');
-          }}
-          style={{
-            background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 22,
-            padding: sidebarOpen ? '10px 32px' : '10px 12px',
-            fontWeight: 800,
-            fontSize: 16,
-            cursor: 'pointer',
-            boxShadow: '0 2px 12px #6366f133',
-            transition: 'all 0.2s',
-            marginBottom: sidebarOpen ? 24 : 0,
-            marginLeft: sidebarOpen ? 0 : 0,
-            alignSelf: sidebarOpen ? 'center' : 'flex-start'
-          }}
-          title="Logout"
-        >
-          <span role="img" aria-label="logout" style={{ marginRight: sidebarOpen ? 8 : 0 }}>🔒</span>
-          {sidebarOpen && 'Logout'}
-        </button>
       </div>
 
       {/* Main content area */}
@@ -520,18 +526,19 @@ export default function Dashboard({ user }) {
                           ref={el => deleteBtnRefs.current[conn.connectionString] = el}
                           onClick={() => setConfirmDelete(conn.connectionString)}
                           style={{
-                            background: '#f87171',
-                            color: '#fff',
+                            background: 'transparent',
                             border: 'none',
                             borderRadius: 8,
-                            padding: '7px 14px',
-                            fontWeight: 700,
-                            fontSize: 15,
+                            padding: '7px 10px',
                             cursor: 'pointer',
-                            boxShadow: '0 2px 8px #f8717111'
+                            boxShadow: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}
+                          title="Delete"
                         >
-                          Delete
+                          <BinIcon />
                         </button>
                       </div>
                     </li>
@@ -596,7 +603,7 @@ export default function Dashboard({ user }) {
               width: '100vw',
               height: '100vh',
               background: 'rgba(44, 62, 80, 0.35)',
-              zIndex: 1000
+              zIndex: 2000 // Increased zIndex
             }}
           />
           {/* Modal */}
@@ -611,7 +618,7 @@ export default function Dashboard({ user }) {
               background: '#fff',
               borderRadius: 16,
               boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
-              zIndex: 1001,
+              zIndex: 2001, // Increased zIndex
               padding: '36px 28px 28px 28px',
               display: 'flex',
               flexDirection: 'column',
@@ -646,8 +653,8 @@ export default function Dashboard({ user }) {
               <button
                 onClick={() => setConfirmDelete(null)}
                 style={{
-                  background: '#e0e7ff',
-                  color: '#6366f1',
+                  background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                  color: '#fff',
                   border: 'none',
                   borderRadius: 8,
                   padding: '10px 22px',
