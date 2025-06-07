@@ -56,7 +56,7 @@ export default function DatabaseExplorer() {
   useEffect(() => {
     fetch('https://ipapi.co/json/')
       .then(res => res.json())
-      .then(data => setCountry(data.country_code))
+      .then data => setCountry(data.country_code))
       .catch(() => {
         // fallback to locale if geolocation fails
         const locale = Intl.DateTimeFormat().resolvedOptions().locale;
@@ -191,10 +191,8 @@ export default function DatabaseExplorer() {
 
   // Pagination logic for table
   const totalPages = Math.ceil(totalDocuments / recordsPerPage);
-  // When paginating documents, reverse the array so latest user is first
-  const paginatedDocs = [...documents]
-    .reverse()
-    .slice((currentPage - 1) * recordsPerPage, currentPage * recordsPerPage);
+  // Use the documents as returned from the backend (already paginated and sorted)
+  const paginatedDocs = documents;
 
   // --- Styling --- ULTRA MODERN THEME ---
   const glass = {
@@ -330,6 +328,19 @@ export default function DatabaseExplorer() {
     }
     // eslint-disable-next-line
   }, [connectionString]);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    fetchDocuments(selectedDb, selectedCollection, page);
+  };
+
+  const handleSelectCollection = (collectionName) => {
+    setSelectedCollection(collectionName);
+    setError('');
+    setCurrentPage(1);
+    stopAutoRefresh();
+    fetchDocuments(selectedDb, collectionName, 1);
+  };
 
   return (
     <div style={{
@@ -690,7 +701,7 @@ export default function DatabaseExplorer() {
                   padding: '8px 0'
                 }}>
                   <button
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
                     style={{
                       background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
@@ -711,7 +722,7 @@ export default function DatabaseExplorer() {
                     Page {currentPage} of {totalPages}
                   </span>
                   <button
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                     style={{
                       background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
