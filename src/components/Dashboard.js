@@ -79,8 +79,15 @@ export default function Dashboard({ user }) {
           setError(err.message || 'Failed to save connection.');
           return;
         }
-        const saved = await res.json();
-        setSavedConnections([saved.connection, ...savedConnections]);
+        // Always fetch the updated list after saving
+        const token = localStorage.getItem('token');
+        const refreshed = await fetch(`${API_URL}/api/saved-connections`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await refreshed.json();
+        setSavedConnections(data);
+        setInput('');
+        setClusterName('');
       }
       const res = await fetch(`${API_URL}/api/list-databases`, {
         method: 'POST',
@@ -437,8 +444,8 @@ export default function Dashboard({ user }) {
                 {paginatedConnections.length === 0 && (
                   <li style={{ color: '#6366f1', textAlign: 'center', padding: '14px 0' }}>No saved connections yet.</li>
                 )}
-                {paginatedConnections.map((conn, idx) => (
-                  <li key={conn.clusterName || idx} style={{
+                {paginatedConnections.filter(Boolean).map((conn, idx) => (
+                  <li key={conn._id || idx} style={{
                     display: 'flex',
                     alignItems: 'center',
                     marginBottom: 10,
