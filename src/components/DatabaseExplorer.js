@@ -99,7 +99,7 @@ export default function DatabaseExplorer() {
     }
   };
 
-  // Fetch documents for a collection
+  // Fetch documents for a collection with a large limit to get all documents
   const fetchDocuments = async (dbName, collectionName) => {
     setIsLoadingDocuments(true);
     setError('');
@@ -110,7 +110,8 @@ export default function DatabaseExplorer() {
         body: JSON.stringify({
           connectionString,
           dbName,
-          collectionName
+          collectionName,
+          limit: 10000 // Request up to 10,000 documents (adjust as needed)
         })
       });
       if (!res.ok) {
