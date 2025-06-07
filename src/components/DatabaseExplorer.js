@@ -117,16 +117,16 @@ export default function DatabaseExplorer() {
     setIsLoadingDocuments(true);
     setError('');
     try {
-      const res = await fetch(`${API_URL}/api/documents`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          connectionString,
-          dbName,
-          collectionName,
-          page,
-          pageSize: recordsPerPage
-        })
+      const params = new URLSearchParams({
+        connectionString,
+        dbName,
+        collectionName,
+        page,
+        pageSize: recordsPerPage
+      });
+      const res = await fetch(`${API_URL}/api/documents?${params.toString()}`, {
+        method: 'GET',
+        cache: 'no-store'
       });
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -136,7 +136,6 @@ export default function DatabaseExplorer() {
       setTotalDocuments(total);
       const cols = docs.length > 0 ? Object.keys(docs[0]) : [];
       setColumns(cols);
-      // By default, hide 'password', columns starting with '-', and '_V' column
       const initialVisibility = {};
       cols.forEach(col => {
         if (col === 'password' || col === '_V' || col.startsWith('-')) {
