@@ -266,7 +266,7 @@ export default function Dashboard({ user }) {
             </div>
           </>
         )}
-        {/* Logout button always visible, moves left when collapsed */}
+        {/* Logout button always visible, moves left when sidebar collapsed */}
         <button
           onClick={() => {
             // Clear token and redirect to login
