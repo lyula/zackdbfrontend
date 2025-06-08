@@ -106,28 +106,29 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
         {/* Avatar with white ring */}
         <div
           style={{
-            width: 76,
-            height: 76,
+            width: sidebarOpen ? 76 : 40,
+            height: sidebarOpen ? 76 : 40,
             borderRadius: '50%',
             background: 'transparent',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: 18,
-            boxShadow: '0 0 0 4px #fff', // White ring
+            marginBottom: sidebarOpen ? 18 : 10,
+            boxShadow: '0 0 0 4px #fff',
             border: 'none',
             position: 'relative',
-            transition: 'box-shadow 0.3s cubic-bezier(.4,2,.6,1)'
+            transition: 'all 0.3s cubic-bezier(.4,2,.6,1)'
           }}
         >
           <span
             role="img"
             aria-label="user on laptop"
             style={{
-              fontSize: 48,
+              fontSize: sidebarOpen ? 48 : 24,
               display: 'block',
               color: '#fff',
-              filter: 'drop-shadow(0 2px 8px #6366f199)'
+              filter: 'drop-shadow(0 2px 8px #6366f199)',
+              transition: 'font-size 0.3s cubic-bezier(.4,2,.6,1)'
             }}
           >🧑‍💻</span>
         </div>
@@ -193,7 +194,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
       {/* Logout Button */}
       <div style={{
         width: '100%',
-        padding: sidebarOpen ? '0 0 38px 0' : '0 0 38px 0', // More space from bottom
+        padding: sidebarOpen ? '0 0 60px 0' : '0 0 38px 0', // More space when expanded, unchanged when collapsed
         display: 'flex',
         justifyContent: 'center'
       }}>
