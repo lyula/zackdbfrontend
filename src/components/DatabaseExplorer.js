@@ -13,7 +13,7 @@ function getCountryFlag(countryCode) {
       String.fromCodePoint(127397 + char.charCodeAt())
     );
 }
-
+// 
 export default function DatabaseExplorer() {
   const { state } = useLocation();
   const { connectionString, databases: initialDatabases, user } = state || {};
