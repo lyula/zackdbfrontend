@@ -98,11 +98,11 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
       <div
         style={{
           width: '100%',
-          padding: sidebarOpen ? '0 22px' : '0',
+          padding: sidebarOpen ? '0 0 0 18px' : '0', // Move contents left when expanded
           marginBottom: 38,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
+          alignItems: sidebarOpen ? 'flex-start' : 'center', // Move left when expanded
           justifyContent: 'center',
         }}
       >
@@ -147,7 +147,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
               width: '100%',
               textShadow: '0 2px 12px #6366f155',
               display: 'flex',
-              justifyContent: 'center'
+              justifyContent: 'flex-start' // Move left
             }}>
               {user?.username || 'User'}
             </div>
@@ -162,7 +162,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
               letterSpacing: '0.2px',
               textShadow: '0 1px 8px #6366f122',
               display: 'flex',
-              justifyContent: 'center'
+              justifyContent: 'flex-start' // Move left
             }}>
               {user?.email || ''}
             </div>
@@ -177,14 +177,14 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
             marginBottom: 10,
             opacity: 0.98,
             lineHeight: 1.5,
-            textAlign: 'center',
+            textAlign: 'left',
             maxWidth: 210,
-            alignSelf: 'center',
+            alignSelf: 'flex-start', // Move left
             letterSpacing: '0.13px',
             textShadow: '0 1px 8px #6366f122',
             wordBreak: 'break-word',
             display: 'flex',
-            justifyContent: 'center'
+            justifyContent: 'flex-start'
           }}>
             Save and visualize your MongoDB databases with ease.
           </div>
@@ -196,7 +196,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: 'flex-start', // Move left
             gap: 6,
             margin: '10px 0 0 0',
             fontSize: 15,
@@ -233,7 +233,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
       {/* Logout Button */}
       <div style={{
         width: '100%',
-        padding: sidebarOpen ? '0 0 38px 0' : '0 0 38px 0', // Move up a bit
+        padding: sidebarOpen ? '0 0 70px 0' : '0 0 38px 0', // Move logout button up from bottom when expanded
         display: 'flex',
         justifyContent: 'center'
       }}>
@@ -504,7 +504,7 @@ export default function Dashboard({ user }) {
             <span role="img" aria-label="rocket" style={{ fontSize: 30 }}>🚀</span> zackdb
           </div>
           {/* PC view: Logout button on right side of header */}
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginRight: 48 /* Move leftwards from edge */ }}>
             <button
               onClick={() => {
                 localStorage.removeItem('token');
