@@ -35,19 +35,19 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
   };
 
   const sidebarStyle = {
-    width: sidebarOpen ? 240 : 64,
+    width: sidebarOpen ? 270 : 72,
     minWidth: 0,
-    maxWidth: 240,
+    maxWidth: 270,
     height: '100vh',
-    background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+    background: 'linear-gradient(120deg, #6366f1 0%, #818cf8 100%)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: sidebarOpen ? 'flex-start' : 'center',
-    padding: sidebarOpen ? '32px 0 0 0' : '18px 0 0 0',
-    transition: 'width 0.32s cubic-bezier(.4,2,.6,1), border-radius 0.3s',
+    padding: sidebarOpen ? '38px 0 0 0' : '22px 0 0 0',
+    transition: 'width 0.38s cubic-bezier(.4,2,.6,1), box-shadow 0.38s cubic-bezier(.4,2,.6,1)',
     position: 'relative',
     zIndex: 11,
-    boxShadow: '0 0 24px 0 rgba(99,102,241,0.10)',
+    boxShadow: '0 0 32px 0 rgba(99,102,241,0.13), 0 2px 12px #818cf855',
     fontFamily: 'Inter, Segoe UI, Arial, sans-serif'
   };
 
@@ -60,26 +60,32 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: sidebarOpen ? 'flex-end' : 'center',
-          padding: sidebarOpen ? '0 16px 0 0' : '0',
-          marginBottom: 38, // Increased margin to move arrow lower
-          marginTop: 18     // Added margin to push arrow down
+          padding: sidebarOpen ? '0 20px 0 0' : '0',
+          marginBottom: 44,
+          marginTop: 36 // Move arrow lower
         }}
       >
         <button
           onClick={() => setSidebarOpen(o => !o)}
           style={{
-            fontSize: 22,
+            fontSize: 26,
             cursor: 'pointer',
             userSelect: 'none',
             color: '#6366f1',
-            padding: 7,
-            borderRadius: 8,
+            padding: '10px 16px',
+            borderRadius: 24,
             border: 'none',
             background: '#fff',
-            boxShadow: '0 2px 8px #6366f144',
-            transition: 'background 0.2s, box-shadow 0.2s'
+            boxShadow: '0 2px 16px #6366f144, 0 0 0 2px #818cf855',
+            transition: 'background 0.22s, box-shadow 0.22s',
+            outline: 'none',
+            fontWeight: 700,
+            filter: 'drop-shadow(0 2px 8px #818cf855)',
+            position: 'relative'
           }}
           title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+          onMouseOver={e => e.currentTarget.style.background = '#f1f5ff'}
+          onMouseOut={e => e.currentTarget.style.background = '#fff'}
         >
           {sidebarOpen ? '←' : '→'}
         </button>
@@ -89,8 +95,8 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
       <div
         style={{
           width: '100%',
-          padding: sidebarOpen ? '0 18px' : '0',
-          marginBottom: 32,
+          padding: sidebarOpen ? '0 22px' : '0',
+          marginBottom: 38,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center'
@@ -99,26 +105,28 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
         {/* Avatar */}
         <div
           style={{
-            width: 64,
-            height: 64,
+            width: 76,
+            height: 76,
             borderRadius: '50%',
             background: '#fff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: 14,
-            boxShadow: '0 2px 12px #6366f122',
-            border: '3px solid #fff',
-            position: 'relative'
+            marginBottom: 18,
+            boxShadow: '0 4px 24px #6366f155, 0 0 0 8px #818cf822',
+            border: '4px solid #fff',
+            position: 'relative',
+            transition: 'box-shadow 0.3s cubic-bezier(.4,2,.6,1)'
           }}
         >
           <span
             role="img"
             aria-label="user on laptop"
             style={{
-              fontSize: 40, // Bigger icon
+              fontSize: 48,
               display: 'block',
-              color: '#6366f1'
+              color: '#6366f1',
+              filter: 'drop-shadow(0 2px 8px #6366f199)'
             }}
           >🧑‍💻</span>
         </div>
@@ -126,24 +134,26 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
           <>
             <div style={{
               color: '#fff',
-              fontWeight: 700,
-              fontSize: 20, // Bigger username
-              marginBottom: 4,
-              letterSpacing: '0.2px',
+              fontWeight: 800,
+              fontSize: 24,
+              marginBottom: 6,
+              letterSpacing: '0.3px',
               textAlign: 'center',
               width: '100%',
-              textShadow: '0 1px 8px #6366f155'
+              textShadow: '0 2px 12px #6366f155'
             }}>
               {user?.username || 'User'}
             </div>
             <div style={{
               color: '#e0e7ff',
-              fontSize: 15, // Bigger email
-              fontWeight: 500,
-              marginBottom: 8,
+              fontSize: 17,
+              fontWeight: 600,
+              marginBottom: 10,
               textAlign: 'center',
               width: '100%',
-              opacity: 0.92
+              opacity: 0.96,
+              letterSpacing: '0.2px',
+              textShadow: '0 1px 8px #6366f122'
             }}>
               {user?.email || ''}
             </div>
@@ -152,18 +162,19 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
         {sidebarOpen && (
           <div style={{
             color: '#e0e7ff',
-            fontSize: 16, // Bigger message
+            fontSize: 17,
             fontWeight: 500,
-            marginTop: 12,
-            marginBottom: 10,
-            opacity: 0.97,
-            lineHeight: 1.6,
+            marginTop: 18,
+            marginBottom: 14,
+            opacity: 0.98,
+            lineHeight: 1.7,
             textAlign: 'center',
             width: '100%',
-            letterSpacing: '0.1px'
+            letterSpacing: '0.13px',
+            textShadow: '0 1px 8px #6366f122'
           }}>
-            <span style={{ fontWeight: 700, color: '#fff' }}>zackdb</span> helps you connect, explore, and manage your MongoDB databases visually. <br />
-            Save connections, browse data, and unlock the power of MongoDB with ease.
+            <span style={{ fontWeight: 700, color: '#fff' }}>zackdb</span> makes MongoDB easy and visual.<br />
+            Effortlessly connect, explore, and manage your data with a beautiful, intuitive interface.
           </div>
         )}
       </div>
@@ -174,7 +185,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
       {/* Logout Button */}
       <div style={{
         width: '100%',
-        padding: sidebarOpen ? '0 0 28px 0' : '0 0 28px 0',
+        padding: sidebarOpen ? '0 0 34px 0' : '0 0 34px 0',
         display: 'flex',
         justifyContent: 'center'
       }}>
@@ -182,26 +193,29 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
           onClick={handleLogout}
           style={{
             minWidth: 0,
-            width: sidebarOpen ? 90 : 38, // Smaller width
+            width: sidebarOpen ? 120 : 44,
             background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
             color: '#fff',
             border: 'none',
-            borderRadius: 8,
-            padding: sidebarOpen ? '8px 0' : '8px',
+            borderRadius: 22,
+            padding: sidebarOpen ? '12px 0' : '12px',
             fontWeight: 700,
-            fontSize: 15,
+            fontSize: 16,
             cursor: 'pointer',
-            boxShadow: '0 2px 8px #6366f144',
+            boxShadow: '0 2px 16px #6366f144, 0 0 0 2px #818cf855',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: sidebarOpen ? 6 : 0,
+            gap: sidebarOpen ? 10 : 0,
             letterSpacing: '0.5px',
-            transition: 'width 0.2s, background 0.2s, border-radius 0.2s'
+            transition: 'width 0.22s, background 0.22s, border-radius 0.22s',
+            outline: 'none'
           }}
           title="Logout"
+          onMouseOver={e => e.currentTarget.style.background = 'linear-gradient(90deg, #818cf8 0%, #6366f1 100%)'}
+          onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)'}
         >
-          <span role="img" aria-label="logout" style={{ marginRight: sidebarOpen ? 4 : 0, fontSize: 17 }}>🚪</span>
+          <span role="img" aria-label="logout" style={{ marginRight: sidebarOpen ? 8 : 0, fontSize: 20 }}>🚪</span>
           {sidebarOpen && 'Logout'}
         </button>
       </div>
