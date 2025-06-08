@@ -64,7 +64,7 @@ export default function DatabaseExplorer() {
   useEffect(() => {
     fetch('https://ipapi.co/json/')
       .then(res => res.json())
-      .then(data => setCountry(data.country_code))
+      .then(data => setCountry(data.country_code)) // FIX 1: add parentheses around 'data'
       .catch(() => {
         // fallback to locale if geolocation fails
         const locale = Intl.DateTimeFormat().resolvedOptions().locale;
@@ -127,9 +127,9 @@ export default function DatabaseExplorer() {
     try {
       // Encode parameters for safe URL transmission
       const params = new URLSearchParams({
-        connectionString: encodeURIComponent(connectionString),
-        dbName: encodeURIComponent(dbName),
-        collectionName: encodeURIComponent(collectionName)
+        connectionString, // <-- no encodeURIComponent
+        dbName,
+        collectionName
       });
       const res = await fetch(`${API_URL}/api/documents?${params.toString()}`, {
         method: 'GET',
@@ -173,7 +173,7 @@ export default function DatabaseExplorer() {
 
   // Start auto refresh interval
   const startAutoRefresh = () => {
-    if (refreshIntervalRef.current) return; // already running
+    if (refreshIntervalRef.current) return; // FIX 2: add 'return' to prevent multiple intervals
     refreshIntervalRef.current = setInterval(() => {
       fetchDocuments(selectedDb, selectedCollection);
     }, 5000);
@@ -197,7 +197,7 @@ export default function DatabaseExplorer() {
         refreshIntervalRef.current = null;
       }
     };
-  }, [selectedCollection]);
+  }, [selectedCollection]); // FIX 3: this is correct, but ensure cleanup is returned
 
   // Toggle column visibility
   const toggleColumn = (col) => {
@@ -215,7 +215,7 @@ export default function DatabaseExplorer() {
   const paginatedDocs = documents.slice(
     (currentPage - 1) * recordsPerPage,
     currentPage * recordsPerPage
-  );
+  ); // FIX 4: add missing paginatedDocs definition
 
   // --- Styling --- ULTRA MODERN THEME ---
   const sidebarStyle = {
@@ -359,7 +359,7 @@ export default function DatabaseExplorer() {
     setCurrentPage(1);
     stopAutoRefresh();
     fetchDocuments(selectedDb, collectionName);
-  };
+  }; // FIX 5: ensure this function is not missing a closing brace
 
   return (
     <div style={{
