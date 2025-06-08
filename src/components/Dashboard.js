@@ -24,6 +24,99 @@ const HamburgerIcon = ({ open, ...props }) => (
   </span>
 );
 
+function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
+  return (
+    <div
+      style={{
+        width: sidebarOpen ? 260 : 64,
+        minWidth: sidebarOpen ? 260 : 64,
+        maxWidth: sidebarOpen ? 260 : 64,
+        background: 'rgba(255,255,255,0.88)',
+        boxShadow: '2px 0 16px #6366f122',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: sidebarOpen ? 'flex-start' : 'center',
+        padding: sidebarOpen ? '32px 0 0 0' : '32px 0 0 0',
+        transition: 'all 0.2s cubic-bezier(.4,2,.6,1)',
+        position: 'relative',
+        zIndex: 11,
+        borderRight: '1.5px solid #e0e7ff'
+      }}
+    >
+      <div
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: sidebarOpen ? 'flex-end' : 'center',
+          padding: sidebarOpen ? '0 18px 0 0' : '0',
+          marginBottom: 24
+        }}
+      >
+        <span
+          onClick={() => setSidebarOpen(o => !o)}
+          style={{
+            fontSize: 28,
+            cursor: 'pointer',
+            userSelect: 'none',
+            color: '#6366f1',
+            padding: 8,
+            borderRadius: 8,
+            background: sidebarOpen ? 'rgba(99,102,241,0.08)' : 'none'
+          }}
+          title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+        >
+          {sidebarOpen ? '←' : '→'}
+        </span>
+      </div>
+      <div
+        style={{
+          width: '100%',
+          padding: sidebarOpen ? '0 24px' : '0',
+          marginBottom: 32,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: sidebarOpen ? 'flex-start' : 'center'
+        }}
+      >
+        <div
+          style={{
+            fontWeight: 900,
+            fontSize: 22,
+            color: 'transparent',
+            letterSpacing: '-1px',
+            background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            marginBottom: 8
+          }}
+        >
+          <span role="img" aria-label="rocket" style={{ fontSize: 26 }}>🚀</span>
+          {sidebarOpen && ' zackdb'}
+        </div>
+        <div
+          style={{
+            fontSize: 15,
+            color: '#6366f1',
+            fontWeight: 700,
+            marginTop: 8,
+            opacity: 0.95,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            width: sidebarOpen ? '100%' : 0,
+            transition: 'width 0.2s'
+          }}
+        >
+          {user ? `Logged in as: ${user.username}` : 'Not logged in'}
+        </div>
+      </div>
+      {/* ...add more sidebar items here if needed... */}
+    </div>
+  );
+}
+
 export default function Dashboard({ user }) {
   const [loading, setLoading] = useState(!user); // loading depends on user prop
   const [input, setInput] = useState('');
@@ -214,8 +307,8 @@ export default function Dashboard({ user }) {
       flexDirection: 'row',
       fontFamily: 'Inter, Segoe UI, Arial, sans-serif'
     }}>
-      {/* Sidebar */}
-      {/* <Sidebar user={user} /> */}
+      {/* Restore Sidebar */}
+      <Sidebar user={user} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       {/* Main content area */}
       <div style={{
         flex: 1,
