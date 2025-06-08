@@ -45,14 +45,8 @@ export default function LoginForm() {
       const data = await res.json();
       localStorage.setItem('zackdb_user', JSON.stringify({ email: data.user.email, username: data.user.username }));
 
-      Swal.fire({
-        icon: 'success',
-        title: 'Login Successful!',
-        timer: 1200,
-        showConfirmButton: false
-      }).then(() => {
-        navigate('/dashboard');
-      });
+      // Redirect immediately on successful login, no success SweetAlert
+      navigate('/dashboard');
 
       // Fallback in case user closes SweetAlert early
       setTimeout(() => navigate('/dashboard'), 1300);
