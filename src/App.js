@@ -1,31 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import RegisterForm from './components/RegisterForm';
 import LoginForm from './components/LoginForm';
-import MongoConnect from './components/MongoConnect';
-import DatabaseExplorer from './components/DatabaseExplorer';
+import RegisterForm from './components/RegisterForm';
 import Dashboard from './components/Dashboard';
+import DatabaseExplorer from './components/DatabaseExplorer';
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = 'https://zackdbbackend.onrender.com';
 
 function App() {
   const [user, setUser] = useState(null);
-  const [connections, setConnections] = useState([]);
 
+  // Fetch user info on mount or when login changes
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      fetch(`${API_URL}/api/user`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      fetch(`${API_URL}/api/me`, { credentials: 'include' })
         .then(res => res.ok ? res.json() : null)
-        .then(data => { if (data) setUser(data); });
-
-      fetch(`${API_URL}/api/saved-connections`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => res.json())
-        .then(data => setConnections(Array.isArray(data) ? data : []));
+        .then(data => {
+          if (data && data.user) setUser(data.user);
+          else setUser(null);
+        })
+        .catch(() => setUser(null));
+    } else {
+      setUser(null);
     }
   }, []);
 
@@ -34,7 +31,10 @@ function App() {
       <Routes>
         <Route path="/register" element={<RegisterForm />} />
         <Route path="/login" element={<LoginForm setUser={setUser} />} />
-        <Route path="/dashboard" element={user ? <Dashboard user={user} connections={connections} /> : <Navigate to="/login" />} />
+        <Route
+          path="/dashboard"
+          element={user ? <Dashboard user={user} /> : <Navigate to="/login" />}
+        />
         <Route path="/explore" element={<DatabaseExplorer />} />
         <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
       </Routes>

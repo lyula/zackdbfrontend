@@ -24,9 +24,9 @@ const HamburgerIcon = ({ open, ...props }) => (
   </span>
 );
 
-export default function Dashboard() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+export default function Dashboard({ user }) { // <-- Accept user as prop
+  // REMOVE: const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(!user); // loading depends on user prop
   const [input, setInput] = useState('');
   const [savedConnections, setSavedConnections] = useState([]);
   const [error, setError] = useState('');
@@ -51,21 +51,25 @@ export default function Dashboard() {
   const connectionsPerPage = 5;
 
   useEffect(() => {
-    // Fetch user info on mount
-    fetch(`${API_URL}/api/me`, {
-      credentials: 'include' // <--- THIS IS CRUCIAL
-    })
-      .then(async res => {
-        if (!res.ok) throw new Error('Not authenticated');
-        const data = await res.json();
-        setUser(data.user);
-        setLoading(false);
+    if (!user) {
+      setLoading(true);
+      fetch(`${API_URL}/api/me`, {
+        credentials: 'include'
       })
-      .catch(() => {
-        setLoading(false);
-        navigate('/login', { replace: true });
-      });
-  }, [navigate]);
+        .then(async res => {
+          if (!res.ok) throw new Error('Not authenticated');
+          const data = await res.json();
+          // setUser(data.user); // REMOVE this line
+          setLoading(false);
+        })
+        .catch(() => {
+          setLoading(false);
+          navigate('/login', { replace: true });
+        });
+    } else {
+      setLoading(false);
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     fetch(`${API_URL}/api/saved-connections`, {

@@ -47,7 +47,8 @@ export default function LoginForm({ setUser }) {
       });
       if (userRes.ok) {
         const userData = await userRes.json();
-        setUser(userData.user);
+        setUser(userData.user); // userData.user contains username and email
+        localStorage.setItem('token', 'dummy'); // Just to trigger App useEffect
         navigate('/dashboard', { replace: true });
       } else {
         Swal.fire({
