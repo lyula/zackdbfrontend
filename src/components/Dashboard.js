@@ -555,6 +555,7 @@ export default function Dashboard({ user: userProp }) {
       const res = await fetch(`${API_URL}/api/list-databases`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // <-- Added this line
         body: JSON.stringify({ connectionString: connStr })
       });
       const dbs = await res.json();
