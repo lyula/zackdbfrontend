@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Sidebar from './Sidebar';
 
 const API_URL = 'https://zackdbbackend.onrender.com';
 
@@ -24,8 +25,7 @@ const HamburgerIcon = ({ open, ...props }) => (
   </span>
 );
 
-export default function Dashboard({ user }) { // <-- Accept user as prop
-  // REMOVE: const [user, setUser] = useState(null);
+export default function Dashboard({ user }) {
   const [loading, setLoading] = useState(!user); // loading depends on user prop
   const [input, setInput] = useState('');
   const [savedConnections, setSavedConnections] = useState([]);
@@ -216,100 +216,7 @@ export default function Dashboard({ user }) { // <-- Accept user as prop
       fontFamily: 'Inter, Segoe UI, Arial, sans-serif'
     }}>
       {/* Sidebar */}
-      <div style={{
-        width: sidebarOpen ? SIDEBAR_WIDTH : SIDEBAR_COLLAPSED,
-        minWidth: sidebarOpen ? SIDEBAR_WIDTH : SIDEBAR_COLLAPSED,
-        maxWidth: sidebarOpen ? SIDEBAR_WIDTH : SIDEBAR_COLLAPSED,
-        height: '100vh',
-        background: 'linear-gradient(160deg, #6366f1 60%, #818cf8 100%)',
-        color: '#fff',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: sidebarOpen ? '48px 0 0 0' : '24px 0 0 0',
-        boxSizing: 'border-box',
-        gap: sidebarOpen ? 22 : 0,
-        borderRight: '1.5px solid #e0e7ff',
-        position: 'relative',
-        zIndex: 2,
-        transition: 'all 0.2s cubic-bezier(.4,2,.6,1)'
-      }}>
-        {/* Hamburger menu */}
-        <HamburgerIcon
-          open={sidebarOpen}
-          onClick={() => setSidebarOpen(o => !o)}
-          style={{
-            alignSelf: 'flex-start',
-            marginLeft: sidebarOpen ? 18 : 10,
-            marginBottom: sidebarOpen ? 18 : 0,
-            marginTop: 0
-          }}
-        />
-        {sidebarOpen && (
-          <>
-            <div style={{
-              width: 80,
-              height: 80,
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 40,
-              color: '#fff',
-              marginBottom: 18,
-              border: '4px solid #fff2',
-              boxShadow: '0 2px 16px #6366f144'
-            }}>
-              <span role="img" aria-label="avatar">🧑‍💻</span>
-            </div>
-            <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 2, color: '#fff' }}>
-              {user?.username}
-            </div>
-            <div style={{ color: '#e0e7ff', fontWeight: 500, fontSize: 15, marginBottom: 4 }}>
-              {user?.email}
-            </div>
-            <div style={{ color: '#fff', fontWeight: 600, fontSize: 15, marginBottom: 12, opacity: 0.85 }}>
-              MongoDB Enthusiast
-            </div>
-            <div style={{ color: '#fff', fontSize: 14, textAlign: 'center', opacity: 0.7, marginTop: 10 }}>
-              <span style={{ fontWeight: 400 }}>Save and visualize your database connections with ease.</span>
-            </div>
-            <div style={{ flex: 1 }} />
-            <div style={{ color: '#e0e7ff', fontSize: 13, opacity: 0.7, marginBottom: 18 }}>
-              <span>zackdb &copy; 2025</span>
-            </div>
-          </>
-        )}
-        {/* Logout button always visible, moves left when sidebar collapsed */}
-        <button
-          onClick={async () => {
-            await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
-            localStorage.removeItem('zackdb_user');
-            navigate('/login');
-          }}
-          style={{
-            background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 22,
-            padding: sidebarOpen ? '10px 32px' : '10px 12px',
-            fontWeight: 800,
-            fontSize: 16,
-            cursor: 'pointer',
-            boxShadow: '0 2px 12px #6366f133',
-            transition: 'all 0.2s',
-            marginBottom: sidebarOpen ? 24 : 0,
-            marginLeft: sidebarOpen ? 0 : 0,
-            alignSelf: sidebarOpen ? 'center' : 'flex-start'
-          }}
-          title="Logout"
-        >
-          <span role="img" aria-label="logout" style={{ marginRight: sidebarOpen ? 8 : 0 }}>🔒</span>
-          {sidebarOpen && 'Logout'}
-        </button>
-      </div>
-
+      <Sidebar user={user} />
       {/* Main content area */}
       <div style={{
         flex: 1,
@@ -722,6 +629,17 @@ export default function Dashboard({ user }) { // <-- Accept user as prop
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function Sidebar({ user }) {
+  return (
+    <div className="sidebar">
+      <div className="sidebar-user">
+        {user ? `Logged in as: ${user.username}` : "Not logged in"}
+      </div>
+      {/* ...rest of sidebar... */}
     </div>
   );
 }
