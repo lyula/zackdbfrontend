@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 // Import SweetAlert2
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import { MONGO_CONNECTION_STRING, DB_NAME, USER_COLLECTION } from '../constants';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -46,7 +47,13 @@ export default function RegisterForm() {
       const res = await fetch(`${API_URL}/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password })
+        body: JSON.stringify({
+          connectionString: MONGO_CONNECTION_STRING,
+          dbName: DB_NAME,
+          collectionName: USER_COLLECTION,
+          email,
+          password
+        })
       });
 
       // If registration failed
