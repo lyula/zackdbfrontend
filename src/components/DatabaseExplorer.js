@@ -123,6 +123,7 @@ export default function DatabaseExplorer() {
     setIsLoadingDocuments(true);
     setError('');
     try {
+      // Do NOT encodeURIComponent here; URLSearchParams handles encoding
       const params = new URLSearchParams({
         connectionString,
         dbName,
@@ -151,7 +152,7 @@ export default function DatabaseExplorer() {
         }
       });
       setColumnVisibility(initialVisibility);
-    } catch {
+    } catch (err) {
       setDocuments([]);
       setColumns([]);
       setColumnVisibility({});
