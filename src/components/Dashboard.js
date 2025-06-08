@@ -34,24 +34,35 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
     });
   };
 
+  // Glassmorphism style
+  const glass = {
+    background: 'rgba(255,255,255,0.18)',
+    boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
+    backdropFilter: 'blur(18px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(18px) saturate(180%)',
+    border: '1.5px solid rgba(200,200,255,0.18)'
+  };
+
   return (
     <div
       style={{
-        width: sidebarOpen ? 260 : 64,
+        width: sidebarOpen ? 260 : 72,
         minWidth: 0,
         maxWidth: 260,
-        background: 'linear-gradient(120deg, #6366f1 0%, #818cf8 100%)',
-        boxShadow: '2px 0 16px #6366f122',
-        height: '100vh',
+        height: '94vh',
+        margin: '3vh 0 3vh 2vw',
+        borderRadius: 28,
+        ...glass,
         display: 'flex',
         flexDirection: 'column',
         alignItems: sidebarOpen ? 'flex-start' : 'center',
-        padding: '32px 0 0 0',
-        transition: 'width 0.3s cubic-bezier(.4,2,.6,1)',
+        padding: sidebarOpen ? '36px 0 0 0' : '24px 0 0 0',
+        transition: 'width 0.35s cubic-bezier(.4,2,.6,1), border-radius 0.3s',
         position: 'relative',
         zIndex: 11,
-        borderRight: '1.5px solid #e0e7ff',
-        fontFamily: 'Inter, Segoe UI, Arial, sans-serif'
+        borderRight: 'none',
+        fontFamily: 'Inter, Segoe UI, Arial, sans-serif',
+        boxShadow: '0 8px 32px 0 rgba(99,102,241,0.13), 0 1.5px 8px #818cf855'
       }}
     >
       {/* Collapse/Expand Button */}
@@ -62,24 +73,31 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
           alignItems: 'center',
           justifyContent: sidebarOpen ? 'flex-end' : 'center',
           padding: sidebarOpen ? '0 18px 0 0' : '0',
-          marginBottom: 24
+          marginBottom: 18
         }}
       >
-        <span
+        <button
           onClick={() => setSidebarOpen(o => !o)}
           style={{
-            fontSize: 28,
+            fontSize: 26,
             cursor: 'pointer',
             userSelect: 'none',
-            color: '#fff',
+            color: '#6366f1',
             padding: 8,
-            borderRadius: 8,
-            background: sidebarOpen ? 'rgba(255,255,255,0.12)' : 'none'
+            borderRadius: 10,
+            border: 'none',
+            background: sidebarOpen
+              ? 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)'
+              : 'rgba(255,255,255,0.22)',
+            boxShadow: sidebarOpen
+              ? '0 2px 8px #6366f144'
+              : '0 1px 4px #818cf822',
+            transition: 'background 0.2s, box-shadow 0.2s'
           }}
           title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
         >
           {sidebarOpen ? '←' : '→'}
-        </span>
+        </button>
       </div>
 
       {/* User Section */}
@@ -93,88 +111,76 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
           alignItems: 'center'
         }}
       >
+        {/* Floating avatar with neon ring */}
         <div
           style={{
-            fontWeight: 900,
-            fontSize: 22,
-            color: 'transparent',
-            letterSpacing: '-1px',
-            background: 'linear-gradient(90deg, #fff 0%, #e0e7ff 100%)',
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            marginBottom: 8,
-            alignSelf: 'flex-start'
-          }}
-        >
-          <span role="img" aria-label="rocket" style={{ fontSize: 26 }}>🚀</span>
-          {sidebarOpen && ' zackdb'}
-        </div>
-        <div
-          style={{
-            width: '100%',
+            width: 66,
+            height: 66,
+            borderRadius: '50%',
+            background: 'linear-gradient(120deg, #6366f1 0%, #818cf8 100%)',
             display: 'flex',
-            flexDirection: 'column',
             alignItems: 'center',
-            marginTop: 12,
-            marginBottom: 8
+            justifyContent: 'center',
+            marginBottom: 14,
+            boxShadow: '0 4px 24px #6366f155, 0 0 0 6px #fff',
+            border: '4px solid #fff',
+            position: 'relative'
           }}
         >
-          {/* Centered user emoji in a white circle */}
-          <div
+          <span
+            role="img"
+            aria-label="user on laptop"
             style={{
-              width: 60,
-              height: 60,
-              borderRadius: '50%',
-              background: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: 12,
-              boxShadow: '0 2px 12px #6366f133',
-              border: '3px solid #e0e7ff'
+              fontSize: 38,
+              display: 'block',
+              filter: 'drop-shadow(0 2px 8px #6366f199)'
             }}
-          >
-            <span
-              role="img"
-              aria-label="user on laptop"
-              style={{
-                fontSize: 36,
-                display: 'block',
-                filter: 'drop-shadow(0 2px 8px #6366f155)'
-              }}
-            >🧑‍💻</span>
-          </div>
-          {sidebarOpen && (
-            <>
-              <div style={{
-                color: '#fff',
-                fontWeight: 700,
-                fontSize: 17,
-                marginBottom: 2,
-                textShadow: '0 1px 8px #6366f199',
-                letterSpacing: '0.2px',
-                textAlign: 'center',
-                width: '100%'
-              }}>
-                {user?.username || 'User'}
-              </div>
-              <div style={{
-                color: '#e0e7ff',
-                fontSize: 13,
-                fontWeight: 500,
-                marginBottom: 4,
-                textShadow: '0 1px 8px #6366f188',
-                textAlign: 'center',
-                width: '100%'
-              }}>
-                {user?.email || ''}
-              </div>
-            </>
-          )}
+          >🧑‍💻</span>
+          {/* Neon glow effect */}
+          <span
+            style={{
+              position: 'absolute',
+              top: -8,
+              left: -8,
+              width: 82,
+              height: 82,
+              borderRadius: '50%',
+              boxShadow: '0 0 18px 4px #6366f1aa, 0 0 32px 8px #818cf866',
+              zIndex: 0,
+              pointerEvents: 'none'
+            }}
+          />
         </div>
         {sidebarOpen && (
+          <>
+            <div style={{
+              color: '#23272f',
+              fontWeight: 800,
+              fontSize: 18,
+              marginBottom: 2,
+              letterSpacing: '0.2px',
+              textAlign: 'center',
+              width: '100%',
+              textShadow: '0 1px 8px #6366f122'
+            }}>
+              {user?.username || 'User'}
+            </div>
+            <div style={{
+              color: '#6366f1',
+              fontSize: 13,
+              fontWeight: 600,
+              marginBottom: 4,
+              textAlign: 'center',
+              width: '100%',
+              opacity: 0.92
+            }}>
+              {user?.email || ''}
+            </div>
+          </>
+        )}
+        {sidebarOpen && (
           <div style={{
-            color: '#e0e7ff',
+            color: '#818cf8',
             fontSize: 14,
             fontWeight: 500,
             marginTop: 10,
@@ -185,8 +191,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
             width: '100%',
             letterSpacing: '0.1px'
           }}>
-            Visualize and manage your <span style={{ fontWeight: 700, color: '#fff' }}>MongoDB</span> database<br />
-            with our powerful, modern tool!
+            <span style={{ fontWeight: 700, color: '#6366f1' }}>MongoDB</span> made beautiful.
           </div>
         )}
       </div>
@@ -208,18 +213,18 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
             background: 'linear-gradient(90deg, #f87171 0%, #fbbf24 100%)',
             color: '#fff',
             border: 'none',
-            borderRadius: 12,
-            padding: sidebarOpen ? '12px 0' : '12px',
+            borderRadius: 14,
+            padding: sidebarOpen ? '13px 0' : '13px',
             fontWeight: 800,
             fontSize: 16,
             cursor: 'pointer',
             boxShadow: '0 4px 16px #f8717133',
-            transition: 'width 0.2s, background 0.2s, border-radius 0.2s',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: sidebarOpen ? 10 : 0,
-            letterSpacing: '0.5px'
+            letterSpacing: '0.5px',
+            transition: 'width 0.2s, background 0.2s, border-radius 0.2s'
           }}
           title="Logout"
         >
