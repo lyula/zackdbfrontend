@@ -14,19 +14,12 @@ function getCountryFlag(countryCode) {
     );
 }
 
-// Add this function at the top of your component file
-function getClusterName(connectionString) {
-  const match = connectionString.match(/@([^\.]+)/);
-  return match ? match[1] : '';
-}
-
 export default function DatabaseExplorer() {
   const { state } = useLocation();
   const { connectionString, databases: initialDatabases } = state || {};
   console.log('connectionString:', connectionString);
   const navigate = useNavigate();
 
-  // Add this useEffect to redirect if connectionString is missing
   useEffect(() => {
     if (!connectionString) {
       navigate('/dashboard');
@@ -216,13 +209,6 @@ export default function DatabaseExplorer() {
   );
 
   // --- Styling --- ULTRA MODERN THEME ---
-  const glass = {
-    background: 'rgba(255,255,255,0.72)',
-    boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.13)',
-    backdropFilter: 'blur(18px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(18px) saturate(180%)',
-    border: '1.5px solid rgba(200,200,255,0.13)'
-  };
   const sidebarStyle = {
     width: 260,
     minWidth: 200,
@@ -266,7 +252,11 @@ export default function DatabaseExplorer() {
     height: 'calc(100vh - 110px)',
     overflowX: 'auto',
     overflowY: 'auto',
-    ...glass,
+    background: 'rgba(255,255,255,0.72)',
+    boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.13)',
+    backdropFilter: 'blur(18px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(18px) saturate(180%)',
+    border: '1.5px solid rgba(200,200,255,0.13)',
     borderRadius: 18,
     marginTop: 0,
     display: 'flex',
@@ -528,17 +518,21 @@ export default function DatabaseExplorer() {
               }}>
                 Collections
               </h3>
-              {paginatedCols.map(col => (
-                <span
-                  key={col}
-                  style={selectedCollection === col ? cardSelected : cardStyle}
-                  onClick={() => handleSelectCollection(col)}
-                  title={col}
-                >
-                  <span role="img" aria-label="collection" style={{ marginRight: 10, fontSize: 18, verticalAlign: 'middle' }}>📂</span>
-                  {col}
-                </span>
-              ))}
+              {paginatedCols.map(col => {
+                // If col is an object (e.g., { name: 'users' }), use col.name; otherwise use col
+                const colName = typeof col === 'string' ? col : col.name;
+                return (
+                  <span
+                    key={colName}
+                    style={selectedCollection === colName ? cardSelected : cardStyle}
+                    onClick={() => handleSelectCollection(colName)}
+                    title={colName}
+                  >
+                    <span role="img" aria-label="collection" style={{ marginRight: 10, fontSize: 18, verticalAlign: 'middle' }}>📂</span>
+                    {colName}
+                  </span>
+                );
+              })}
               {/* Collections Pagination */}
               {totalColPages > 1 && (
                 <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
@@ -597,10 +591,10 @@ export default function DatabaseExplorer() {
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between', // space between title and buttons
+                justifyContent: 'space-between',
                 marginBottom: 10,
                 marginTop: 0,
-                width: '100%' // take full width of card
+                width: '100%'
               }}>
                 <h4 style={{
                   color: 'transparent',
@@ -610,8 +604,8 @@ export default function DatabaseExplorer() {
                   fontWeight: 800,
                   fontSize: 20,
                   margin: 0,
-                  textAlign: 'center', // center text
-                  width: '100%' // ensure h4 takes full width
+                  textAlign: 'center',
+                  width: '100%'
                 }}>
                   Table: <span style={{
                     color: '#6366f1',
@@ -672,7 +666,6 @@ export default function DatabaseExplorer() {
                   </thead>
                   <tbody>
                     {paginatedDocs.map((doc, idx) => {
-                      // Now absoluteIdx counts from the reversed array
                       const absoluteIdx = (currentPage - 1) * recordsPerPage + idx;
                       return (
                         <tr
@@ -784,13 +777,6 @@ export default function DatabaseExplorer() {
           )}
         </div>
       </div>
-      {/* For each connection, display the cluster name:
-      <div>
-        <strong>Cluster Name:</strong> {getClusterName(connection.connectionString)}
-      </div>
-      <div>
-        <strong>Connection String:</strong> {connection.connectionString}
-      </div> */}
     </div>
   );
 }
