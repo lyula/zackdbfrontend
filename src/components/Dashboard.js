@@ -34,7 +34,6 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
     });
   };
 
-  // Sidebar style: full height, theme gradient, clean look
   const sidebarStyle = {
     width: sidebarOpen ? 240 : 64,
     minWidth: 0,
@@ -62,7 +61,8 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
           alignItems: 'center',
           justifyContent: sidebarOpen ? 'flex-end' : 'center',
           padding: sidebarOpen ? '0 16px 0 0' : '0',
-          marginBottom: 18
+          marginBottom: 38, // Increased margin to move arrow lower
+          marginTop: 18     // Added margin to push arrow down
         }}
       >
         <button
@@ -90,7 +90,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
         style={{
           width: '100%',
           padding: sidebarOpen ? '0 18px' : '0',
-          marginBottom: 28,
+          marginBottom: 32,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center'
@@ -99,14 +99,14 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
         {/* Avatar */}
         <div
           style={{
-            width: 54,
-            height: 54,
+            width: 64,
+            height: 64,
             borderRadius: '50%',
             background: '#fff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: 10,
+            marginBottom: 14,
             boxShadow: '0 2px 12px #6366f122',
             border: '3px solid #fff',
             position: 'relative'
@@ -116,7 +116,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
             role="img"
             aria-label="user on laptop"
             style={{
-              fontSize: 30,
+              fontSize: 40, // Bigger icon
               display: 'block',
               color: '#6366f1'
             }}
@@ -127,8 +127,8 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
             <div style={{
               color: '#fff',
               fontWeight: 700,
-              fontSize: 16,
-              marginBottom: 2,
+              fontSize: 20, // Bigger username
+              marginBottom: 4,
               letterSpacing: '0.2px',
               textAlign: 'center',
               width: '100%',
@@ -138,9 +138,9 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
             </div>
             <div style={{
               color: '#e0e7ff',
-              fontSize: 12,
+              fontSize: 15, // Bigger email
               fontWeight: 500,
-              marginBottom: 4,
+              marginBottom: 8,
               textAlign: 'center',
               width: '100%',
               opacity: 0.92
@@ -152,17 +152,18 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
         {sidebarOpen && (
           <div style={{
             color: '#e0e7ff',
-            fontSize: 13,
+            fontSize: 16, // Bigger message
             fontWeight: 500,
-            marginTop: 8,
-            marginBottom: 6,
+            marginTop: 12,
+            marginBottom: 10,
             opacity: 0.97,
-            lineHeight: 1.5,
+            lineHeight: 1.6,
             textAlign: 'center',
             width: '100%',
             letterSpacing: '0.1px'
           }}>
-            <span style={{ fontWeight: 700, color: '#fff' }}>MongoDB</span> made beautiful.
+            <span style={{ fontWeight: 700, color: '#fff' }}>zackdb</span> helps you connect, explore, and manage your MongoDB databases visually. <br />
+            Save connections, browse data, and unlock the power of MongoDB with ease.
           </div>
         )}
       </div>
@@ -173,33 +174,34 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
       {/* Logout Button */}
       <div style={{
         width: '100%',
-        padding: sidebarOpen ? '0 18px 24px 18px' : '0 0 24px 0',
+        padding: sidebarOpen ? '0 0 28px 0' : '0 0 28px 0',
         display: 'flex',
-        justifyContent: sidebarOpen ? 'flex-start' : 'center'
+        justifyContent: 'center'
       }}>
         <button
           onClick={handleLogout}
           style={{
-            width: sidebarOpen ? '100%' : 38,
-            background: 'linear-gradient(90deg, #f87171 0%, #fbbf24 100%)',
+            minWidth: 0,
+            width: sidebarOpen ? 90 : 38, // Smaller width
+            background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
             color: '#fff',
             border: 'none',
-            borderRadius: 10,
-            padding: sidebarOpen ? '12px 0' : '12px',
+            borderRadius: 8,
+            padding: sidebarOpen ? '8px 0' : '8px',
             fontWeight: 700,
             fontSize: 15,
             cursor: 'pointer',
-            boxShadow: '0 2px 8px #f8717133',
+            boxShadow: '0 2px 8px #6366f144',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: sidebarOpen ? 8 : 0,
+            gap: sidebarOpen ? 6 : 0,
             letterSpacing: '0.5px',
             transition: 'width 0.2s, background 0.2s, border-radius 0.2s'
           }}
           title="Logout"
         >
-          <span role="img" aria-label="logout" style={{ marginRight: sidebarOpen ? 6 : 0, fontSize: 17 }}>🚪</span>
+          <span role="img" aria-label="logout" style={{ marginRight: sidebarOpen ? 4 : 0, fontSize: 17 }}>🚪</span>
           {sidebarOpen && 'Logout'}
         </button>
       </div>
