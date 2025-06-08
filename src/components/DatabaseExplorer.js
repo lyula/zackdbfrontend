@@ -23,6 +23,16 @@ function getClusterName(connectionString) {
 export default function DatabaseExplorer() {
   const { state } = useLocation();
   const { connectionString, databases: initialDatabases } = state || {};
+  console.log('connectionString:', connectionString);
+  const navigate = useNavigate();
+
+  // Add this useEffect to redirect if connectionString is missing
+  useEffect(() => {
+    if (!connectionString) {
+      navigate('/dashboard');
+    }
+  }, [connectionString, navigate]);
+
   const [collections, setCollections] = useState([]);
   const [selectedDb, setSelectedDb] = useState('');
   const [error, setError] = useState('');
@@ -36,7 +46,6 @@ export default function DatabaseExplorer() {
   const recordsPerPage = 10;
   const dbsPerPage = 5;
   const colsPerPage = 3;
-  const navigate = useNavigate();
   const [databases, setDatabases] = useState(initialDatabases || []);
 
   // For live time display

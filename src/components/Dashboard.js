@@ -141,7 +141,7 @@ export default function Dashboard({ user }) {
         body: JSON.stringify({ connectionString: connStr })
       });
       const dbs = await res.json();
-      navigate('/explore', { state: { connectionString: connStr, databases: dbs } });
+      navigate('/explore', { state: { connectionString: connStr, databases: dbs } }); // <-- Corrected line
     } catch {
       setError('Failed to fetch databases.');
     }
