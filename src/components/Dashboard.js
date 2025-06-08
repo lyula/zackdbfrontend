@@ -3,6 +3,27 @@ import { useNavigate } from 'react-router-dom';
 
 const API_URL = 'https://zackdbbackend.onrender.com';
 
+function isValidMongoAtlasConnectionString(str) {
+  return typeof str === 'string' && str.startsWith('mongodb+srv://');
+}
+
+function getClusterName(connectionString) {
+  // Example: extract cluster name from MongoDB URI
+  try {
+    const match = connectionString.match(/\/\/([^./]+)/);
+    return match ? match[1] : 'Unknown Cluster';
+  } catch {
+    return 'Unknown Cluster';
+  }
+}
+
+// Add this before your Dashboard function
+const HamburgerIcon = ({ open, ...props }) => (
+  <span {...props} style={{ fontSize: 28, cursor: 'pointer', userSelect: 'none' }}>
+    {open ? '☰' : '≡'}
+  </span>
+);
+
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
