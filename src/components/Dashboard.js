@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from './Sidebar';
 
 const API_URL = 'https://zackdbbackend.onrender.com';
 
@@ -216,7 +215,7 @@ export default function Dashboard({ user }) {
       fontFamily: 'Inter, Segoe UI, Arial, sans-serif'
     }}>
       {/* Sidebar */}
-      <Sidebar user={user} />
+      {/* <Sidebar user={user} /> */}
       {/* Main content area */}
       <div style={{
         flex: 1,
@@ -629,17 +628,6 @@ export default function Dashboard({ user }) {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function Sidebar({ user }) {
-  return (
-    <div className="sidebar">
-      <div className="sidebar-user">
-        {user ? `Logged in as: ${user.username}` : "Not logged in"}
-      </div>
-      {/* ...rest of sidebar... */}
     </div>
   );
 }
