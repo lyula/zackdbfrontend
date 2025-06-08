@@ -64,14 +64,20 @@ export default function Dashboard({ user = storedUser }) {
   }, [navigate, user]);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
     fetch(`${API_URL}/api/saved-connections`, {
-      credentials: 'include' // <-- Required for JWT cookie
+      credentials: 'include'
     })
-      .then(res => res.json())
-      .then(data => setSavedConnections(data));
-  }, []);
+      .then(res => {
+        if (res.status === 401) {
+          navigate('/login');
+        } else {
+          return res.json();
+        }
+      })
+      .then(data => {
+        if (data) setSavedConnections(data);
+      });
+  }, [navigate]);
 
   const totalConnPages = Math.ceil(savedConnections.length / connectionsPerPage);
   const paginatedConnections = savedConnections.slice(

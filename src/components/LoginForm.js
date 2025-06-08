@@ -44,7 +44,6 @@ export default function LoginForm() {
       // For now, store the email as session data
       const data = await res.json();
       localStorage.setItem('zackdb_user', JSON.stringify({ email: data.user.email, username: data.user.username }));
-      // Do NOT store the token in localStorage!
 
       Swal.fire({
         icon: 'success',
@@ -55,7 +54,7 @@ export default function LoginForm() {
         navigate('/dashboard');
       });
 
-      // If user closes the alert before timer, still redirect
+      // Fallback in case user closes SweetAlert early
       setTimeout(() => navigate('/dashboard'), 1300);
 
     } catch (err) {
