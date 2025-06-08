@@ -483,7 +483,7 @@ export default function Dashboard({ user }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 120px 0 48px', // Increased right padding to move logout button left
+          padding: '0 48px 0 48px', // Add right padding for space from edge
           position: 'sticky',
           top: 0,
           zIndex: 10,
