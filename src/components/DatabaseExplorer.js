@@ -125,21 +125,25 @@ export default function DatabaseExplorer() {
     setIsLoadingDocuments(true);
     setError('');
     try {
+      // Encode parameters for safe URL transmission
       const params = new URLSearchParams({
-        connectionString,
-        dbName,
-        collectionName
+        connectionString: encodeURIComponent(connectionString),
+        dbName: encodeURIComponent(dbName),
+        collectionName: encodeURIComponent(collectionName)
       });
       const res = await fetch(`${API_URL}/api/documents?${params.toString()}`, {
         method: 'GET',
         cache: 'no-store'
       });
       if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
+        const text = await res.text();
+        throw new Error(`HTTP error! status: ${res.status} - ${text}`);
       }
-      const { documents: docs, total } = await res.json();
+      // Expecting: { documents: [...] }
+      const data = await res.json();
+      const docs = data.documents || [];
       setDocuments(docs);
-      setTotalDocuments(total);
+      setTotalDocuments(docs.length);
       setCurrentPage(1); // Reset to first page on new fetch
       const cols = docs.length > 0 ? Object.keys(docs[0]) : [];
       setColumns(cols);
