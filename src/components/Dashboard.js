@@ -268,9 +268,9 @@ export default function Dashboard({ user = storedUser }) {
         )}
         {/* Logout button always visible, moves left when sidebar collapsed */}
         <button
-          onClick={() => {
-            // Clear token and redirect to login
-            localStorage.removeItem('token');
+          onClick={async () => {
+            await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
+            localStorage.removeItem('zackdb_user');
             navigate('/login');
           }}
           style={{
