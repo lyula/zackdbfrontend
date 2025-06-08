@@ -334,7 +334,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
 }
 
 // --- MOBILE HEADER ---
-function MobileHeader() {
+function MobileHeader({ navigate, sidebarOpen, setSidebarOpen }) {
   return (
     <div
       style={{
@@ -561,7 +561,7 @@ export default function Dashboard({ user }) {
   };
 
   // --- MOBILE HEADER ---
-  const MobileHeader = () => (
+  const MobileHeader = ({ navigate, sidebarOpen, setSidebarOpen }) => (
     <div
       style={{
         width: '100%',
@@ -570,7 +570,7 @@ export default function Dashboard({ user }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 8px 0 8px', // Less padding for more space
+        padding: '0 8px 0 8px',
         position: 'sticky',
         top: 0,
         zIndex: 101,
@@ -656,7 +656,13 @@ export default function Dashboard({ user }) {
       }}
     >
       {/* Mobile Header */}
-      {isMobile && <MobileHeader />}
+      {isMobile && (
+        <MobileHeader
+          navigate={navigate}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
+      )}
 
       {/* Sidebar */}
       <div
