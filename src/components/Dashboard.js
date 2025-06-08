@@ -334,69 +334,71 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
 }
 
 // --- MOBILE HEADER ---
-const MobileHeader = () => (
-  <div
-    style={{
-      width: '100%',
-      height: 56,
-      background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '0 8px 0 8px', // Less padding for more space
-      position: 'sticky',
-      top: 0,
-      zIndex: 101,
-      boxShadow: '0 2px 12px #6366f122'
-    }}
-  >
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      {/* Logout icon on far left */}
-      <button
-        onClick={() => {
-          localStorage.removeItem('token');
-          fetch(`${API_URL}/api/logout`, { credentials: 'include' }).finally(() => {
-            navigate('/login');
-          });
-        }}
-        style={{
-          background: '#fff',
-          color: '#6366f1',
-          border: 'none',
-          borderRadius: 22,
-          padding: '8px 14px',
-          fontWeight: 700,
-          fontSize: 15,
-          cursor: 'pointer',
-          boxShadow: '0 2px 12px #6366f122',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          letterSpacing: '0.5px',
-          transition: 'background 0.22s, box-shadow 0.22s, border-radius 0.22s',
-          outline: 'none',
-          marginRight: 8
-        }}
-        title="Logout"
-      >
-        <span role="img" aria-label="logout" style={{ fontSize: 18 }}>🔒</span>
-      </button>
-      <HamburgerIcon open={sidebarOpen} onClick={() => setSidebarOpen(o => !o)} />
+function MobileHeader() {
+  return (
+    <div
+      style={{
+        width: '100%',
+        height: 56,
+        background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 8px 0 8px',
+        position: 'sticky',
+        top: 0,
+        zIndex: 101,
+        boxShadow: '0 2px 12px #6366f122'
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {/* Logout icon on far left */}
+        <button
+          onClick={() => {
+            localStorage.removeItem('token');
+            fetch(`${API_URL}/api/logout`, { credentials: 'include' }).finally(() => {
+              navigate('/login');
+            });
+          }}
+          style={{
+            background: '#fff',
+            color: '#6366f1',
+            border: 'none',
+            borderRadius: 22,
+            padding: '8px 14px',
+            fontWeight: 700,
+            fontSize: 15,
+            cursor: 'pointer',
+            boxShadow: '0 2px 12px #6366f122',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            letterSpacing: '0.5px',
+            transition: 'background 0.22s, box-shadow 0.22s, border-radius 0.22s',
+            outline: 'none',
+            marginRight: 8
+          }}
+          title="Logout"
+        >
+          <span role="img" aria-label="logout" style={{ fontSize: 18 }}>🔒</span>
+        </button>
+        <HamburgerIcon open={sidebarOpen} onClick={() => setSidebarOpen(o => !o)} />
+      </div>
+      <div style={{
+        fontWeight: 900,
+        fontSize: 22,
+        color: '#fff',
+        letterSpacing: '-1px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        textShadow: '0 2px 12px #6366f155'
+      }}>
+        <span role="img" aria-label="rocket" style={{ fontSize: 24 }}>🚀</span> zackdb
+      </div>
+      <div style={{ width: 36 }} /> {/* Spacer for symmetry */}
     </div>
-    <div style={{
-      fontWeight: 900,
-      fontSize: 22,
-      color: '#fff',
-      letterSpacing: '-1px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 8,
-      textShadow: '0 2px 12px #6366f155'
-    }}>
-      <span role="img" aria-label="rocket" style={{ fontSize: 24 }}>🚀</span> zackdb
-    </div>
-    <div style={{ width: 36 }} /> {/* Spacer for symmetry */}
-  </div>
+  );
 };
 
 export default function Dashboard({ user }) {
