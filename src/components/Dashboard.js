@@ -495,8 +495,11 @@ export default function Dashboard({ user: userProp }) {
       });
   }, [navigate]);
 
-  const totalConnPages = Math.ceil(savedConnections.length / connectionsPerPage);
-  const paginatedConnections = savedConnections.slice(
+  // After fetching savedConnections and before rendering the Saved Connections list:
+  const isConnectionsArray = Array.isArray(savedConnections);
+  const safeConnections = isConnectionsArray ? savedConnections : [];
+  const totalConnPages = Math.ceil(safeConnections.length / connectionsPerPage);
+  const paginatedConnections = safeConnections.slice(
     (connPage - 1) * connectionsPerPage,
     connPage * connectionsPerPage
   );
@@ -945,7 +948,11 @@ export default function Dashboard({ user: userProp }) {
               }}>
                 Saved Connections
               </div>
-              {paginatedConnections.length === 0 ? (
+              {!isConnectionsArray ? (
+                <div style={{ color: '#f87171', fontSize: 16, marginTop: 24 }}>
+                  Failed to load saved connections. Please try again later.
+                </div>
+              ) : paginatedConnections.length === 0 ? (
                 <div style={{ color: '#888', fontSize: 16, marginTop: 24 }}>No saved connections yet.</div>
               ) : (
                 <ul style={{ width: '100%', padding: 0, margin: 0, listStyle: 'none' }}>
