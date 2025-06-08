@@ -48,7 +48,8 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
         background: 'linear-gradient(120deg, #6366f1 0%, #818cf8 100%)',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'flex-start',
+        alignItems: 'center', // Center all contents horizontally on mobile
+        justifyContent: 'center', // Center vertically
         padding: sidebarOpen ? '38px 0 0 0' : '0',
         transition: 'width 0.45s cubic-bezier(.4,1.6,.6,1), box-shadow 0.45s cubic-bezier(.4,1.6,.6,1), padding 0.3s',
         position: 'fixed',
@@ -125,12 +126,12 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
       <div
         style={{
           width: '100%',
-          padding: sidebarOpen ? '0 0 0 18px' : '0',
+          padding: sidebarOpen ? (isMobile ? '0' : '0 0 0 18px') : '0',
           marginBottom: 38,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: isMobile ? 'center' : 'flex-start',
         }}
       >
         {/* Avatar with white ring */}
@@ -174,7 +175,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
               width: '100%',
               textShadow: '0 2px 12px #6366f155',
               display: 'flex',
-              justifyContent: 'center' // Center username
+              justifyContent: 'center'
             }}>
               {user?.username || 'User'}
             </div>
@@ -189,7 +190,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
               letterSpacing: '0.2px',
               textShadow: '0 1px 8px #6366f122',
               display: 'flex',
-              justifyContent: 'center', // Center email horizontally
+              justifyContent: 'center',
               alignItems: 'center'
             }}>
               {user?.email || ''}
@@ -224,7 +225,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'center', // Center horizontally
+            justifyContent: 'center',
             gap: 6,
             margin: '10px 0 0 0',
             fontSize: 15,
@@ -263,12 +264,12 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
         width: '100%',
         padding: sidebarOpen
           ? isMobile
-            ? '0 0 120px 0' // Move up more on mobile
+            ? '0 0 40px 0' // Less padding on mobile so it's near the bottom but not too far
             : '0 0 70px 0'
           : isMobile
-            ? '0 0 80px 0'
+            ? '0 0 30px 0'
             : '0 0 38px 0',
-        display: isMobile ? 'flex' : 'flex',
+        display: 'flex',
         justifyContent: 'center'
       }}>
         <button
@@ -483,34 +484,6 @@ export default function Dashboard({ user }) {
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <HamburgerIcon open={sidebarOpen} onClick={() => setSidebarOpen(o => !o)} />
-        <button
-          onClick={() => {
-            localStorage.removeItem('token');
-            fetch(`${API_URL}/api/logout`, { credentials: 'include' }).finally(() => {
-              navigate('/login');
-            });
-          }}
-          style={{
-            background: '#fff',
-            color: '#6366f1',
-            border: 'none',
-            borderRadius: 22,
-            padding: '8px 18px',
-            fontWeight: 700,
-            fontSize: 15,
-            cursor: 'pointer',
-            boxShadow: '0 2px 12px #6366f122',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            letterSpacing: '0.5px',
-            transition: 'background 0.22s, box-shadow 0.22s, border-radius 0.22s',
-            outline: 'none'
-          }}
-          title="Logout"
-        >
-          <span role="img" aria-label="logout" style={{ fontSize: 18 }}>🔒</span>
-        </button>
       </div>
       <div style={{
         fontWeight: 900,
@@ -523,6 +496,35 @@ export default function Dashboard({ user }) {
         textShadow: '0 2px 12px #6366f155'
       }}>
         <span role="img" aria-label="rocket" style={{ fontSize: 24 }}>🚀</span> zackdb
+        <button
+          onClick={() => {
+            localStorage.removeItem('token');
+            fetch(`${API_URL}/api/logout`, { credentials: 'include' }).finally(() => {
+              navigate('/login');
+            });
+          }}
+          style={{
+            background: '#fff',
+            color: '#6366f1',
+            border: 'none',
+            borderRadius: 22,
+            padding: '8px 14px',
+            fontWeight: 700,
+            fontSize: 15,
+            cursor: 'pointer',
+            boxShadow: '0 2px 12px #6366f122',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            letterSpacing: '0.5px',
+            transition: 'background 0.22s, box-shadow 0.22s, border-radius 0.22s',
+            outline: 'none',
+            marginLeft: 10
+          }}
+          title="Logout"
+        >
+          <span role="img" aria-label="logout" style={{ fontSize: 18 }}>🔒</span>
+        </button>
       </div>
       <div style={{ width: 36 }} /> {/* Spacer for symmetry */}
     </div>
@@ -692,9 +694,9 @@ export default function Dashboard({ user }) {
               flexDirection: isMobile ? 'column' : 'row',
               gap: isMobile ? 14 : 40,
               justifyContent: isMobile ? 'center' : 'center',
-              alignItems: isMobile ? 'flex-start' : 'center', // Center on desktop, top on mobile
+              alignItems: isMobile ? 'flex-start' : 'center',
               margin: isMobile ? '0 auto' : undefined,
-              padding: isMobile ? '10px 0 24px 0' : '48px 0 0 0' // Move down on desktop
+              padding: isMobile ? '32px 0 24px 0' : '48px 0 0 0' // <-- More top padding on mobile
             }}
           >
             {/* Left: New Connection */}
@@ -714,6 +716,7 @@ export default function Dashboard({ user }) {
                 minWidth: 320,
                 maxWidth: 440,
                 width: isMobile ? '96vw' : 420,
+                height: isMobile ? 'auto' : 480, // Set fixed height on desktop
                 margin: isMobile ? '0 auto' : undefined,
                 boxSizing: 'border-box'
               }}
@@ -827,6 +830,7 @@ export default function Dashboard({ user }) {
                 minWidth: 320,
                 maxWidth: 440,
                 width: isMobile ? '96vw' : 420,
+                height: isMobile ? 'auto' : 480, // Set fixed height on desktop
                 margin: isMobile ? '0 auto' : undefined,
                 marginTop: isMobile ? 14 : 0,
                 position: 'relative',
