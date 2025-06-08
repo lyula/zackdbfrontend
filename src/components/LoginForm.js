@@ -19,6 +19,7 @@ export default function LoginForm() {
       const res = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Make sure cookies are sent!
         body: JSON.stringify({
           connectionString: MONGO_CONNECTION_STRING,
           dbName: DB_NAME,
@@ -40,16 +41,9 @@ export default function LoginForm() {
         return;
       }
 
-      // Optionally, you can get more user info from the backend here if needed
-      // For now, store the email as session data
-      const data = await res.json();
-      localStorage.setItem('zackdb_user', JSON.stringify({ email: data.user.email, username: data.user.username }));
-
-      // Redirect immediately on successful login, no success SweetAlert
-      navigate('/dashboard');
-
-      // Fallback in case user closes SweetAlert early
-      setTimeout(() => navigate('/dashboard'), 1300);
+      // No need to store anything in localStorage.
+      // Redirect immediately on successful login.
+      navigate('/dashboard', { replace: true });
 
     } catch (err) {
       Swal.fire({

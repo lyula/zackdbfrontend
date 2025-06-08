@@ -31,12 +31,14 @@ function isValidMongoAtlasConnectionString(str) {
   return /^mongodb\+srv:\/\/[^:]+:[^@]+@[^.]+(\.[^.]+)+\/?.*/.test(str);
 }
 
-const storedUser = JSON.parse(localStorage.getItem('zackdb_user') || '{}');
-export default function Dashboard({ user = storedUser }) {
+export default function Dashboard() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [input, setInput] = useState('');
   const [savedConnections, setSavedConnections] = useState([]);
   const [error, setError] = useState('');
   const errorTimeoutRef = useRef();
+  const navigate = useNavigate();
 
   // Auto-hide error after 3 seconds
   useEffect(() => {
@@ -54,7 +56,6 @@ export default function Dashboard({ user = storedUser }) {
   const [confirmDelete, setConfirmDelete] = useState(null); // holds the connection string to confirm
   const deleteBtnRefs = useRef({});
   const connectionsPerPage = 5;
-  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -62,6 +63,23 @@ export default function Dashboard({ user = storedUser }) {
       navigate('/login');
     }
   }, [navigate, user]);
+
+  useEffect(() => {
+    // Fetch user info on mount
+    fetch(`${API_URL}/api/me`, {
+      credentials: 'include'
+    })
+      .then(async res => {
+        if (!res.ok) throw new Error('Not authenticated');
+        const data = await res.json();
+        setUser(data.user);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+        navigate('/login', { replace: true });
+      });
+  }, [navigate]);
 
   useEffect(() => {
     fetch(`${API_URL}/api/saved-connections`, {
@@ -188,6 +206,21 @@ export default function Dashboard({ user = storedUser }) {
     WebkitBackdropFilter: 'blur(18px) saturate(180%)',
     border: '1.5px solid rgba(200,200,255,0.13)'
   };
+
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 22,
+        color: '#6366f1'
+      }}>
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div style={{
