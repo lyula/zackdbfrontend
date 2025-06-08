@@ -561,12 +561,22 @@ export default function Dashboard({ user }) {
       {isMobile && <MobileHeader />}
 
       {/* Sidebar */}
-      <Sidebar
-        user={user}
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        isMobile={isMobile}
-      />
+      <div
+        style={{
+          zIndex: 20,
+          position: isMobile ? 'relative' : 'static',
+          width: isMobile ? '100%' : undefined,
+          boxShadow: isMobile ? '0 4px 24px 0 rgba(99,102,241,0.13), 0 2px 12px #818cf855' : undefined,
+          order: isMobile ? 1 : 0 // Sidebar appears below header on mobile
+        }}
+      >
+        <Sidebar
+          user={user}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          isMobile={isMobile}
+        />
+      </div>
 
       {/* Overlay for mobile sidebar */}
       {isMobile && sidebarOpen && (
@@ -681,10 +691,10 @@ export default function Dashboard({ user }) {
               display: 'flex',
               flexDirection: isMobile ? 'column' : 'row',
               gap: isMobile ? 14 : 40,
-              justifyContent: 'center',
-              alignItems: 'stretch',
+              justifyContent: isMobile ? 'center' : 'center',
+              alignItems: isMobile ? 'flex-start' : 'center', // Center on desktop, top on mobile
               margin: isMobile ? '0 auto' : undefined,
-              padding: isMobile ? '10px 0 24px 0' : undefined
+              padding: isMobile ? '10px 0 24px 0' : '48px 0 0 0' // Move down on desktop
             }}
           >
             {/* Left: New Connection */}
@@ -695,15 +705,15 @@ export default function Dashboard({ user }) {
                 backdropFilter: 'blur(18px) saturate(180%)',
                 WebkitBackdropFilter: 'blur(18px) saturate(180%)',
                 border: '1.5px solid rgba(200,200,255,0.13)',
-                flex: 1,
+                flex: '0 1 420px',
                 borderRadius: 22,
                 padding: isMobile ? '24px 8px 18px 8px' : '44px 36px 36px 36px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                minWidth: isMobile ? 0 : 320,
-                maxWidth: isMobile ? 420 : 440,
-                width: isMobile ? '96vw' : undefined,
+                minWidth: 320,
+                maxWidth: 440,
+                width: isMobile ? '96vw' : 420,
                 margin: isMobile ? '0 auto' : undefined,
                 boxSizing: 'border-box'
               }}
@@ -808,17 +818,17 @@ export default function Dashboard({ user }) {
                 backdropFilter: 'blur(18px) saturate(180%)',
                 WebkitBackdropFilter: 'blur(18px) saturate(180%)',
                 border: '1.5px solid rgba(200,200,255,0.13)',
-                flex: 1,
+                flex: '0 1 420px',
                 borderRadius: 22,
                 padding: isMobile ? '24px 8px 18px 8px' : '44px 36px 36px 36px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                minWidth: isMobile ? 0 : 320,
-                maxWidth: isMobile ? 420 : 440,
-                width: isMobile ? '96vw' : undefined,
+                minWidth: 320,
+                maxWidth: 440,
+                width: isMobile ? '96vw' : 420,
                 margin: isMobile ? '0 auto' : undefined,
-                marginTop: isMobile ? 14 : 12,
+                marginTop: isMobile ? 14 : 0,
                 position: 'relative',
                 overflow: 'visible',
                 order: isMobile ? 2 : 0,
