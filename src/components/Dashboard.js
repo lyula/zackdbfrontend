@@ -29,16 +29,16 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
     <div
       style={{
         width: sidebarOpen ? 260 : 64,
-        minWidth: sidebarOpen ? 260 : 64,
-        maxWidth: sidebarOpen ? 260 : 64,
+        minWidth: 0, // static
+        maxWidth: 260, // static
         background: 'rgba(255,255,255,0.88)',
         boxShadow: '2px 0 16px #6366f122',
         height: '100vh',
         display: 'flex',
         flexDirection: 'column',
         alignItems: sidebarOpen ? 'flex-start' : 'center',
-        padding: sidebarOpen ? '32px 0 0 0' : '32px 0 0 0',
-        transition: 'all 0.2s cubic-bezier(.4,2,.6,1)',
+        padding: '32px 0 0 0',
+        transition: 'width 0.3s cubic-bezier(.4,2,.6,1)', // Only width
         position: 'relative',
         zIndex: 11,
         borderRight: '1.5px solid #e0e7ff'
