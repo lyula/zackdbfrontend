@@ -113,8 +113,8 @@ export default function DatabaseExplorer() {
 
   const [totalDocuments, setTotalDocuments] = useState(0);
 
-  // Fetch all documents for a collection (no backend pagination)
-  const fetchDocuments = async (dbName, collectionName) => {
+  // Fetch documents for a collection with backend pagination
+  const fetchDocuments = async (dbName, collectionName, page = 1) => {
     if (!connectionString || !dbName || !collectionName) {
       setError('Missing connection info.');
       setDocuments([]);
@@ -125,11 +125,12 @@ export default function DatabaseExplorer() {
     setIsLoadingDocuments(true);
     setError('');
     try {
-      // Encode parameters for safe URL transmission
       const params = new URLSearchParams({
-        connectionString, // <-- no encodeURIComponent
+        connectionString,
         dbName,
-        collectionName
+        collectionName,
+        page,
+        limit: recordsPerPage
       });
       const res = await fetch(`${API_URL}/api/documents?${params.toString()}`, {
         method: 'GET',
@@ -139,12 +140,11 @@ export default function DatabaseExplorer() {
         const text = await res.text();
         throw new Error(`HTTP error! status: ${res.status} - ${text}`);
       }
-      // Expecting: { documents: [...] }
       const data = await res.json();
       const docs = data.documents || [];
       setDocuments(docs);
-      setTotalDocuments(docs.length);
-      setCurrentPage(1); // Reset to first page on new fetch
+      setTotalDocuments(data.total || 0);
+      setCurrentPage(page);
       const cols = docs.length > 0 ? Object.keys(docs[0]) : [];
       setColumns(cols);
       const initialVisibility = {};
@@ -210,12 +210,14 @@ export default function DatabaseExplorer() {
   // Only show columns that are visible
   const visibleColumns = columns.filter(col => columnVisibility[col]);
 
-  // Pagination logic for table (frontend only)
-  const totalPages = Math.ceil(documents.length / recordsPerPage);
-  const paginatedDocs = documents.slice(
-    (currentPage - 1) * recordsPerPage,
-    currentPage * recordsPerPage
-  ); // FIX 4: add missing paginatedDocs definition
+  // Pagination logic for table (now backend-driven)
+  const totalPages = Math.ceil(totalDocuments / recordsPerPage);
+
+  // When page changes, fetch that page from backend
+  const handlePageChange = (page) => {
+    if (page < 1 || page > totalPages) return;
+    fetchDocuments(selectedDb, selectedCollection, page);
+  };
 
   // --- Styling --- ULTRA MODERN THEME ---
   const sidebarStyle = {
@@ -349,16 +351,12 @@ export default function DatabaseExplorer() {
     // eslint-disable-next-line
   }, [connectionString]);
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
   const handleSelectCollection = (collectionName) => {
     setSelectedCollection(collectionName);
     setError('');
     setCurrentPage(1);
     stopAutoRefresh();
-    fetchDocuments(selectedDb, collectionName);
+    fetchDocuments(selectedDb, collectionName, 1);
   }; // FIX 5: ensure this function is not missing a closing brace
 
   return (
@@ -674,7 +672,7 @@ export default function DatabaseExplorer() {
                     </tr>
                   </thead>
                   <tbody>
-                    {paginatedDocs.map((doc, idx) => {
+                    {documents.map((doc, idx) => {
                       const absoluteIdx = (currentPage - 1) * recordsPerPage + idx;
                       return (
                         <tr
