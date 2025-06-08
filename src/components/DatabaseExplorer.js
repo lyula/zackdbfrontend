@@ -136,7 +136,13 @@ export default function DatabaseExplorer() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include', // <-- Required for JWT cookie
-        body: JSON.stringify({ ...yourData })
+        body: JSON.stringify({
+          connectionString,
+          dbName,
+          collectionName,
+          page,
+          limit: recordsPerPage
+        })
       });
       if (!res.ok) {
         const text = await res.text();
