@@ -16,7 +16,7 @@ function getCountryFlag(countryCode) {
 
 export default function DatabaseExplorer() {
   const { state } = useLocation();
-  const { connectionString, databases: initialDatabases } = state || {};
+  const { connectionString, databases: initialDatabases, user } = state || {};
   console.log('connectionString:', connectionString);
   const navigate = useNavigate();
 
@@ -132,9 +132,11 @@ export default function DatabaseExplorer() {
         page,
         limit: recordsPerPage
       });
-      const res = await fetch(`${API_URL}/api/documents?${params.toString()}`, {
-        method: 'GET',
-        cache: 'no-store'
+      const res = await fetch(`${API_URL}/api/documents`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // <-- Required for JWT cookie
+        body: JSON.stringify({ ...yourData })
       });
       if (!res.ok) {
         const text = await res.text();

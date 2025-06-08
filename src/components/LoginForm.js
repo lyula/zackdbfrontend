@@ -40,14 +40,23 @@ export default function LoginForm() {
         return;
       }
 
-      // Login succeeded
+      // Optionally, you can get more user info from the backend here if needed
+      // For now, store the email as session data
+      const data = await res.json();
+      localStorage.setItem('zackdb_user', JSON.stringify({ email: data.user.email, username: data.user.username }));
+      // Do NOT store the token in localStorage!
+
       Swal.fire({
         icon: 'success',
         title: 'Login Successful!',
         timer: 1200,
         showConfirmButton: false
+      }).then(() => {
+        navigate('/dashboard');
       });
-      setTimeout(() => navigate('/'), 1200);
+
+      // If user closes the alert before timer, still redirect
+      setTimeout(() => navigate('/dashboard'), 1300);
 
     } catch (err) {
       Swal.fire({
@@ -260,3 +269,8 @@ export default function LoginForm() {
     </div>
   );
 }
+
+// Example for fetching saved connections
+const res = await fetch(`${API_URL}/api/saved-connections`, {
+  credentials: 'include'
+});

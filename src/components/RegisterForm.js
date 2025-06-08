@@ -52,7 +52,8 @@ export default function RegisterForm() {
           dbName: DB_NAME,
           collectionName: USER_COLLECTION,
           email,
-          password
+          password,
+          username // <-- add this line
         })
       });
 

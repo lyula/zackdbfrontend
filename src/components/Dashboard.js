@@ -31,7 +31,8 @@ function isValidMongoAtlasConnectionString(str) {
   return /^mongodb\+srv:\/\/[^:]+:[^@]+@[^.]+(\.[^.]+)+\/?.*/.test(str);
 }
 
-export default function Dashboard({ user }) {
+const storedUser = JSON.parse(localStorage.getItem('zackdb_user') || '{}');
+export default function Dashboard({ user = storedUser }) {
   const [input, setInput] = useState('');
   const [savedConnections, setSavedConnections] = useState([]);
   const [error, setError] = useState('');
@@ -66,7 +67,7 @@ export default function Dashboard({ user }) {
     const token = localStorage.getItem('token');
     if (!token) return;
     fetch(`${API_URL}/api/saved-connections`, {
-      headers: { Authorization: `Bearer ${token}` }
+      credentials: 'include' // <-- Required for JWT cookie
     })
       .then(res => res.json())
       .then(data => setSavedConnections(data));
@@ -94,9 +95,10 @@ export default function Dashboard({ user }) {
       const res = await fetch(`${API_URL}/api/saved-connections`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          'Content-Type': 'application/json'
+          // Remove Authorization header, not needed with httpOnly cookie
         },
+        credentials: 'include', // <-- Required for JWT cookie
         body: JSON.stringify({ connectionString: connStr, clusterName: name })
       });
 
@@ -151,18 +153,10 @@ export default function Dashboard({ user }) {
     setError('');
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(
-        `${API_URL}/api/saved-connections/${encodeURIComponent(connectionString)}`,
-        {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.message || 'Failed to delete connection.');
-        return;
-      }
+      await fetch(`${API_URL}/api/saved-connections/${encodeURIComponent(connectionString)}`, {
+        method: 'DELETE',
+        credentials: 'include' // <-- Required for JWT cookie
+      });
       // Refresh saved connections after delete
       const connectionsRes = await fetch(`${API_URL}/api/saved-connections`, {
         headers: { Authorization: `Bearer ${token}` }
