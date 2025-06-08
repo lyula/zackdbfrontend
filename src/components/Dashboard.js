@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useMediaQuery } from 'react-responsive';
 
 const API_URL = 'https://zackdbbackend.onrender.com';
 
@@ -24,7 +25,7 @@ const HamburgerIcon = ({ open, ...props }) => (
   </span>
 );
 
-function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
+function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -98,11 +99,11 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
       <div
         style={{
           width: '100%',
-          padding: sidebarOpen ? '0 0 0 18px' : '0', // Keep left padding for all content
+          padding: sidebarOpen ? '0 0 0 18px' : '0',
           marginBottom: 38,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center', // Always center horizontally
+          alignItems: 'center',
           justifyContent: 'center',
         }}
       >
@@ -234,8 +235,14 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
       {/* Logout Button */}
       <div style={{
         width: '100%',
-        padding: sidebarOpen ? '0 0 70px 0' : '0 0 38px 0', // Move logout button up from bottom when expanded
-        display: 'flex',
+        padding: sidebarOpen
+          ? isMobile
+            ? '0 0 120px 0' // Move up more on mobile
+            : '0 0 70px 0'
+          : isMobile
+            ? '0 0 80px 0'
+            : '0 0 38px 0',
+        display: isMobile ? 'flex' : 'flex',
         justifyContent: 'center'
       }}>
         <button
@@ -273,7 +280,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
 }
 
 export default function Dashboard({ user }) {
-  const [loading, setLoading] = useState(!user); // loading depends on user prop
+  const [loading, setLoading] = useState(!user);
   const [input, setInput] = useState('');
   const [savedConnections, setSavedConnections] = useState([]);
   const [error, setError] = useState('');
@@ -292,10 +299,20 @@ export default function Dashboard({ user }) {
   }, [error]);
 
   const [connPage, setConnPage] = useState(1);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(null); // holds the connection string to confirm
   const deleteBtnRefs = useRef({});
   const connectionsPerPage = 5;
+
+  // Responsive: detect mobile
+  const isMobile = useMediaQuery({ maxWidth: 768 });
+
+  // Sidebar open state: collapsed by default on mobile
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+
+  // Update sidebar state if screen size changes
+  useEffect(() => {
+    setSidebarOpen(!isMobile);
+  }, [isMobile]);
 
   useEffect(() => {
     if (!user) {
@@ -463,7 +480,12 @@ export default function Dashboard({ user }) {
       fontFamily: 'Inter, Segoe UI, Arial, sans-serif'
     }}>
       {/* Sidebar */}
-      <Sidebar user={user} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <Sidebar
+        user={user}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        isMobile={isMobile}
+      />
       {/* Main content area */}
       <div style={{
         flex: 1,
@@ -480,10 +502,10 @@ export default function Dashboard({ user }) {
           height: HEADER_HEIGHT,
           minHeight: HEADER_HEIGHT,
           maxHeight: HEADER_HEIGHT,
-          display: 'flex',
+          display: isMobile ? 'none' : 'flex', // Hide header on mobile
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 48px 0 48px', // Add right padding for space from edge
+          padding: '0 140px 0 48px',
           position: 'sticky',
           top: 0,
           zIndex: 10,
@@ -543,7 +565,7 @@ export default function Dashboard({ user }) {
         <div style={{
           flex: 1,
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: isMobile ? 'column' : 'row', // Stack on mobile
           width: '100%',
           height: `calc(100vh - ${HEADER_HEIGHT}px)`,
           overflow: 'hidden',
@@ -555,7 +577,7 @@ export default function Dashboard({ user }) {
             width: '100%',
             maxWidth: 980,
             display: 'flex',
-            flexDirection: 'row',
+            flexDirection: isMobile ? 'column' : 'row', // Stack on mobile
             gap: 40,
             justifyContent: 'center',
             alignItems: 'stretch'
@@ -677,9 +699,10 @@ export default function Dashboard({ user }) {
                 alignItems: 'center',
                 minWidth: 320,
                 maxWidth: 440,
-                marginTop: 12,
+                marginTop: isMobile ? 24 : 12, // Add margin on mobile
                 position: 'relative', // Needed for absolute modal/backdrop
-                overflow: 'visible'
+                overflow: 'visible',
+                order: isMobile ? 2 : 0 // Move below inputs on mobile
               }}
             >
               <div style={{
