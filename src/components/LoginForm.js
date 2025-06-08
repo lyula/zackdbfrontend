@@ -5,7 +5,7 @@ import { MONGO_CONNECTION_STRING, DB_NAME, USER_COLLECTION } from '../constants'
 
 const API_URL = 'https://zackdbbackend.onrender.com';
 
-export default function LoginForm() {
+export default function LoginForm({ setUser }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -19,7 +19,7 @@ export default function LoginForm() {
       const res = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // CRUCIAL for cross-origin cookies!
+        credentials: 'include',
         body: JSON.stringify({
           connectionString: MONGO_CONNECTION_STRING,
           dbName: DB_NAME,
@@ -41,8 +41,21 @@ export default function LoginForm() {
         return;
       }
 
-      // Redirect immediately on successful login.
-      navigate('/dashboard', { replace: true });
+      // Fetch user info after login to update App state
+      const userRes = await fetch(`${API_URL}/api/me`, {
+        credentials: 'include'
+      });
+      if (userRes.ok) {
+        const userData = await userRes.json();
+        setUser(userData.user);
+        navigate('/dashboard', { replace: true });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Login Failed',
+          text: 'Could not fetch user info after login.'
+        });
+      }
 
     } catch (err) {
       Swal.fire({
@@ -255,8 +268,3 @@ export default function LoginForm() {
     </div>
   );
 }
-
-// Example for fetching saved connections
-const res = await fetch(`${API_URL}/api/saved-connections`, {
-  credentials: 'include'
-});
