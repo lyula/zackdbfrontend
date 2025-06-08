@@ -187,7 +187,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
               display: 'flex',
               justifyContent: 'center'
             }}>
-              {user?.username || 'User'}
+              {user?.username || user?.email || 'User'}
             </div>
             <div style={{
               color: '#fff',
@@ -422,7 +422,8 @@ function MobileHeader({ navigate, sidebarOpen, setSidebarOpen }) {
   );
 };
 
-export default function Dashboard({ user }) {
+export default function Dashboard({ user: userProp }) {
+  const [user, setUser] = useState(userProp || null);
   const [loading, setLoading] = useState(!user);
   const [input, setInput] = useState('');
   const [savedConnections, setSavedConnections] = useState([]);
@@ -466,7 +467,7 @@ export default function Dashboard({ user }) {
         .then(async res => {
           if (!res.ok) throw new Error('Not authenticated');
           const data = await res.json();
-          // setUser(data.user); // REMOVE this line
+          setUser(data.user); // <-- UNCOMMENT THIS LINE
           setLoading(false);
         })
         .catch(() => {
