@@ -67,7 +67,7 @@ export default function Dashboard() {
   useEffect(() => {
     // Fetch user info on mount
     fetch(`${API_URL}/api/me`, {
-      credentials: 'include'
+      credentials: 'include' // <--- THIS IS CRUCIAL
     })
       .then(async res => {
         if (!res.ok) throw new Error('Not authenticated');

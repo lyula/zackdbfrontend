@@ -19,7 +19,7 @@ export default function LoginForm() {
       const res = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Make sure cookies are sent!
+        credentials: 'include', // <--- THIS IS CRUCIAL
         body: JSON.stringify({
           connectionString: MONGO_CONNECTION_STRING,
           dbName: DB_NAME,
@@ -41,7 +41,6 @@ export default function LoginForm() {
         return;
       }
 
-      // No need to store anything in localStorage.
       // Redirect immediately on successful login.
       navigate('/dashboard', { replace: true });
 
