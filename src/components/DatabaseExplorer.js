@@ -156,7 +156,12 @@ export default function DatabaseExplorer() {
       setDocuments([]);
       setColumns([]);
       setColumnVisibility({});
-      setError('Failed to fetch documents.');
+      setError(err.message || 'Failed to fetch documents.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed to Fetch Documents',
+        text: err.message || 'Unknown error occurred while fetching documents.'
+      });
     } finally {
       setIsLoadingDocuments(false);
     }
