@@ -100,21 +100,21 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center', // Center vertically
+          justifyContent: 'center',
         }}
       >
-        {/* Avatar */}
+        {/* Avatar with white ring */}
         <div
           style={{
             width: 76,
             height: 76,
             borderRadius: '50%',
-            background: 'transparent', // Transparent background
+            background: 'transparent',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             marginBottom: 18,
-            boxShadow: 'none',
+            boxShadow: '0 0 0 4px #fff', // White ring
             border: 'none',
             position: 'relative',
             transition: 'box-shadow 0.3s cubic-bezier(.4,2,.6,1)'
@@ -167,20 +167,22 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
         {sidebarOpen && (
           <div style={{
             color: '#fff',
-            fontSize: 17,
+            fontSize: 16,
             fontWeight: 500,
             marginTop: 18,
-            marginBottom: 14,
+            marginBottom: 10,
             opacity: 0.98,
-            lineHeight: 1.7,
+            lineHeight: 1.5,
             textAlign: 'center',
-            width: '100%',
+            maxWidth: 210, // Ensures message stays within sidebar
+            alignSelf: 'center',
             letterSpacing: '0.13px',
             textShadow: '0 1px 8px #6366f122',
+            wordBreak: 'break-word',
             display: 'flex',
             justifyContent: 'center'
           }}>
-            <span style={{ fontWeight: 700, color: '#fff' }}>zackdb</span> — save and visualize your MongoDB databases with ease.
+            Save and visualize your MongoDB databases with ease.
           </div>
         )}
       </div>
@@ -191,7 +193,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
       {/* Logout Button */}
       <div style={{
         width: '100%',
-        padding: sidebarOpen ? '0 0 18px 0' : '0 0 18px 0', // moved up by reducing bottom padding
+        padding: sidebarOpen ? '0 0 38px 0' : '0 0 38px 0', // More space from bottom
         display: 'flex',
         justifyContent: 'center'
       }}>
