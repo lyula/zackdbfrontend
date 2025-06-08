@@ -385,7 +385,7 @@ function MobileHeader({ navigate, sidebarOpen, setSidebarOpen }) {
       }}>
         <span role="img" aria-label="rocket" style={{ fontSize: 24 }}>🚀</span> zackdb
       </div>
-      {/* Logout icon on far right */}
+      {/* Logout icon on far right, but with more left margin */}
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <button
           onClick={() => {
@@ -410,7 +410,8 @@ function MobileHeader({ navigate, sidebarOpen, setSidebarOpen }) {
             letterSpacing: '0.5px',
             transition: 'background 0.22s, box-shadow 0.22s, border-radius 0.22s',
             outline: 'none',
-            marginLeft: 8
+            marginLeft: 8,
+            marginRight: 12 // <-- Add more space from the right edge
           }}
           title="Logout"
         >
@@ -614,7 +615,7 @@ export default function Dashboard({ user }) {
       }}>
         <span role="img" aria-label="rocket" style={{ fontSize: 24 }}>🚀</span> zackdb
       </div>
-      {/* Logout icon on far right */}
+      {/* Logout icon on far right, but with more left margin */}
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <button
           onClick={() => {
@@ -639,7 +640,8 @@ export default function Dashboard({ user }) {
             letterSpacing: '0.5px',
             transition: 'background 0.22s, box-shadow 0.22s, border-radius 0.22s',
             outline: 'none',
-            marginLeft: 8
+            marginLeft: 8,
+            marginRight: 12 // <-- Add more space from the right edge
           }}
           title="Logout"
         >
