@@ -1,44 +1,61 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import axios from 'axios';
+import { MONGO_CONNECTION_STRING, DB_NAME, USER_COLLECTION } from '../constants';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
-export default function LoginForm({ setUser }) {
+export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
     try {
-      const res = await axios.post(`${API_URL}/api/login`, { email, password });
-      const { token } = res.data;
-      localStorage.setItem('token', token);
-
-      // Fetch user info after login
-      const userRes = await fetch(`${API_URL}/api/user`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await fetch(`${API_URL}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          connectionString: MONGO_CONNECTION_STRING,
+          dbName: DB_NAME,
+          collectionName: USER_COLLECTION,
+          email,
+          password
+        })
       });
-      const user = await userRes.json();
-      if (setUser) setUser(user);
 
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        const msg = data?.error || 'Login failed. Check your email or password.';
+        Swal.fire({
+          icon: 'error',
+          title: 'Login Failed',
+          text: msg
+        });
+        setError(msg);
+        return;
+      }
+
+      // Login succeeded
       Swal.fire({
         icon: 'success',
         title: 'Login Successful!',
         timer: 1200,
         showConfirmButton: false
       });
-      setTimeout(() => navigate('/dashboard'), 1200);
-    } catch (error) {
-      const msg = error.response?.data?.error || 'Login failed. Check your email or password.';
+      setTimeout(() => navigate('/'), 1200);
+
+    } catch (err) {
       Swal.fire({
         icon: 'error',
         title: 'Login Failed',
-        text: msg.replace(/username/gi, 'email')
+        text: 'An unexpected error occurred. Please try again.'
       });
+      setError('An unexpected error occurred. Please try again.');
     }
   };
 
