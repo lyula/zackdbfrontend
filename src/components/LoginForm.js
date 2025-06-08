@@ -19,7 +19,7 @@ export default function LoginForm() {
       const res = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        credentials: 'include', // CRUCIAL for cross-origin cookies!
         body: JSON.stringify({
           connectionString: MONGO_CONNECTION_STRING,
           dbName: DB_NAME,

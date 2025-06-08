@@ -99,25 +99,21 @@ export default function Dashboard() {
       setError('Please enter a valid MongoDB Atlas connection string.');
       return;
     }
-    // Extract cluster name from connection string
     const name = getClusterName(connStr);
     try {
       const res = await fetch(`${API_URL}/api/saved-connections`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
-          // Remove Authorization header, not needed with httpOnly cookie
         },
-        credentials: 'include', // <-- Required for JWT cookie
+        credentials: 'include',
         body: JSON.stringify({ connectionString: connStr, clusterName: name })
       });
 
       let data = {};
       try {
         data = await res.json();
-      } catch {
-        // If response is not JSON, keep data as empty object
-      }
+      } catch {}
 
       if (!res.ok) {
         setError(data.message || 'Connection string already exists, check saved connections list');
@@ -125,22 +121,19 @@ export default function Dashboard() {
       }
 
       // Refresh saved connections after successful save
-      const token = localStorage.getItem('token');
       const connectionsRes = await fetch(`${API_URL}/api/saved-connections`, {
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: 'include'
       });
       const connectionsData = await connectionsRes.json();
       setSavedConnections(connectionsData);
 
-      // Optionally clear input fields
       setInput('');
       setError('');
 
-      // Redirect to explore page with databases
       await handleUseConnection(connStr);
 
     } catch (err) {
-      setError(err.message || 'Failed to save Connection string already exists, check saved connections listconnection string.');
+      setError(err.message || 'Failed to save connection string.');
     }
   };
 
@@ -161,15 +154,14 @@ export default function Dashboard() {
 
   const handleDeleteConnection = async (connectionString) => {
     setError('');
-    const token = localStorage.getItem('token');
     try {
       await fetch(`${API_URL}/api/saved-connections/${encodeURIComponent(connectionString)}`, {
         method: 'DELETE',
-        credentials: 'include' // <-- Required for JWT cookie
+        credentials: 'include'
       });
       // Refresh saved connections after delete
       const connectionsRes = await fetch(`${API_URL}/api/saved-connections`, {
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: 'include'
       });
       const connectionsData = await connectionsRes.json();
       setSavedConnections(connectionsData);
