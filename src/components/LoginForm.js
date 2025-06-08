@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { MONGO_CONNECTION_STRING, DB_NAME, USER_COLLECTION } from '../constants';
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = 'https://zackdbbackend.onrender.com';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -19,7 +19,7 @@ export default function LoginForm() {
       const res = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // <--- THIS IS CRUCIAL
+        credentials: 'include',
         body: JSON.stringify({
           connectionString: MONGO_CONNECTION_STRING,
           dbName: DB_NAME,

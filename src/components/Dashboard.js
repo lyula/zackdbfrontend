@@ -1,35 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = process.env.REACT_APP_API_URL;
-
-const HamburgerIcon = ({ open, ...props }) => (
-  <span {...props} style={{ cursor: 'pointer', fontSize: 28, marginRight: 18, ...props.style }}>
-    {open ? (
-      <svg width="28" height="28" viewBox="0 0 28 28">
-        <line x1="7" y1="7" x2="21" y2="21" stroke="#6366f1" strokeWidth="3" strokeLinecap="round"/>
-        <line x1="21" y1="7" x2="7" y2="21" stroke="#6366f1" strokeWidth="3" strokeLinecap="round"/>
-      </svg>
-    ) : (
-      <svg width="28" height="28" viewBox="0 0 28 28">
-        <rect x="5" y="8" width="18" height="3" rx="1.5" fill="#6366f1"/>
-        <rect x="5" y="13" width="18" height="3" rx="1.5" fill="#6366f1"/>
-        <rect x="5" y="18" width="18" height="3" rx="1.5" fill="#6366f1"/>
-      </svg>
-    )}
-  </span>
-);
-
-function getClusterName(connectionString) {
-  const match = connectionString.match(/@([^\.]+)/);
-  return match ? match[1] : '';
-}
-
-// Add this function near the top, after getClusterName
-function isValidMongoAtlasConnectionString(str) {
-  // Basic check for MongoDB Atlas SRV connection string
-  return /^mongodb\+srv:\/\/[^:]+:[^@]+@[^.]+(\.[^.]+)+\/?.*/.test(str);
-}
+const API_URL = 'https://zackdbbackend.onrender.com';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -56,13 +28,6 @@ export default function Dashboard() {
   const [confirmDelete, setConfirmDelete] = useState(null); // holds the connection string to confirm
   const deleteBtnRefs = useRef({});
   const connectionsPerPage = 5;
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token && !user) {
-      navigate('/login');
-    }
-  }, [navigate, user]);
 
   useEffect(() => {
     // Fetch user info on mount
