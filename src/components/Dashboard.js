@@ -34,6 +34,9 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
     });
   };
 
+  // Get current year for copyright
+  const currentYear = new Date().getFullYear();
+
   const sidebarStyle = {
     width: sidebarOpen ? 270 : 72,
     minWidth: 0,
@@ -44,7 +47,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
     flexDirection: 'column',
     alignItems: sidebarOpen ? 'flex-start' : 'center',
     padding: sidebarOpen ? '38px 0 0 0' : '22px 0 0 0',
-    transition: 'width 0.38s cubic-bezier(.4,2,.6,1), box-shadow 0.38s cubic-bezier(.4,2,.6,1)',
+    transition: 'width 0.55s cubic-bezier(.4,1.6,.6,1), box-shadow 0.55s cubic-bezier(.4,1.6,.6,1)',
     position: 'relative',
     zIndex: 11,
     boxShadow: '0 0 32px 0 rgba(99,102,241,0.13), 0 2px 12px #818cf855',
@@ -62,7 +65,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
           justifyContent: sidebarOpen ? 'flex-end' : 'center',
           padding: sidebarOpen ? '0 20px 0 0' : '0',
           marginBottom: 44,
-          marginTop: 36 // Move arrow lower
+          marginTop: 36
         }}
       >
         <button
@@ -106,29 +109,29 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
         {/* Avatar with white ring */}
         <div
           style={{
-            width: sidebarOpen ? 76 : 40,
-            height: sidebarOpen ? 76 : 40,
+            width: sidebarOpen ? 88 : 40,
+            height: sidebarOpen ? 88 : 40,
             borderRadius: '50%',
             background: 'transparent',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: sidebarOpen ? 18 : 10,
+            marginBottom: sidebarOpen ? 22 : 10,
             boxShadow: '0 0 0 4px #fff',
             border: 'none',
             position: 'relative',
-            transition: 'all 0.3s cubic-bezier(.4,2,.6,1)'
+            transition: 'all 0.55s cubic-bezier(.4,1.6,.6,1)'
           }}
         >
           <span
             role="img"
             aria-label="user on laptop"
             style={{
-              fontSize: sidebarOpen ? 48 : 24,
+              fontSize: sidebarOpen ? 56 : 24,
               display: 'block',
               color: '#fff',
               filter: 'drop-shadow(0 2px 8px #6366f199)',
-              transition: 'font-size 0.3s cubic-bezier(.4,2,.6,1)'
+              transition: 'font-size 0.55s cubic-bezier(.4,1.6,.6,1)'
             }}
           >🧑‍💻</span>
         </div>
@@ -175,7 +178,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
             opacity: 0.98,
             lineHeight: 1.5,
             textAlign: 'center',
-            maxWidth: 210, // Ensures message stays within sidebar
+            maxWidth: 210,
             alignSelf: 'center',
             letterSpacing: '0.13px',
             textShadow: '0 1px 8px #6366f122',
@@ -186,6 +189,42 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
             Save and visualize your MongoDB databases with ease.
           </div>
         )}
+        {/* zackdb © YEAR */}
+        {sidebarOpen && (
+          <div style={{
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            margin: '10px 0 0 0',
+            fontSize: 15,
+            color: '#fff',
+            opacity: 0.75,
+            fontWeight: 600,
+            letterSpacing: '0.1em',
+            userSelect: 'none'
+          }}>
+            <span style={{ fontWeight: 700 }}>zackdb</span>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 18,
+              height: 18,
+              borderRadius: '50%',
+              background: '#fff',
+              color: '#6366f1',
+              fontWeight: 900,
+              fontSize: 13,
+              marginLeft: 2,
+              marginRight: 2,
+              boxShadow: '0 1px 4px #6366f122'
+            }}>©</span>
+            <span>{currentYear}</span>
+          </div>
+        )}
       </div>
 
       {/* Spacer to push logout to bottom */}
@@ -194,7 +233,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen }) {
       {/* Logout Button */}
       <div style={{
         width: '100%',
-        padding: sidebarOpen ? '0 0 60px 0' : '0 0 38px 0', // More space when expanded, unchanged when collapsed
+        padding: sidebarOpen ? '0 0 38px 0' : '0 0 38px 0', // Move up a bit
         display: 'flex',
         justifyContent: 'center'
       }}>
@@ -422,7 +461,7 @@ export default function Dashboard({ user }) {
       flexDirection: 'row',
       fontFamily: 'Inter, Segoe UI, Arial, sans-serif'
     }}>
-      {/* Restore Sidebar */}
+      {/* Sidebar */}
       <Sidebar user={user} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       {/* Main content area */}
       <div style={{
@@ -463,6 +502,40 @@ export default function Dashboard({ user }) {
             backgroundClip: 'text'
           }}>
             <span role="img" aria-label="rocket" style={{ fontSize: 30 }}>🚀</span> zackdb
+          </div>
+          {/* PC view: Logout button on right side of header */}
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <button
+              onClick={() => {
+                localStorage.removeItem('token');
+                fetch(`${API_URL}/api/logout`, { credentials: 'include' }).finally(() => {
+                  navigate('/login');
+                });
+              }}
+              style={{
+                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 22,
+                padding: '10px 28px',
+                fontWeight: 700,
+                fontSize: 16,
+                cursor: 'pointer',
+                boxShadow: '0 2px 16px #6366f144, 0 0 0 2px #818cf855',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                letterSpacing: '0.5px',
+                transition: 'background 0.22s, box-shadow 0.22s, border-radius 0.22s',
+                outline: 'none'
+              }}
+              title="Logout"
+              onMouseOver={e => e.currentTarget.style.background = 'linear-gradient(90deg, #818cf8 0%, #6366f1 100%)'}
+              onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)'}
+            >
+              <span role="img" aria-label="logout" style={{ fontSize: 20 }}>🔒</span>
+              Logout
+            </button>
           </div>
         </div>
         {/* Main horizontal layout */}
