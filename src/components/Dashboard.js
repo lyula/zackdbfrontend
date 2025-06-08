@@ -18,10 +18,10 @@ function getClusterName(connectionString) {
   }
 }
 
-// Add this before your Dashboard function
+// Hamburger icon for mobile header
 const HamburgerIcon = ({ open, ...props }) => (
-  <span {...props} style={{ fontSize: 28, cursor: 'pointer', userSelect: 'none' }}>
-    {open ? '☰' : '≡'}
+  <span {...props} style={{ fontSize: 28, cursor: 'pointer', userSelect: 'none', marginRight: 18 }}>
+    {open ? '✕' : '☰'}
   </span>
 );
 
@@ -38,62 +38,88 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
   // Get current year for copyright
   const currentYear = new Date().getFullYear();
 
-  const sidebarStyle = {
-    width: sidebarOpen ? 270 : 72,
-    minWidth: 0,
-    maxWidth: 270,
-    height: '100vh',
-    background: 'linear-gradient(120deg, #6366f1 0%, #818cf8 100%)',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: sidebarOpen ? 'flex-start' : 'center',
-    padding: sidebarOpen ? '38px 0 0 0' : '22px 0 0 0',
-    transition: 'width 0.55s cubic-bezier(.4,1.6,.6,1), box-shadow 0.55s cubic-bezier(.4,1.6,.6,1)',
-    position: 'relative',
-    zIndex: 11,
-    boxShadow: '0 0 32px 0 rgba(99,102,241,0.13), 0 2px 12px #818cf855',
-    fontFamily: 'Inter, Segoe UI, Arial, sans-serif'
-  };
+  // On mobile, overlay the sidebar above content
+  const sidebarStyle = isMobile
+    ? {
+        width: sidebarOpen ? 270 : 0,
+        minWidth: 0,
+        maxWidth: 270,
+        height: '100vh',
+        background: 'linear-gradient(120deg, #6366f1 0%, #818cf8 100%)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        padding: sidebarOpen ? '38px 0 0 0' : '0',
+        transition: 'width 0.45s cubic-bezier(.4,1.6,.6,1), box-shadow 0.45s cubic-bezier(.4,1.6,.6,1), padding 0.3s',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        zIndex: 100,
+        boxShadow: sidebarOpen ? '0 0 32px 0 rgba(99,102,241,0.13), 0 2px 12px #818cf855' : 'none',
+        fontFamily: 'Inter, Segoe UI, Arial, sans-serif',
+        overflow: 'hidden',
+        borderTopRightRadius: 18,
+        borderBottomRightRadius: 18,
+        pointerEvents: sidebarOpen ? 'auto' : 'none'
+      }
+    : {
+        width: sidebarOpen ? 270 : 72,
+        minWidth: 0,
+        maxWidth: 270,
+        height: '100vh',
+        background: 'linear-gradient(120deg, #6366f1 0%, #818cf8 100%)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: sidebarOpen ? 'flex-start' : 'center',
+        padding: sidebarOpen ? '38px 0 0 0' : '22px 0 0 0',
+        transition: 'width 0.55s cubic-bezier(.4,1.6,.6,1), box-shadow 0.55s cubic-bezier(.4,1.6,.6,1)',
+        position: 'relative',
+        zIndex: 11,
+        boxShadow: '0 0 32px 0 rgba(99,102,241,0.13), 0 2px 12px #818cf855',
+        fontFamily: 'Inter, Segoe UI, Arial, sans-serif'
+      };
 
   return (
     <div style={sidebarStyle}>
       {/* Collapse/Expand Button */}
-      <div
-        style={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: sidebarOpen ? 'flex-end' : 'center',
-          padding: sidebarOpen ? '0 20px 0 0' : '0',
-          marginBottom: 44,
-          marginTop: 36
-        }}
-      >
-        <button
-          onClick={() => setSidebarOpen(o => !o)}
+      {!isMobile && (
+        <div
           style={{
-            fontSize: 26,
-            cursor: 'pointer',
-            userSelect: 'none',
-            color: '#6366f1',
-            padding: '10px 16px',
-            borderRadius: 24,
-            border: 'none',
-            background: '#fff',
-            boxShadow: '0 2px 16px #6366f144, 0 0 0 2px #818cf855',
-            transition: 'background 0.22s, box-shadow 0.22s',
-            outline: 'none',
-            fontWeight: 700,
-            filter: 'drop-shadow(0 2px 8px #818cf855)',
-            position: 'relative'
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: sidebarOpen ? 'flex-end' : 'center',
+            padding: sidebarOpen ? '0 20px 0 0' : '0',
+            marginBottom: 44,
+            marginTop: 36
           }}
-          title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-          onMouseOver={e => e.currentTarget.style.background = '#f1f5ff'}
-          onMouseOut={e => e.currentTarget.style.background = '#fff'}
         >
-          {sidebarOpen ? '←' : '→'}
-        </button>
-      </div>
+          <button
+            onClick={() => setSidebarOpen(o => !o)}
+            style={{
+              fontSize: 26,
+              cursor: 'pointer',
+              userSelect: 'none',
+              color: '#6366f1',
+              padding: '10px 16px',
+              borderRadius: 24,
+              border: 'none',
+              background: '#fff',
+              boxShadow: '0 2px 16px #6366f144, 0 0 0 2px #818cf855',
+              transition: 'background 0.22s, box-shadow 0.22s',
+              outline: 'none',
+              fontWeight: 700,
+              filter: 'drop-shadow(0 2px 8px #818cf855)',
+              position: 'relative'
+            }}
+            title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+            onMouseOver={e => e.currentTarget.style.background = '#f1f5ff'}
+            onMouseOut={e => e.currentTarget.style.background = '#fff'}
+          >
+            {sidebarOpen ? '←' : '→'}
+          </button>
+        </div>
+      )}
 
       {/* User Section */}
       <div
@@ -287,19 +313,8 @@ export default function Dashboard({ user }) {
   const errorTimeoutRef = useRef();
   const navigate = useNavigate();
 
-  // Auto-hide error after 3 seconds
-  useEffect(() => {
-    if (error) {
-      if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
-      errorTimeoutRef.current = setTimeout(() => setError(''), 3000);
-    }
-    return () => {
-      if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
-    };
-  }, [error]);
-
   const [connPage, setConnPage] = useState(1);
-  const [confirmDelete, setConfirmDelete] = useState(null); // holds the connection string to confirm
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const deleteBtnRefs = useRef({});
   const connectionsPerPage = 5;
 
@@ -313,6 +328,17 @@ export default function Dashboard({ user }) {
   useEffect(() => {
     setSidebarOpen(!isMobile);
   }, [isMobile]);
+
+  // Auto-hide error after 3 seconds
+  useEffect(() => {
+    if (error) {
+      if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+      errorTimeoutRef.current = setTimeout(() => setError(''), 3000);
+    }
+    return () => {
+      if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+    };
+  }, [error]);
 
   useEffect(() => {
     if (!user) {
@@ -438,20 +464,69 @@ export default function Dashboard({ user }) {
     }
   };
 
-  // Layout constants
-  const HEADER_HEIGHT = 64;
-  const SIDEBAR_WIDTH = 260;
-  const SIDEBAR_COLLAPSED = 64;
-  const PADDING_X = 32;
-
-  // Ultra modern colors and glassmorphism
-  const glass = {
-    background: 'rgba(255,255,255,0.72)',
-    boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.13)',
-    backdropFilter: 'blur(18px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(18px) saturate(180%)',
-    border: '1.5px solid rgba(200,200,255,0.13)'
-  };
+  // --- MOBILE HEADER ---
+  const MobileHeader = () => (
+    <div
+      style={{
+        width: '100%',
+        height: 56,
+        background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 16px',
+        position: 'sticky',
+        top: 0,
+        zIndex: 101,
+        boxShadow: '0 2px 12px #6366f122'
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <HamburgerIcon open={sidebarOpen} onClick={() => setSidebarOpen(o => !o)} />
+        <button
+          onClick={() => {
+            localStorage.removeItem('token');
+            fetch(`${API_URL}/api/logout`, { credentials: 'include' }).finally(() => {
+              navigate('/login');
+            });
+          }}
+          style={{
+            background: '#fff',
+            color: '#6366f1',
+            border: 'none',
+            borderRadius: 22,
+            padding: '8px 18px',
+            fontWeight: 700,
+            fontSize: 15,
+            cursor: 'pointer',
+            boxShadow: '0 2px 12px #6366f122',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            letterSpacing: '0.5px',
+            transition: 'background 0.22s, box-shadow 0.22s, border-radius 0.22s',
+            outline: 'none'
+          }}
+          title="Logout"
+        >
+          <span role="img" aria-label="logout" style={{ fontSize: 18 }}>🔒</span>
+        </button>
+      </div>
+      <div style={{
+        fontWeight: 900,
+        fontSize: 22,
+        color: '#fff',
+        letterSpacing: '-1px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        textShadow: '0 2px 12px #6366f155'
+      }}>
+        <span role="img" aria-label="rocket" style={{ fontSize: 24 }}>🚀</span> zackdb
+      </div>
+      <div style={{ width: 36 }} /> {/* Spacer for symmetry */}
+    </div>
+  );
 
   if (loading) {
     return (
@@ -468,17 +543,23 @@ export default function Dashboard({ user }) {
     );
   }
 
+  // --- MAIN RENDER ---
   return (
-    <div style={{
-      minHeight: '100vh',
-      height: '100vh',
-      width: '100vw',
-      overflow: 'hidden',
-      background: 'linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%)',
-      display: 'flex',
-      flexDirection: 'row',
-      fontFamily: 'Inter, Segoe UI, Arial, sans-serif'
-    }}>
+    <div
+      style={{
+        minHeight: '100vh',
+        height: '100vh',
+        width: '100vw',
+        overflow: 'hidden',
+        background: 'linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%)',
+        display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        fontFamily: 'Inter, Segoe UI, Arial, sans-serif'
+      }}
+    >
+      {/* Mobile Header */}
+      {isMobile && <MobileHeader />}
+
       {/* Sidebar */}
       <Sidebar
         user={user}
@@ -486,32 +567,53 @@ export default function Dashboard({ user }) {
         setSidebarOpen={setSidebarOpen}
         isMobile={isMobile}
       />
+
+      {/* Overlay for mobile sidebar */}
+      {isMobile && sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(44,62,80,0.13)',
+            zIndex: 99
+          }}
+        />
+      )}
+
       {/* Main content area */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        overflow: 'hidden'
-      }}>
-        {/* Header */}
-        <div style={{
-          width: '100%',
-          background: 'rgba(255,255,255,0.85)',
-          boxShadow: '0 2px 16px #6366f122',
-          height: HEADER_HEIGHT,
-          minHeight: HEADER_HEIGHT,
-          maxHeight: HEADER_HEIGHT,
-          display: isMobile ? 'none' : 'flex', // Hide header on mobile
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 140px 0 48px',
-          position: 'sticky',
-          top: 0,
-          zIndex: 10,
-          flexShrink: 0,
-          borderBottom: '1.5px solid #e0e7ff'
-        }}>
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          height: isMobile ? 'auto' : '100vh',
+          overflow: 'hidden'
+        }}
+      >
+        {/* Desktop Header */}
+        <div
+          style={{
+            width: '100%',
+            background: 'rgba(255,255,255,0.85)',
+            boxShadow: '0 2px 16px #6366f122',
+            height: 64,
+            minHeight: 64,
+            maxHeight: 64,
+            display: isMobile ? 'none' : 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 140px 0 48px',
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+            flexShrink: 0,
+            borderBottom: '1.5px solid #e0e7ff'
+          }}
+        >
           <div style={{
             fontWeight: 900,
             fontSize: 26,
@@ -562,39 +664,50 @@ export default function Dashboard({ user }) {
           </div>
         </div>
         {/* Main horizontal layout */}
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row', // Stack on mobile
-          width: '100%',
-          height: `calc(100vh - ${HEADER_HEIGHT}px)`,
-          overflow: 'hidden',
-          justifyContent: 'center',
-          alignItems: 'center',
-          background: 'linear-gradient(120deg, #f1f5f9 0%, #e0e7ff 100%)'
-        }}>
-          <div style={{
-            width: '100%',
-            maxWidth: 980,
+        <div
+          style={{
+            flex: 1,
             display: 'flex',
-            flexDirection: isMobile ? 'column' : 'row', // Stack on mobile
-            gap: 40,
-            justifyContent: 'center',
-            alignItems: 'stretch'
-          }}>
-            {/* Left: New Connection */}
-            <div style={{
-              ...glass,
-              flex: 1,
-              borderRadius: 22,
-              padding: '44px 36px 36px 36px',
+            flexDirection: 'column',
+            width: '100%',
+            minHeight: isMobile ? 'calc(100vh - 56px)' : undefined,
+            background: 'linear-gradient(120deg, #f1f5f9 0%, #e0e7ff 100%)'
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: isMobile ? '100%' : 980,
               display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              minWidth: 320,
-              maxWidth: 440,
-              marginTop: 12
-            }}>
+              flexDirection: isMobile ? 'column' : 'row',
+              gap: isMobile ? 14 : 40,
+              justifyContent: 'center',
+              alignItems: 'stretch',
+              margin: isMobile ? '0 auto' : undefined,
+              padding: isMobile ? '10px 0 24px 0' : undefined
+            }}
+          >
+            {/* Left: New Connection */}
+            <div
+              style={{
+                background: 'rgba(255,255,255,0.72)',
+                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.13)',
+                backdropFilter: 'blur(18px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(18px) saturate(180%)',
+                border: '1.5px solid rgba(200,200,255,0.13)',
+                flex: 1,
+                borderRadius: 22,
+                padding: isMobile ? '24px 8px 18px 8px' : '44px 36px 36px 36px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                minWidth: isMobile ? 0 : 320,
+                maxWidth: isMobile ? 420 : 440,
+                width: isMobile ? '96vw' : undefined,
+                margin: isMobile ? '0 auto' : undefined,
+                boxSizing: 'border-box'
+              }}
+            >
               <div style={{
                 fontSize: 54,
                 marginBottom: 12,
@@ -690,19 +803,26 @@ export default function Dashboard({ user }) {
             <div
               className="saved-connections-card"
               style={{
-                ...glass,
+                background: 'rgba(255,255,255,0.72)',
+                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.13)',
+                backdropFilter: 'blur(18px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(18px) saturate(180%)',
+                border: '1.5px solid rgba(200,200,255,0.13)',
                 flex: 1,
                 borderRadius: 22,
-                padding: '44px 36px 36px 36px',
+                padding: isMobile ? '24px 8px 18px 8px' : '44px 36px 36px 36px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                minWidth: 320,
-                maxWidth: 440,
-                marginTop: isMobile ? 24 : 12, // Add margin on mobile
-                position: 'relative', // Needed for absolute modal/backdrop
+                minWidth: isMobile ? 0 : 320,
+                maxWidth: isMobile ? 420 : 440,
+                width: isMobile ? '96vw' : undefined,
+                margin: isMobile ? '0 auto' : undefined,
+                marginTop: isMobile ? 14 : 12,
+                position: 'relative',
                 overflow: 'visible',
-                order: isMobile ? 2 : 0 // Move below inputs on mobile
+                order: isMobile ? 2 : 0,
+                boxSizing: 'border-box'
               }}
             >
               <div style={{
