@@ -111,8 +111,8 @@ export default function DatabaseExplorer() {
 
   const [totalDocuments, setTotalDocuments] = useState(0);
 
-  // Fetch documents for a collection (with pagination)
-  const fetchDocuments = async (dbName, collectionName, page = 1) => {
+  // Fetch all documents for a collection (no backend pagination)
+  const fetchDocuments = async (dbName, collectionName) => {
     if (!connectionString || !dbName || !collectionName) {
       setError('Missing connection info.');
       setDocuments([]);
@@ -123,13 +123,10 @@ export default function DatabaseExplorer() {
     setIsLoadingDocuments(true);
     setError('');
     try {
-      // Do NOT encodeURIComponent here; URLSearchParams handles encoding
       const params = new URLSearchParams({
         connectionString,
         dbName,
-        collectionName,
-        page,
-        pageSize: recordsPerPage
+        collectionName
       });
       const res = await fetch(`${API_URL}/api/documents?${params.toString()}`, {
         method: 'GET',
@@ -141,6 +138,7 @@ export default function DatabaseExplorer() {
       const { documents: docs, total } = await res.json();
       setDocuments(docs);
       setTotalDocuments(total);
+      setCurrentPage(1); // Reset to first page on new fetch
       const cols = docs.length > 0 ? Object.keys(docs[0]) : [];
       setColumns(cols);
       const initialVisibility = {};
@@ -201,10 +199,12 @@ export default function DatabaseExplorer() {
   // Only show columns that are visible
   const visibleColumns = columns.filter(col => columnVisibility[col]);
 
-  // Pagination logic for table
-  const totalPages = Math.ceil(totalDocuments / recordsPerPage);
-  // Use the documents as returned from the backend (already paginated and sorted)
-  const paginatedDocs = documents;
+  // Pagination logic for table (frontend only)
+  const totalPages = Math.ceil(documents.length / recordsPerPage);
+  const paginatedDocs = documents.slice(
+    (currentPage - 1) * recordsPerPage,
+    currentPage * recordsPerPage
+  );
 
   // --- Styling --- ULTRA MODERN THEME ---
   const glass = {
@@ -343,7 +343,6 @@ export default function DatabaseExplorer() {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
-    fetchDocuments(selectedDb, selectedCollection, page);
   };
 
   const handleSelectCollection = (collectionName) => {
@@ -351,7 +350,7 @@ export default function DatabaseExplorer() {
     setError('');
     setCurrentPage(1);
     stopAutoRefresh();
-    fetchDocuments(selectedDb, collectionName, 1);
+    fetchDocuments(selectedDb, collectionName);
   };
 
   return (
