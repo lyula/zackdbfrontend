@@ -136,8 +136,8 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
         style={{
           width: '100%',
           padding: sidebarOpen ? (isMobile ? '0' : '0 0 0 18px') : '0',
-          marginTop: isMobile && sidebarOpen ? 48 : 0, // Move down on mobile
-          marginBottom: isMobile && sidebarOpen ? 24 : 38, // More space below on mobile
+          marginTop: isMobile && sidebarOpen ? 90 : 0, // Move down much further on mobile
+          marginBottom: isMobile && sidebarOpen ? 32 : 38,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -154,7 +154,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: isMobile && sidebarOpen ? 18 : sidebarOpen ? 22 : 10,
+            marginBottom: isMobile && sidebarOpen ? 22 : sidebarOpen ? 22 : 10,
             boxShadow: '0 0 0 4px #fff',
             border: 'none',
             position: 'relative',
@@ -179,7 +179,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
               color: '#fff',
               fontWeight: 800,
               fontSize: 24,
-              marginBottom: isMobile ? 2 : 6,
+              marginBottom: isMobile ? 6 : 6,
               letterSpacing: '0.3px',
               textAlign: 'center',
               width: '100%',
@@ -193,7 +193,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
               color: '#fff',
               fontSize: 17,
               fontWeight: 600,
-              marginBottom: isMobile ? 8 : 10,
+              marginBottom: isMobile ? 14 : 10,
               textAlign: 'center',
               width: '100%',
               opacity: 0.96,
@@ -212,8 +212,8 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
             color: '#fff',
             fontSize: 16,
             fontWeight: 500,
-            marginTop: isMobile ? 10 : 18,
-            marginBottom: isMobile ? 10 : 10,
+            marginTop: isMobile ? 18 : 18,
+            marginBottom: isMobile ? 18 : 10,
             opacity: 0.98,
             lineHeight: 1.5,
             textAlign: 'center',
@@ -228,7 +228,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
             Save and visualize your MongoDB databases with ease.
           </div>
         )}
-        {/* zackdb © YEAR and logout icon on mobile */}
+        {/* zackdb © YEAR */}
         {sidebarOpen && (
           <div style={{
             width: '100%',
@@ -263,24 +263,6 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
               boxShadow: '0 1px 4px #6366f122'
             }}>©</span>
             <span>{currentYear}</span>
-            {/* Logout icon on mobile, right of zackdb */}
-            {isMobile && (
-              <button
-                onClick={handleLogout}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  marginLeft: 14,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: 0
-                }}
-                title="Logout"
-              >
-                <span role="img" aria-label="logout" style={{ fontSize: 20, color: '#fff' }}>🔒</span>
-              </button>
-            )}
           </div>
         )}
       </div>
@@ -288,8 +270,43 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
       {/* Spacer to push logout to bottom */}
       <div style={{ flex: 1 }} />
 
-      {/* Logout Button (desktop only, or mobile fallback if needed) */}
-      {!isMobile && (
+      {/* Logout Button (desktop only, or mobile at bottom) */}
+      {(isMobile && sidebarOpen) ? (
+        <div style={{
+          width: '100%',
+          padding: '0 0 32px 0',
+          display: 'flex',
+          justifyContent: 'center'
+        }}>
+          <button
+            onClick={handleLogout}
+            style={{
+              minWidth: 0,
+              width: 160,
+              background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 22,
+              padding: '12px 0',
+              fontWeight: 700,
+              fontSize: 16,
+              cursor: 'pointer',
+              boxShadow: '0 2px 16px #6366f144, 0 0 0 2px #818cf855',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 10,
+              letterSpacing: '0.5px',
+              transition: 'width 0.22s, background 0.22s, border-radius 0.22s',
+              outline: 'none'
+            }}
+            title="Logout"
+          >
+            <span role="img" aria-label="logout" style={{ fontSize: 20 }}>🔒</span>
+            Logout
+          </button>
+        </div>
+      ) : !isMobile && (
         <div style={{
           width: '100%',
           padding: sidebarOpen
@@ -351,8 +368,25 @@ function MobileHeader({ navigate, sidebarOpen, setSidebarOpen }) {
         boxShadow: '0 2px 12px #6366f122'
       }}
     >
+      {/* Hamburger on far left */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        {/* Logout icon on far left */}
+        <HamburgerIcon open={sidebarOpen} onClick={() => setSidebarOpen(o => !o)} />
+      </div>
+      {/* Title centered */}
+      <div style={{
+        fontWeight: 900,
+        fontSize: 22,
+        color: '#fff',
+        letterSpacing: '-1px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        textShadow: '0 2px 12px #6366f155'
+      }}>
+        <span role="img" aria-label="rocket" style={{ fontSize: 24 }}>🚀</span> zackdb
+      </div>
+      {/* Logout icon on far right */}
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         <button
           onClick={() => {
             localStorage.removeItem('token');
@@ -376,27 +410,13 @@ function MobileHeader({ navigate, sidebarOpen, setSidebarOpen }) {
             letterSpacing: '0.5px',
             transition: 'background 0.22s, box-shadow 0.22s, border-radius 0.22s',
             outline: 'none',
-            marginRight: 8
+            marginLeft: 8
           }}
           title="Logout"
         >
           <span role="img" aria-label="logout" style={{ fontSize: 18 }}>🔒</span>
         </button>
-        <HamburgerIcon open={sidebarOpen} onClick={() => setSidebarOpen(o => !o)} />
       </div>
-      <div style={{
-        fontWeight: 900,
-        fontSize: 22,
-        color: '#fff',
-        letterSpacing: '-1px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        textShadow: '0 2px 12px #6366f155'
-      }}>
-        <span role="img" aria-label="rocket" style={{ fontSize: 24 }}>🚀</span> zackdb
-      </div>
-      <div style={{ width: 36 }} /> {/* Spacer for symmetry */}
     </div>
   );
 };
@@ -577,8 +597,25 @@ export default function Dashboard({ user }) {
         boxShadow: '0 2px 12px #6366f122'
       }}
     >
+      {/* Hamburger on far left */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        {/* Logout icon on far left */}
+        <HamburgerIcon open={sidebarOpen} onClick={() => setSidebarOpen(o => !o)} />
+      </div>
+      {/* Title centered */}
+      <div style={{
+        fontWeight: 900,
+        fontSize: 22,
+        color: '#fff',
+        letterSpacing: '-1px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        textShadow: '0 2px 12px #6366f155'
+      }}>
+        <span role="img" aria-label="rocket" style={{ fontSize: 24 }}>🚀</span> zackdb
+      </div>
+      {/* Logout icon on far right */}
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         <button
           onClick={() => {
             localStorage.removeItem('token');
@@ -602,27 +639,13 @@ export default function Dashboard({ user }) {
             letterSpacing: '0.5px',
             transition: 'background 0.22s, box-shadow 0.22s, border-radius 0.22s',
             outline: 'none',
-            marginRight: 8
+            marginLeft: 8
           }}
           title="Logout"
         >
           <span role="img" aria-label="logout" style={{ fontSize: 18 }}>🔒</span>
         </button>
-        <HamburgerIcon open={sidebarOpen} onClick={() => setSidebarOpen(o => !o)} />
       </div>
-      <div style={{
-        fontWeight: 900,
-        fontSize: 22,
-        color: '#fff',
-        letterSpacing: '-1px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        textShadow: '0 2px 12px #6366f155'
-      }}>
-        <span role="img" aria-label="rocket" style={{ fontSize: 24 }}>🚀</span> zackdb
-      </div>
-      <div style={{ width: 36 }} /> {/* Spacer for symmetry */}
     </div>
   );
 
