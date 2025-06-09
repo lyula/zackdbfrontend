@@ -275,8 +275,33 @@ export default function LoginForm({ setUser }) {
           disabled={loading}
         >
           <span role="img" aria-label="login" style={{ marginRight: 8 }}>🔑</span>
-          {loading ? `Logging in${dots}` : 'Login'}
+          {loading ? (
+            <>
+              Logging in
+              <span
+                style={{
+                  display: 'inline-block',
+                  minWidth: 16,
+                  fontWeight: 900,
+                  letterSpacing: 1,
+                  animation: 'fadeDots 1.2s linear infinite'
+                }}
+              >
+                {dots}
+              </span>
+            </>
+          ) : 'Login'}
         </button>
+        {/* Add keyframes for fadeDots animation */}
+        <style>
+          {`
+            @keyframes fadeDots {
+              0% { opacity: 1; }
+              50% { opacity: 0.6; }
+              100% { opacity: 1; }
+            }
+          `}
+        </style>
         {/* Register Link */}
         <div style={{ marginTop: 8, fontSize: 14 }}>
           Don't have an account?{' '}
