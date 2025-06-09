@@ -413,21 +413,21 @@ export default function DatabaseExplorer() {
   const thStyle = {
     background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
     color: '#fff',
-    padding: '10px 14px',
+    padding: '6px 10px', // Reduced padding
     fontWeight: 700,
     border: 'none',
-    fontSize: 15,
-    // Remove border radius from columns
+    fontSize: 14,        // Slightly smaller font
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0
   };
   const tdStyle = {
-    padding: '10px 14px',
+    padding: '6px 10px', // Reduced padding
     border: 'none',
-    fontSize: 14,
+    fontSize: 13,        // Slightly smaller font
     background: '#fff',
     color: '#23272f',
-    verticalAlign: 'middle'
+    verticalAlign: 'middle',
+    height: 32           // Explicit row height for compactness
   };
 
   const buttonStyle = {
@@ -926,7 +926,7 @@ export default function DatabaseExplorer() {
                 display: 'flex',
                 justifyContent: 'center'
               }}>
-                <table style={tableStyle} className="bootstrap-table">
+                <table className="zackdb-table">
                   <thead>
                     <tr>
                       <th style={thStyle}>#</th>

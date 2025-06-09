@@ -204,3 +204,15 @@ body {
   0% { transform: rotate(0deg);}
   100% { transform: rotate(360deg);}
 }
+
+.zackdb-table tr,
+.zackdb-table td,
+.zackdb-table th {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  font-size: 0.95rem !important;
+  line-height: 1.2 !important;
+  height: 32px !important;
+}
