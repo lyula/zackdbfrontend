@@ -127,7 +127,7 @@ export default function DatabaseExplorer() {
     : [];
   const totalColPages = Math.ceil((Array.isArray(collections) ? collections.length : 0) / colsPerPage);
   const paginatedCols = Array.isArray(collections)
-    ? collections.slice().reverse().slice((colPage - 1) * colsPerPage, colPage * colPage)
+    ? collections.slice().reverse().slice((colPage - 1) * colsPerPage, colPage * colsPerPage)
     : [];
 
   const handleSelectDb = async (dbName) => {
@@ -274,7 +274,7 @@ export default function DatabaseExplorer() {
     if (page < 1 || page > totalPages) return;
     fetchDocuments(selectedDb, selectedCollection, page);
   };
-// restored code version
+
   // --- Styling --- ULTRA MODERN THEME ---
   const sidebarStyle = {
     width: isMobile ? '100%' : 260,
@@ -414,7 +414,10 @@ export default function DatabaseExplorer() {
     setCurrentPage(1);
     stopAutoRefresh();
     fetchDocuments(selectedDb, collectionName, 1);
-  }; // FIX 5: ensure this function is not missing a closing brace
+  };
+
+  // Spinner logic: only one spinner per device type
+  const showSpinner = (isLoadingCollections || isLoadingDocuments);
 
   return (
     <div style={{
@@ -671,7 +674,7 @@ export default function DatabaseExplorer() {
           height: 'calc(100vh - 110px)'
         }}>
           {/* Show spinner above table/sidebar on mobile when loading */}
-          {isMobile && (isLoadingCollections || isLoadingDocuments) && (
+          {isMobile && showSpinner && (
             <div style={{
               position: 'fixed',
               top: '50%',
@@ -692,7 +695,7 @@ export default function DatabaseExplorer() {
             </div>
           )}
           {/* Show spinner in main area on desktop only */}
-          {!isMobile && (isLoadingCollections || isLoadingDocuments) && (
+          {!isMobile && showSpinner && (
             <div style={{
               width: '100%',
               display: 'flex',
