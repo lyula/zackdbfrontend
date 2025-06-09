@@ -195,7 +195,7 @@ export default function DatabaseExplorer() {
       setCurrentPage(page);
       const cols = docs.length > 0 ? Object.keys(docs[0]) : [];
       setColumns(cols);
-      const initialVisibility = {}; // FIXED typo here
+      const initialVisibility = {};
       cols.forEach(col => {
         if (
           col === 'password' ||
@@ -236,10 +236,10 @@ export default function DatabaseExplorer() {
   // Stop auto refresh interval
   const stopAutoRefresh = () => {
     if (refreshIntervalRef.current) {
-      clearInterval(refreshIntervalRef.current); // FIXED typo here
+      clearInterval(refreshIntervalRef.current);
       refreshIntervalRef.current = null;
     }
-    setIsAutoRefreshing(false); // FIXED typo here
+    setIsAutoRefreshing(false);
   };
 
   // Clear interval on unmount or when selectedCollection changes
@@ -260,7 +260,7 @@ export default function DatabaseExplorer() {
     }));
   };
 
-  // Only show columns that are visible(policy);
+  // Only show columns that are visible
   const visibleColumns = columns.filter(col => columnVisibility[col]);
 
   // Pagination logic for table (now backend-driven)
@@ -445,8 +445,8 @@ export default function DatabaseExplorer() {
         marginBottom: 18
       }}>
         {isMobile ? (
-          // On mobile, show "Show Sidebar" button only when table is visible and sidebar is hidden
-          columns.length > 0 && !isSidebarVisible && (
+          // On mobile, show "Show Sidebar" button when sidebar is hidden
+          !isSidebarVisible && (
             <button
               onClick={() => setIsSidebarVisible(true)}
               style={{
@@ -582,17 +582,21 @@ export default function DatabaseExplorer() {
                 fontWeight: 800,
                 letterSpacing: '-0.5px'
               }}>Databases</h3>
-              {paginatedDbs.map(db => (
-                <span
-                  key={db}
-                  style={selectedDb === db ? cardSelected : cardStyle}
-                  onClick={() => handleSelectDb(db)}
-                  title={db}
-                >
-                  <span role="img" aria-label="database" style={{ marginRight: 10, fontSize: 18, verticalAlign: 'middle' }}>📁</span>
-                  {db}
-                </span>
-              ))}
+              {paginatedDbs.length > 0 ? (
+                paginatedDbs.map(db => (
+                  <span
+                    key={db}
+                    style={selectedDb === db ? cardSelected : cardStyle}
+                    onClick={() => handleSelectDb(db)}
+                    title={db}
+                  >
+                    <span role="img" aria-label="database" style={{ marginRight: 10, fontSize: 18, verticalAlign: 'middle' }}>📁</span>
+                    {db}
+                  </span>
+                ))
+              ) : (
+                <span style={{ color: '#fff', fontSize: 15 }}>No databases available</span>
+              )}
               {/* Database Pagination */}
               {totalDbPages > 1 && (
                 <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
