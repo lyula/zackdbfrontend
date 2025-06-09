@@ -569,20 +569,25 @@ export default function Dashboard({ user: userProp }) {
 </h1>
                   <p className="text-center fw-semibold" style={{ color: '#333', opacity: 0.9, fontSize: 18, marginTop: isMobile ? 8 : 4, marginBottom: 24 }}>
                     {user
-                      ? 'You are now connected to your MongoDB Atlas account.'
-                      : 'Connect to your MongoDB Atlas account to get started.'}
+                      ? 'Connect to your MongoDB database to get started.'
+                      : 'Connect to your MongoDB database to get started.'}
                   </p>
                   {/* Connection string input and buttons */}
                   <div className="w-100 d-flex flex-column align-items-center" style={{ gap: 12 }}>
                     <div className="input-group rounded-3 overflow-hidden" style={{ maxWidth: 480, width: '100%' }}>
                       <input
                         type="text"
-                        className="form-control border-0 rounded-3 shadow-sm"
-                        placeholder="Enter your connection string"
+                        className="form-control border-1 rounded-3 shadow-sm"
+                        placeholder="Paste your connection string here"
                         aria-label="Connection string"
                         value={input}
                         onChange={e => setInput(e.target.value)}
-                        style={{ height: 54, fontSize: 16 }}
+                        style={{
+                          height: 54,
+                          fontSize: 16,
+                          border: '2px solid #6366f1', // Add a visible border
+                          boxShadow: '0 1px 6px #6366f122'
+                        }}
                       />
                     </div>
                     <button
@@ -690,12 +695,13 @@ export default function Dashboard({ user: userProp }) {
                               style={{
                                 height: 38,
                                 fontSize: 18,
-                                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                                color: '#fff',
+                                // Remove background and color for bin icon button
+                                background: 'transparent',
+                                color: '#6366f1',
                                 border: 'none',
                                 borderRadius: 8,
                                 minWidth: 38,
-                                boxShadow: '0 2px 12px #6366f122'
+                                boxShadow: 'none'
                               }}
                               aria-label="Delete"
                             >

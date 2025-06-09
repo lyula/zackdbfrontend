@@ -138,6 +138,7 @@ export default function DatabaseExplorer() {
     : [];
 
   const handleSelectDb = async (dbName) => {
+    setPreloadedDocuments({});
     setSelectedDb(dbName);
     setSelectedCollection('');
     setDocuments([]);
@@ -167,9 +168,10 @@ export default function DatabaseExplorer() {
   };
 
   const [totalDocuments, setTotalDocuments] = useState(0);
+  const [preloadedDocuments, setPreloadedDocuments] = useState({});
 
   // Fetch documents for a collection with backend pagination
-  const fetchDocuments = async (dbName, collectionName, page = 1) => {
+  const fetchDocuments = async (dbName, collectionName, page = 1, { preload = false } = {}) => {
     if (!connectionString || !dbName || !collectionName) {
       setError('Missing connection info.');
       setDocuments([]);
@@ -177,7 +179,7 @@ export default function DatabaseExplorer() {
       setColumnVisibility({});
       return;
     }
-    setIsLoadingDocuments(true);
+    setIsLoadingDocuments(!preload); // Only set loading if not preloading
     setError('');
     try {
       const params = new URLSearchParams({
@@ -199,35 +201,54 @@ export default function DatabaseExplorer() {
       const docs = data.documents || [];
       setDocuments(docs);
       setTotalDocuments(data.total || 0);
-      setCurrentPage(page);
-      const cols = docs.length > 0 ? Object.keys(docs[0]) : [];
-      setColumns(cols);
-      const initialVisibility = {};
-      cols.forEach(col => {
-        if (
-          col === 'password' ||
-          col === '_V' ||
-          col === '__v' || // Always hide __v by default
-          col.startsWith('-')
-        ) {
-          initialVisibility[col] = false;
-        } else {
-          initialVisibility[col] = true;
+      if (preload) {
+        setPreloadedDocuments(prev => ({
+          ...prev,
+          [page]: data.documents || []
+        }));
+      } else {
+        setDocuments(data.documents || []);
+        setCurrentPage(page);
+        const cols = docs.length > 0 ? Object.keys(docs[0]) : [];
+        setColumns(cols);
+        const initialVisibility = {};
+        cols.forEach(col => {
+          if (
+            col === 'password' ||
+            col === '_V' ||
+            col === '__v' ||
+            col.startsWith('-')
+          ) {
+            initialVisibility[col] = false;
+          } else {
+            initialVisibility[col] = true;
+          }
+        });
+        setColumnVisibility(initialVisibility);
+
+        // Preload next and previous pages if within bounds and not already loaded
+        const totalPages = Math.ceil((data.total || 0) / recordsPerPage);
+        if (page < totalPages && !preloadedDocuments[page + 1]) {
+          fetchDocuments(dbName, collectionName, page + 1, { preload: true });
         }
-      });
-      setColumnVisibility(initialVisibility);
+        if (page > 1 && !preloadedDocuments[page - 1]) {
+          fetchDocuments(dbName, collectionName, page - 1, { preload: true });
+        }
+      }
     } catch (err) {
-      setDocuments([]);
-      setColumns([]);
-      setColumnVisibility({});
-      setError(err.message || 'Failed to fetch documents.');
-      Swal.fire({
-        icon: 'error',
-        title: 'Failed to Fetch Documents',
-        text: err.message || 'Unknown error occurred while fetching documents.'
-      });
+      if (!preload) {
+        setDocuments([]);
+        setColumns([]);
+        setColumnVisibility({});
+        setError(err.message || 'Failed to fetch documents.');
+        Swal.fire({
+          icon: 'error',
+          title: 'Failed to Fetch Documents',
+          text: err.message || 'Unknown error occurred while fetching documents.'
+        });
+      }
     } finally {
-      setIsLoadingDocuments(false);
+      if (!preload) setIsLoadingDocuments(false);
     }
   };
 
@@ -276,7 +297,19 @@ export default function DatabaseExplorer() {
   // When page changes, fetch that page from backend
   const handlePageChange = (page) => {
     if (page < 1 || page > totalPages) return;
-    fetchDocuments(selectedDb, selectedCollection, page);
+    if (preloadedDocuments[page]) {
+      setDocuments(preloadedDocuments[page]);
+      setCurrentPage(page);
+      // Preload next and previous pages if possible
+      if (page < totalPages && !preloadedDocuments[page + 1]) {
+        fetchDocuments(selectedDb, selectedCollection, page + 1, { preload: true });
+      }
+      if (page > 1 && !preloadedDocuments[page - 1]) {
+        fetchDocuments(selectedDb, selectedCollection, page - 1, { preload: true });
+      }
+    } else {
+      fetchDocuments(selectedDb, selectedCollection, page);
+    }
   };
 
   // --- Styling --- ULTRA MODERN THEME ---
@@ -420,6 +453,7 @@ export default function DatabaseExplorer() {
   }, [connectionString]);
 
   const handleSelectCollection = (collectionName) => {
+    setPreloadedDocuments({});
     setSelectedCollection(collectionName);
     setError('');
     setCurrentPage(1);
