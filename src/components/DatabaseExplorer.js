@@ -416,8 +416,6 @@ export default function DatabaseExplorer() {
     fetchDocuments(selectedDb, collectionName, 1);
   }; // FIX 5: ensure this function is not missing a closing brace
 
-  const sortedDatabases = sortDatabases(databases);
-
   return (
     <div style={{
       padding: 24,
