@@ -1123,7 +1123,7 @@ export default function Dashboard({ user: userProp }) {
               )}
 
               {/* Modal Backdrop and Modal (inside the card, absolutely  positioned) */}
-              {confirmDelete && (
+              {!isMobile && confirmDelete && (
                 <>
                   {/* Backdrop */}
                   <div
