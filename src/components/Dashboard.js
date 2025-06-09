@@ -1003,10 +1003,13 @@ export default function Dashboard({ user: userProp }) {
                               fontWeight: 700,
                               fontSize: 15,
                               cursor: 'pointer',
-                              boxShadow: '0 2px 8px #6366f122'
+                              boxShadow: '0 2px 8px #6366f122',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 8
                             }}
                           >
-                            Use
+                            <span role="img" aria-label="rocket">🚀</span> Use
                           </button>
                           <span
                             role="button"
