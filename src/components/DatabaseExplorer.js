@@ -670,8 +670,8 @@ export default function DatabaseExplorer() {
           alignItems: 'flex-start',
           height: 'calc(100vh - 110px)'
         }}>
-          {/* Show spinner above table on mobile when loading documents */}
-          {isMobile && isLoadingDocuments && (
+          {/* Show spinner above table/sidebar on mobile when loading */}
+          {isMobile && (isLoadingCollections || isLoadingDocuments) && (
             <div style={{
               position: 'fixed',
               top: '50%',
@@ -687,6 +687,18 @@ export default function DatabaseExplorer() {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center'
+            }}>
+              <AtlasSpinner />
+            </div>
+          )}
+          {/* Show spinner in main area on desktop only */}
+          {!isMobile && (isLoadingCollections || isLoadingDocuments) && (
+            <div style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: 320
             }}>
               <AtlasSpinner />
             </div>
