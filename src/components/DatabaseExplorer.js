@@ -64,20 +64,30 @@ export default function DatabaseExplorer() {
     return () => clearInterval(timer);
   }, []);
 
-  // Get user's country and timezone using geolocation API
+  // Get user's country and timezone using geolocation API, and update in real time if location changes
   useEffect(() => {
-    fetch('https://ipapi.co/json/')
-      .then(res => res.json())
-      .then(data => {
-        setCountry(data.country_code);
-        setUserTimezone(data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
-      })
-      .catch(() => {
-        // fallback to locale if geolocation fails
-        const locale = Intl.DateTimeFormat().resolvedOptions().locale;
-        setCountry(locale.split('-')[1] || 'US');
-        setUserTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
-      });
+    let intervalId;
+
+    const fetchLocation = () => {
+      fetch('https://ipapi.co/json/')
+        .then(res => res.json())
+        .then(data => {
+          setCountry(data.country_code);
+          setUserTimezone(data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
+        })
+        .catch(() => {
+          // fallback to locale if geolocation fails
+          const locale = Intl.DateTimeFormat().resolvedOptions().locale;
+          setCountry(locale.split('-')[1] || 'US');
+          setUserTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
+        });
+    };
+
+    fetchLocation();
+    // Poll every 30 seconds for location change
+    intervalId = setInterval(fetchLocation, 3000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   // Pagination for databases and collections
@@ -794,12 +804,77 @@ export default function DatabaseExplorer() {
             </div>
           )}
           {(isLoadingCollections || isLoadingDocuments) && (
-            <div style={{ marginTop: 20, fontWeight: 600, color: '#6366f1' }}>
-              Loading...
+            <div style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: 320
+            }}>
+              <AtlasSpinner />
             </div>
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function AtlasSpinner() {
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: 320,
+      width: '100%',
+      minHeight: 200
+    }}>
+      <div style={{
+        position: 'relative',
+        width: 64,
+        height: 64,
+        marginBottom: 18
+      }}>
+        <div style={{
+          boxSizing: 'border-box',
+          position: 'absolute',
+          width: 64,
+          height: 64,
+          border: '6px solid #6366f1', // theme color
+          borderTop: '6px solid #818cf8', // lighter theme color
+          borderRadius: '50%',
+          animation: 'atlas-spin 1.1s linear infinite'
+        }} />
+        <div style={{
+          position: 'absolute',
+          top: 6,
+          left: 29,
+          width: 10,
+          height: 10,
+          borderRadius: '50%',
+          background: '#6366f1', // theme color
+          boxShadow: '0 0 12px #818cf8'
+        }} />
+      </div>
+      <span style={{
+        color: '#6366f1',
+        fontWeight: 700,
+        fontSize: 18,
+        letterSpacing: '0.5px'
+      }}>
+        Loading...
+      </span>
+      {/* Spinner keyframes */}
+      <style>
+        {`
+          @keyframes atlas-spin {
+            0% { transform: rotate(0deg);}
+            100% { transform: rotate(360deg);}
+          }
+        `}
+      </style>
     </div>
   );
 }

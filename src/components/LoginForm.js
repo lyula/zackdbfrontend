@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { MONGO_CONNECTION_STRING, DB_NAME, USER_COLLECTION } from '../constants';
@@ -10,11 +10,27 @@ export default function LoginForm({ setUser }) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [dots, setDots] = useState('');
+  const intervalRef = useRef();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (loading) {
+      intervalRef.current = setInterval(() => {
+        setDots(prev => (prev.length < 3 ? prev + '.' : ''));
+      }, 400);
+    } else {
+      setDots('');
+      clearInterval(intervalRef.current);
+    }
+    return () => clearInterval(intervalRef.current);
+  }, [loading]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
@@ -38,6 +54,7 @@ export default function LoginForm({ setUser }) {
           text: msg
         });
         setError(msg);
+        setLoading(false);
         return;
       }
 
@@ -57,7 +74,6 @@ export default function LoginForm({ setUser }) {
           text: 'Could not fetch user info after login.'
         });
       }
-
     } catch (err) {
       Swal.fire({
         icon: 'error',
@@ -66,6 +82,7 @@ export default function LoginForm({ setUser }) {
       });
       setError('An unexpected error occurred. Please try again.');
     }
+    setLoading(false);
   };
 
   return (
@@ -247,16 +264,18 @@ export default function LoginForm({ setUser }) {
             width: 220,
             fontWeight: 800,
             fontSize: 16,
-            cursor: 'pointer',
+            cursor: loading ? 'not-allowed' : 'pointer',
             boxShadow: '0 2px 12px #6366f133',
             letterSpacing: '0.5px',
             marginBottom: 4,
             transition: 'background 0.2s',
-            alignSelf: 'center'
+            alignSelf: 'center',
+            opacity: loading ? 0.7 : 1
           }}
+          disabled={loading}
         >
           <span role="img" aria-label="login" style={{ marginRight: 8 }}>🔑</span>
-          Login
+          {loading ? `Logging in${dots}` : 'Login'}
         </button>
         {/* Register Link */}
         <div style={{ marginTop: 8, fontSize: 14 }}>
