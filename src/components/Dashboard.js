@@ -49,11 +49,11 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
 
   // Custom sidebar gradient and white text, no Bootstrap bg classes
   const sidebarStyles = {
-    width: isMobile ? 270 : (sidebarOpen ? 270 : 72), // Always full width on mobile, collapsible on desktop
+    width: isMobile ? 270 : (sidebarOpen ? 270 : 72),
     minWidth: 0,
     maxWidth: 270,
     height: '100vh',
-    background: 'linear-gradient(120deg, #b7b5fa 0%, #a5b4fc 50%, #818cf8 100%)', // lighter purple gradient
+    background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)', // Match mobile header
     boxShadow: '0 0 32px 0 rgba(99,102,241,0.13), 0 2px 12px #818cf855',
     borderTopRightRadius: 18,
     borderBottomRightRadius: 18,
@@ -65,7 +65,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
     left: 0,
     display: isMobile ? (sidebarOpen ? 'flex' : 'none') : 'flex',
     flexDirection: 'column',
-    color: '#fff', // force white text
+    color: '#fff',
   };
 
   return (
@@ -146,7 +146,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
           className="btn fw-bold d-flex align-items-center gap-2"
           style={{
             width: sidebarOpen ? 120 : 44,
-            background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+            background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)', // Match mobile header
             color: '#fff',
             borderRadius: 22,
             fontSize: 16,
@@ -499,6 +499,28 @@ export default function Dashboard({ user: userProp }) {
           }}>
             <span role="img" aria-label="rocket" style={{ fontSize: 30 }}>🚀</span> zackdb
           </div>
+          {/* Desktop Logout Icon */}
+          <button
+            className="btn btn-light rounded-pill d-flex align-items-center"
+            style={{
+              color: '#6366f1',
+              marginLeft: 8,
+              fontWeight: 700,
+              fontSize: 17,
+              border: 'none',
+              boxShadow: '0 2px 12px #6366f122',
+              padding: '8px 18px'
+            }}
+            onClick={() => {
+              localStorage.removeItem('token');
+              fetch(`${API_URL}/api/logout`, { credentials: 'include' }).finally(() => {
+                navigate('/login');
+              });
+            }}
+            title="Logout"
+          >
+            <span role="img" aria-label="logout" style={{ fontSize: 22 }}>🔒</span>
+          </button>
         </header>
         {/* Main horizontal layout */}
         <div className="container-fluid flex-grow-1 d-flex flex-column justify-content-center align-items-center py-4" style={{ background: 'linear-gradient(120deg, #f1f5f9 0%, #e0e7ff 100%)' }}>
@@ -519,307 +541,206 @@ export default function Dashboard({ user: userProp }) {
                   }}>
                     <span role="img" aria-label="rocket">🚀</span>
                   </div>
-                  <h1 className="fw-bold mb-2" style={{
-                    color: 'transparent',
-                    background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                    WebkitBackgroundClip: 'text',
-                    backgroundClip: 'text',
-                    fontSize: 30,
-                    letterSpacing: '-1px'
-                  }}>
-                    Welcome{user ? `, ${user.username}` : ''}!
-                  </h1>
-                  <div className="text-secondary fs-5 mb-3 fw-medium text-center opacity-85">
-                    Connect to your MongoDB database to get started.
-                  </div>
-                  <input
-                    type="text"
-                    className="form-control mb-3"
-                    placeholder="Paste your MongoDB connection string here"
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    style={{
-                      maxWidth: 340,
-                      border: '1.5px solid #6366f1',
-                      background: 'rgba(255,255,255,0.95)'
-                    }}
-                  />
-                  <button
-                    className="btn fw-bold mb-2 px-4 py-2"
-                    style={{
-                      background: 'linear-gradient(90deg, #ede9fe 0%, #c7d2fe 50%, #a5b4fc 100%)',
-                      color: '#4f46e5',
-                      borderRadius: 10,
-                      fontSize: 17,
-                      letterSpacing: '0.5px',
-                      border: 'none'
-                    }}
-                    onClick={() => handleConnect(input)}
-                    disabled={!input}
-                  >
-                    <span role="img" aria-label="rocket" className="me-2">🚀</span>
-                    Save & Connect
-                  </button>
-                  {error && (
-                    <div className="text-primary fw-bold mt-2 text-center" style={{ fontSize: 15 }}>
-                      {error}
+                  <h1
+  className="fw-bold mb-2"
+  style={{
+    color: 'transparent',
+    background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+    WebkitBackgroundClip: 'text',
+    backgroundClip: 'text',
+    fontSize: 30,
+    letterSpacing: '-1px',
+    display: isMobile ? 'flex' : undefined,           // <-- Add flex on mobile
+    flexDirection: isMobile ? 'row' : undefined,      // <-- Row direction on mobile
+    alignItems: isMobile ? 'center' : undefined,      // <-- Center vertically
+    gap: isMobile ? 6 : undefined                     // <-- Small gap between text and username
+  }}
+>
+  Welcome
+  {user ? (
+    <>
+      <span style={{ marginLeft: isMobile ? 6 : 0 }}>
+        , {user.username}
+      </span>
+      {/* Fix: Always show ! at the end, but only once */}
+      <span>!</span>
+    </>
+  ) : null}
+</h1>
+                  <p className="text-center fw-semibold" style={{ color: '#333', opacity: 0.9, fontSize: 18, marginTop: isMobile ? 8 : 4, marginBottom: 24 }}>
+                    {user
+                      ? 'You are now connected to your MongoDB Atlas account.'
+                      : 'Connect to your MongoDB Atlas account to get started.'}
+                  </p>
+                  {/* Connection string input and buttons */}
+                  <div className="w-100 d-flex flex-column align-items-center" style={{ gap: 12 }}>
+                    <div className="input-group rounded-3 overflow-hidden" style={{ maxWidth: 480, width: '100%' }}>
+                      <input
+                        type="text"
+                        className="form-control border-0 rounded-start-3 shadow-sm"
+                        placeholder="Enter your connection string"
+                        aria-label="Connection string"
+                        value={input}
+                        onChange={e => setInput(e.target.value)}
+                        style={{ height: 54, fontSize: 16 }}
+                      />
+                      <button
+                        className="btn btn-primary rounded-end-3 shadow-sm"
+                        onClick={() => handleConnect(input)}
+                        style={{ height: 54, minWidth: 120, fontSize: 16 }}
+                        disabled={loading}
+                      >
+                        {loading ? 'Connecting...' : 'Connect'}
+                      </button>
                     </div>
-                  )}
+                    {error && (
+                      <div className="alert alert-danger text-center rounded-3 shadow-sm" style={{ maxWidth: 480, width: '100%', fontSize: 14 }}>
+                        {error}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
             {/* Right: Saved Connections */}
-            <div className="col-12 col-md-6 col-lg-5 mb-4">
-              <div className="card shadow-lg border-0 rounded-4 position-relative" style={{
+            <div className="col-12 col-md-6 col-lg-7 mb-4">
+              <div className="card shadow-lg border-0 rounded-4" style={{
                 background: 'rgba(255,255,255,0.85)',
                 minHeight: isMobile ? 'auto' : 480
               }}>
-                <div className="card-body d-flex flex-column align-items-center">
-                  <div className="fw-bold fs-4 mb-3" style={{
-                    color: 'transparent',
-                    background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                    WebkitBackgroundClip: 'text',
-                    backgroundClip: 'text'
-                  }}>
-                    Saved Connections
+                <div className="card-body d-flex flex-column">
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <h2 className="fw-bold" style={{ fontSize: 22, color: '#333' }}>
+                      Your Connections
+                    </h2>
+                    <button
+                      className="btn btn-primary rounded-3 shadow-sm"
+                      onClick={() => setConnPage(1)}
+                      style={{ height: 38, fontSize: 14 }}
+                    >
+                      Refresh
+                    </button>
                   </div>
-                  {!isConnectionsArray ? (
-                    <div className="text-danger fs-6 mt-4">
-                      Failed to load saved connections. Please try again later.
-                    </div>
-                  ) : paginatedConnections.length === 0 ? (
-                    <div className="text-muted fs-6 mt-4">No saved connections yet.</div>
-                  ) : (
-                    <ul className="list-group w-100 mb-3 border-0">
-                      {paginatedConnections.map((conn, idx) => {
-                        const clusterName = getClusterName(conn.connectionString);
-                        const displayName = truncateName(clusterName, 10);
-                        const isLoading = useLoading === conn.connectionString;
-                        return (
-                          <li key={conn._id} className="list-group-item border-0 mb-2 rounded-3 d-flex justify-content-between align-items-center" style={{
-                            background: 'rgba(245,245,255,0.88)',
-                            boxShadow: '0 2px 8px #6366f111'
-                          }}>
-                            {/* Clustername, Use, Delete - always in a row */}
-                            <div className="d-flex align-items-center w-100" style={isMobile ? { gap: 10, flexDirection: 'row' } : { gap: 10 }}>
-                              <span
-                                className="fw-bold px-3 py-2 rounded-2 d-inline-block text-truncate"
-                                style={{
-                                  background: 'linear-gradient(90deg, #ede9fe 0%, #c7d2fe 50%, #a5b4fc 100%)', // lighter purple/blue
-                                  color: '#4f46e5', // dark purple text for contrast
-                                  fontSize: 17,
-                                  letterSpacing: '0.5px',
-                                  boxShadow: '0 2px 8px #6366f122',
-                                  minWidth: 120,
-                                  maxWidth: 120,
-                                  height: 40,
-                                  lineHeight: '24px',
-                                  verticalAlign: 'middle',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                  textAlign: 'center'
-                                }}
-                                title={conn.clusterName || clusterName}
-                              >
-                                {displayName}
-                              </span>
-                              <button
-                                className="btn fw-bold d-flex align-items-center justify-content-center"
-                                style={{
-                                  background: isLoading
-                                    ? 'linear-gradient(90deg, #a5b4fc 0%, #818cf8 100%)'
-                                    : 'linear-gradient(90deg, #ede9fe 0%, #c7d2fe 50%, #a5b4fc 100%)',
-                                  color: '#4f46e5',
-                                  borderRadius: 8,
-                                  minWidth: 90,
-                                  height: 40,
-                                  fontSize: 15,
-                                  opacity: isLoading ? 0.7 : 1,
-                                  position: 'relative',
-                                  padding: '0 18px',
-                                  marginLeft: isMobile ? 0 : 0,
-                                  border: 'none'
-                                }}
-                                onClick={() => handleUseConnection(conn.connectionString)}
-                                disabled={isLoading}
-                              >
-                                <span
-                                  style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    width: 54,
-                                    minWidth: 54,
-                                    height: 24,
-                                    position: 'relative'
-                                  }}
-                                >
-                                  {isLoading ? (
-                                    <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" style={{ color: '#fff' }} />
-                                  ) : (
-                                    <>
-                                      <span role="img" aria-label="rocket" className="me-1">🚀</span>
-                                      Use
-                                    </>
-                                  )}
-                                </span>
-                              </button>
-                              <button
-                                className="btn btn-link p-0"
-                                title="Delete"
-                                ref={el => deleteBtnRefs.current[conn.connectionString] = el}
-                                onClick={() => setConfirmDelete(conn.connectionString)}
-                                style={{ fontSize: 22, color: '#f87171', marginLeft: 8 }}
-                              >
-                                🗑️
-                              </button>
+                  {/* Connection items list */}
+                  <div className="flex-grow-1" style={{ overflowY: 'auto', paddingRight: isMobile ? 0 : 16 }}>
+                    {safeConnections.length === 0 ? (
+                      <div className="text-center text-muted py-4" style={{ fontSize: 16 }}>
+                        No saved connections found.
+                      </div>
+                    ) : (
+                      paginatedConnections.map((conn, idx) => (
+                        <div
+                          key={conn._id}
+                          className="d-flex align-items-center justify-content-between bg-light rounded-3 p-3 mb-3 shadow-sm"
+                          style={{ border: '1px solid #e0e7ff' }}
+                        >
+                          {/* Left: Connection info */}
+                          <div className="d-flex align-items-center gap-3" style={{ flex: 1 }}>
+                            <div
+                              className="d-flex align-items-center justify-content-center"
+                              style={{
+                                width: 48,
+                                height: 48,
+                                borderRadius: '50%',
+                                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                                color: '#fff',
+                                fontSize: 24,
+                                boxShadow: '0 2px 12px rgba(99,102,241,0.2)'
+                              }}
+                            >
+                              <span role="img" aria-label="database" style={{ lineHeight: 1 }}>📦</span>
                             </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                  {/* Pagination */}
+                            <div className="d-flex flex-column" style={{ flex: 1 }}>
+                              <div className="fw-semibold" style={{ fontSize: 16, color: '#333' }}>
+                                {truncateName(getClusterName(conn.connectionString), 20)}
+                              </div>
+                              <div className="text-muted" style={{ fontSize: 14 }}>
+                                {conn.connectionString}
+                              </div>
+                            </div>
+                          </div>
+                          {/* Right: Action buttons */}
+                          <div className="d-flex align-items-center gap-2">
+                            <button
+                              className="btn btn-outline-primary rounded-3 shadow-sm"
+                              onClick={() => handleUseConnection(conn.connectionString)}
+                              style={{ height: 38, fontSize: 14 }}
+                              disabled={useLoading === conn.connectionString}
+                            >
+                              {useLoading === conn.connectionString ? 'Connecting...' : 'Connect'}
+                            </button>
+                            <button
+                              className="btn btn-danger rounded-3 shadow-sm"
+                              onClick={() => setConfirmDelete(conn.connectionString)}
+                              style={{ height: 38, fontSize: 14 }}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  {/* Pagination controls */}
                   {totalConnPages > 1 && (
-                    <nav className="d-flex align-items-center gap-2 mt-2">
+                    <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
                       <button
-                        className="btn btn-outline-primary btn-sm rounded-2"
-                        onClick={() => setConnPage(p => Math.max(1, p - 1))}
+                        className="btn btn-light rounded-3 shadow-sm"
+                        onClick={() => setConnPage(p => Math.max(p - 1, 1))}
                         disabled={connPage === 1}
+                        style={{ height: 38, fontSize: 14, minWidth: 80 }}
                       >
-                        Prev
+                        Previous
                       </button>
-                      <span className="fw-bold text-primary">{connPage} / {totalConnPages}</span>
+                      <div className="text-muted" style={{ fontSize: 14 }}>
+                        Page {connPage} of {totalConnPages}
+                      </div>
                       <button
-                        className="btn btn-outline-primary btn-sm rounded-2"
-                        onClick={() => setConnPage(p => Math.min(totalConnPages, p + 1))}
+                        className="btn btn-light rounded-3 shadow-sm"
+                        onClick={() => setConnPage(p => Math.min(p + 1, totalConnPages))}
                         disabled={connPage === totalConnPages}
+                        style={{ height: 38, fontSize: 14, minWidth: 80 }}
                       >
                         Next
                       </button>
-                    </nav>
-                  )}
-                  {/* Modal Backdrop and Modal */}
-                  {!isMobile && confirmDelete && (
-                    <>
-                      <div
-                        className="modal-backdrop fade show"
-                        onClick={() => setConfirmDelete(null)}
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          background: 'rgba(44, 62, 80, 0.18)',
-                          zIndex: 120,
-                          borderRadius: 22
-                        }}
-                      />
-                      <div
-                        className="d-flex align-items-center justify-content-center"
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          zIndex: 121
-                        }}
-                      >
-                        <div className="modal-dialog modal-dialog-centered" style={{ minWidth: 280, maxWidth: 340 }}>
-                          <div className="modal-content rounded-4 shadow">
-                            <div className="modal-header border-0">
-                              <h5 className="modal-title text-primary fw-bold">Confirm Delete</h5>
-                            </div>
-                            <div className="modal-body text-center">
-                              Are you sure you want to delete this connection?
-                            </div>
-                            <div className="modal-footer border-0 d-flex justify-content-center gap-3">
-                              <button
-                                className="btn btn-danger px-4"
-                                onClick={() => {
-                                  handleDeleteConnection(confirmDelete);
-                                  setConfirmDelete(null);
-                                }}
-                              >
-                                Delete
-                              </button>
-                              <button
-                                className="btn btn-outline-primary px-4"
-                                onClick={() => setConfirmDelete(null)}
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </>
+                    </div>
                   )}
                 </div>
               </div>
             </div>
           </div>
         </div>
-        {/* Mobile Confirm Delete Modal */}
-        {isMobile && confirmDelete && (
-          <>
-            <div
-              className="modal-backdrop fade show"
-              onClick={() => setConfirmDelete(null)}
-              style={{
-                position: 'fixed',
-                top: 56,
-                left: 0,
-                width: '100vw',
-                height: 'calc(100vh - 56px)',
-                background: 'rgba(44, 62, 80, 0.18)',
-                zIndex: 2000
-              }}
-            />
-            <div
-              className="d-flex align-items-center justify-content-center"
-              style={{
-                position: 'fixed',
-                top: 56,
-                left: 0,
-                width: '100vw',
-                height: 'calc(100vh - 56px)',
-                zIndex: 2001,
-                overflowY: 'auto'
-              }}
-            >
-              <div className="modal-dialog modal-dialog-centered" style={{ minWidth: 280, maxWidth: '94vw' }}>
-                <div className="modal-content rounded-4 shadow">
-                  <div className="modal-header border-0">
-                    <h5 className="modal-title text-primary fw-bold">Confirm Delete</h5>
-                  </div>
-                  <div className="modal-body text-center">
-                    Are you sure you want to delete this connection?
-                  </div>
-                  <div className="modal-footer border-0 d-flex justify-content-center gap-3">
-                    <button
-                      className="btn btn-danger px-4"
-                      onClick={() => {
-                        handleDeleteConnection(confirmDelete);
-                        setConfirmDelete(null);
-                      }}
-                    >
-                      Delete
-                    </button>
-                    <button
-                      className="btn btn-outline-primary px-4"
-                      onClick={() => setConfirmDelete(null)}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
+        {/* Confirmation dialog for deletion */}
+        {confirmDelete && (
+          <div className="position-fixed top-0 left-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{ zIndex: 250 }}>
+            <div className="bg-white rounded-4 shadow-lg p-4" style={{ maxWidth: 400, width: '90%' }}>
+              <h3 className="fw-bold mb-3" style={{ fontSize: 18, color: '#333' }}>
+                Confirm Deletion
+              </h3>
+              <p className="text-muted mb-4" style={{ fontSize: 15 }}>
+                Are you sure you want to delete this connection? This action cannot be undone.
+              </p>
+              <div className="d-flex justify-content-end gap-2">
+                <button
+                  className="btn btn-secondary rounded-3 shadow-sm"
+                  onClick={() => setConfirmDelete(null)}
+                  style={{ height: 38, fontSize: 14 }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-danger rounded-3 shadow-sm"
+                  onClick={() => {
+                    handleDeleteConnection(confirmDelete);
+                    setConfirmDelete(null);
+                  }}
+                  style={{ height: 38, fontSize: 14 }}
+                >
+                  Delete
+                </button>
               </div>
             </div>
-          </>
+          </div>
         )}
       </main>
     </div>

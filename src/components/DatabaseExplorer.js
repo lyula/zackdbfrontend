@@ -321,41 +321,46 @@ export default function DatabaseExplorer() {
   const tableContainerStyle = {
     width: '100%',
     maxWidth: 980,
-    height: 'calc(100vh - 110px)',
-    overflowX: 'auto',
-    overflowY: 'auto',
-    background: 'rgba(255,255,255,0.72)',
+    background: 'rgba(255,255,255,0.95)',
     boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.13)',
-    backdropFilter: 'blur(18px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(18px) saturate(180%)',
-    border: '1.5px solid rgba(200,200,255,0.13)',
+    border: '1.5px solid #e0e7ff',
     borderRadius: 18,
     marginTop: 0,
     display: 'flex',
     flexDirection: 'column',
-    color: '#23272f'
+    color: '#23272f',
+    padding: isMobile ? 0 : '18px 18px 0 18px',
+    // Only scroll vertically on mobile
+    height: isMobile ? 'calc(100vh - 110px)' : 'auto',
+    overflowY: isMobile ? 'auto' : 'visible',
+    overflowX: 'auto'
   };
   const tableStyle = {
-    borderCollapse: 'collapse',
+    borderCollapse: 'separate',
+    borderSpacing: 0,
     width: '100%',
-    background: 'rgba(255,255,255,0.95)'
+    background: '#fff',
+    borderRadius: 12,
+    boxShadow: '0 2px 8px #6366f122',
+    marginBottom: 0
   };
   const thStyle = {
     background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
     color: '#fff',
-    padding: '8px 10px',
+    padding: '10px 14px',
     fontWeight: 700,
-    border: '1px solid #e0e7ff',
-    fontSize: 15
+    border: 'none',
+    fontSize: 15,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8
   };
   const tdStyle = {
-    padding: '8px 10px',
-    border: '1px solid #e0e7ff',
+    padding: '10px 14px',
+    border: 'none',
     fontSize: 14,
-    minHeight: 24,
-    height: 38,
-    background: 'rgba(255,255,255,0.85)',
-    color: '#23272f'
+    background: '#fff',
+    color: '#23272f',
+    verticalAlign: 'middle'
   };
 
   const buttonStyle = {
@@ -461,12 +466,13 @@ export default function DatabaseExplorer() {
                 color: '#fff',
                 border: 'none',
                 borderRadius: 8,
-                padding: '9px 20px',
+                padding: '9px 20px', // Match Home button
                 fontWeight: 700,
                 fontSize: 16,
                 cursor: 'pointer',
                 marginBottom: 0,
-                boxShadow: '0 2px 12px #6366f133'
+                boxShadow: '0 2px 12px #6366f133', // Match Home button
+                minWidth: 130 // Match Home button minWidth
               }}
             >
               <span role="img" aria-label="sidebar" style={{ marginRight: 8 }}>📚</span>
@@ -852,7 +858,7 @@ export default function DatabaseExplorer() {
                 display: 'flex',
                 justifyContent: 'center'
               }}>
-                <table style={tableStyle}>
+                <table style={tableStyle} className="bootstrap-table">
                   <thead>
                     <tr>
                       <th style={thStyle}>#</th>
@@ -863,21 +869,21 @@ export default function DatabaseExplorer() {
                   </thead>
                   <tbody>
                     {(searchTerm && searchField ? filteredDocuments : documents).map((doc, idx) => {
-                      // Numbering: latest document is totalDocuments, then totalDocuments-1, ...
                       const descendingNumber = totalDocuments - ((currentPage - 1) * recordsPerPage + idx);
                       return (
                         <tr
                           key={idx}
+                          className={((currentPage - 1) * recordsPerPage + idx) % 2 === 1 ? 'table-row-striped' : ''}
                           style={{
-                            background: ((currentPage - 1) * recordsPerPage + idx) % 2 === 0 ? 'rgba(255,255,255,0.95)' : '#f1f5fd',
-                            height: 38
+                            background: 'none',
+                            transition: 'background 0.2s'
                           }}
+                          onMouseEnter={e => e.currentTarget.style.background = '#f1f5fd'}
+                          onMouseLeave={e => e.currentTarget.style.background = ''}
                         >
-                          <td style={{ ...tdStyle, height: 38 }}>
-                            {descendingNumber}
-                          </td>
+                          <td style={tdStyle}>{descendingNumber}</td>
                           {visibleColumns.map(col => (
-                            <td key={col} style={{ ...tdStyle, height: 38 }}>
+                            <td key={col} style={tdStyle}>
                               {(col === 'createdAt' || col === 'updatedAt')
                                 ? (doc[col]
                                     ? new Date(doc[col]).toLocaleString(undefined, { 
@@ -902,10 +908,10 @@ export default function DatabaseExplorer() {
                   </tbody>
                 </table>
               </div>
-              {/* Move Pagination Controls here, just above the footer */}
+              {/* Pagination Controls */}
               {totalPages > 1 && (
                 <div style={{
-                  marginTop: 32, // Increased margin to move it down
+                  marginTop: 18,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -915,16 +921,17 @@ export default function DatabaseExplorer() {
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
                     style={{
-                      background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                      background: '#6366f1',
                       color: '#fff',
                       border: 'none',
                       borderRadius: 6,
-                      padding: '6px 18px',
+                      padding: '8px 22px',
                       fontWeight: 700,
                       fontSize: 15,
                       cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
                       marginRight: 10,
-                      opacity: currentPage === 1 ? 0.5 : 1
+                      opacity: currentPage === 1 ? 0.5 : 1,
+                      boxShadow: '0 2px 8px #6366f133'
                     }}
                   >
                     Prev
@@ -936,16 +943,17 @@ export default function DatabaseExplorer() {
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                     style={{
-                      background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                      background: '#6366f1',
                       color: '#fff',
                       border: 'none',
                       borderRadius: 6,
-                      padding: '6px 18px',
+                      padding: '8px 22px',
                       fontWeight: 700,
                       fontSize: 15,
                       cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
                       marginLeft: 10,
-                      opacity: currentPage === totalPages ? 0.5 : 1
+                      opacity: currentPage === totalPages ? 0.5 : 1,
+                      boxShadow: '0 2px 8px #6366f133'
                     }}
                   >
                     Next
@@ -1032,3 +1040,21 @@ function AtlasSpinner() {
     </div>
   );
 }
+
+/* Add Bootstrap-like table styles */
+<style>
+  {`
+    .bootstrap-table th, .bootstrap-table td {
+      border-bottom: 1px solid #e0e7ff;
+    }
+    .bootstrap-table tr:last-child td {
+      border-bottom: none;
+    }
+    .bootstrap-table tr.table-row-striped {
+      background: #f8fafc;
+    }
+    .bootstrap-table tr:hover td {
+      background: #f1f5fd !important;
+    }
+  `}
+</style>
