@@ -72,7 +72,7 @@ export default function DatabaseExplorer() {
   const dbsPerPage = isMobile ? 3 : 5;
   const colsPerPage = isMobile ? 3 : 3;
   const [databases, setDatabases] = useState(initialDatabases || []);
-  const [isSidebarVisible, setIsSidebarVisible] = useState(!isMobile); // Sidebar visible by default on PC
+  const [isSidebarVisible, setIsSidebarVisible] = useState(!isMobile || !selectedCollection); // Sidebar visible on PC or on mobile when no collection selected
 
   // For live time display
   const [now, setNow] = useState(new Date());
@@ -119,6 +119,13 @@ export default function DatabaseExplorer() {
 
     return () => clearInterval(intervalId);
   }, []);
+
+  // Update sidebar visibility when selectedCollection changes
+  useEffect(() => {
+    if (isMobile) {
+      setIsSidebarVisible(!selectedCollection);
+    }
+  }, [selectedCollection, isMobile]);
 
   // Pagination for databases and collections
   const totalDbPages = Math.ceil((Array.isArray(databases) ? databases.length : 0) / dbsPerPage);
@@ -411,7 +418,7 @@ export default function DatabaseExplorer() {
     setCurrentPage(1);
     stopAutoRefresh();
     fetchDocuments(selectedDb, collectionName, 1);
-    if (isMobile) setIsSidebarVisible(false); // Hide sidebar on mobile
+    if (isMobile) setIsSidebarVisible(false); // Hide sidebar on mobile in tables view
   };
 
   // Spinner logic: only one spinner per device type
@@ -437,16 +444,16 @@ export default function DatabaseExplorer() {
       background: 'linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%)',
       minHeight: '100vh'
     }}>
-      {/* Top Row: Home Button (PC) or Show Sidebar Button (Mobile) + Local Time */}
+      {/* Top Row: Home Button (both) or Show Sidebar Button (Mobile, tables view) + Local Time */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         marginBottom: 18
       }}>
-        {isMobile ? (
-          // On mobile, show "Show Sidebar" button when sidebar is hidden
-          !isSidebarVisible && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {/* Home Button (always on PC, always on mobile) or Show Sidebar (mobile, tables view) */}
+          {isMobile && columns.length > 0 && !isSidebarVisible ? (
             <button
               onClick={() => setIsSidebarVisible(true)}
               style={{
@@ -465,28 +472,27 @@ export default function DatabaseExplorer() {
               <span role="img" aria-label="sidebar" style={{ marginRight: 8 }}>📚</span>
               Show Sidebar
             </button>
-          )
-        ) : (
-          // On PC, show Home button
-          <button
-            onClick={() => navigate('/dashboard')}
-            style={{
-              background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              padding: '9px 20px',
-              fontWeight: 700,
-              fontSize: 16,
-              cursor: 'pointer',
-              marginBottom: 0,
-              boxShadow: '0 2px 12px #6366f133'
-            }}
-          >
-            <span role="img" aria-label="home" style={{ marginRight: 8 }}>🏠</span>
-            Home
-          </button>
-        )}
+          ) : (
+            <button
+              onClick={() => navigate('/dashboard')}
+              style={{
+                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '9px 20px',
+                fontWeight: 700,
+                fontSize: 16,
+                cursor: 'pointer',
+                marginBottom: 0,
+                boxShadow: '0 2px 12px #6366f133'
+              }}
+            >
+              <span role="img" aria-label="home" style={{ marginRight: 8 }}>🏠</span>
+              Home
+            </button>
+          )}
+        </div>
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -551,28 +557,6 @@ export default function DatabaseExplorer() {
         {/* Sidebar */}
         {(!isMobile || isSidebarVisible) && (
           <div style={sidebarStyle}>
-            {/* Home Button in Sidebar for Mobile */}
-            {isMobile && (
-              <button
-                onClick={() => navigate('/dashboard')}
-                style={{
-                  background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '9px 20px',
-                  fontWeight: 700,
-                  fontSize: 16,
-                  cursor: 'pointer',
-                  marginBottom: 10,
-                  width: '100%',
-                  textAlign: 'center'
-                }}
-              >
-                <span role="img" aria-label="home" style={{ marginRight: 8 }}>🏠</span>
-                Home
-              </button>
-            )}
             <div>
               <h3 style={{
                 color: '#fff',
