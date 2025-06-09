@@ -257,7 +257,7 @@ export default function DatabaseExplorer() {
     if (page < 1 || page > totalPages) return;
     fetchDocuments(selectedDb, selectedCollection, page);
   };
-
+// restored code version
   // --- Styling --- ULTRA MODERN THEME ---
   const sidebarStyle = {
     width: isMobile ? '100%' : 260,
