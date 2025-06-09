@@ -14,7 +14,7 @@ function getClusterName(connectionString) {
   return match ? match[1] : 'Unknown Cluster';
 }
 
-function truncateName(name, maxLength = 20) {
+function truncateName(name, maxLength = 10) {
   return name.length > maxLength ? name.slice(0, maxLength) + '...' : name;
 }
 
@@ -47,21 +47,30 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
 
   const currentYear = new Date().getFullYear();
 
+  // Sidebar visibility logic for both mobile and desktop
+  const sidebarStyles = {
+    width: sidebarOpen ? 270 : 0,
+    minWidth: 0,
+    maxWidth: 270,
+    height: '100vh',
+    background: 'linear-gradient(120deg, #6366f1 0%, #818cf8 100%)',
+    boxShadow: sidebarOpen ? '0 0 32px 0 rgba(99,102,241,0.13), 0 2px 12px #818cf855' : 'none',
+    borderTopRightRadius: 18,
+    borderBottomRightRadius: 18,
+    zIndex: 200,
+    transition: 'width 0.45s cubic-bezier(.4,1.6,.6,1), box-shadow 0.3s',
+    overflow: 'hidden',
+    position: isMobile ? 'fixed' : 'static',
+    top: 0,
+    left: 0,
+    display: sidebarOpen ? 'flex' : 'none',
+    flexDirection: 'column'
+  };
+
   return (
     <nav
-      className={`d-flex flex-column bg-gradient ${isMobile ? 'position-fixed top-0 start-0' : ''}`}
-      style={{
-        width: sidebarOpen ? 270 : 72,
-        minWidth: 0,
-        maxWidth: 270,
-        height: '100vh',
-        background: 'linear-gradient(120deg, #6366f1 0%, #818cf8 100%)',
-        boxShadow: '0 0 32px 0 rgba(99,102,241,0.13), 0 2px 12px #818cf855',
-        borderTopRightRadius: 18,
-        borderBottomRightRadius: 18,
-        zIndex: 100,
-        transition: 'width 0.45s cubic-bezier(.4,1.6,.6,1)'
-      }}
+      className="d-flex flex-column bg-gradient"
+      style={sidebarStyles}
     >
       {/* Collapse/Expand Button */}
       {!isMobile && (
@@ -83,7 +92,14 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
       )}
 
       {/* User Section */}
-      <div className="d-flex flex-column align-items-center mb-4 px-2">
+      <div
+        className="d-flex flex-column align-items-center mb-4 px-2"
+        style={
+          isMobile
+            ? { marginTop: 64 } // Move down on mobile
+            : {}
+        }
+      >
         <div
           className="d-flex align-items-center justify-content-center mb-2"
           style={{
@@ -117,7 +133,14 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
       </div>
       <div className="flex-grow-1" />
       {/* Logout Button */}
-      <div className="d-flex justify-content-center mb-4">
+      <div
+        className="d-flex justify-content-center mb-4"
+        style={
+          isMobile
+            ? { marginBottom: 18, marginTop: 0, paddingBottom: 8 }
+            : {}
+        }
+      >
         <button
           className="btn fw-bold d-flex align-items-center gap-2"
           style={{
@@ -236,7 +259,7 @@ export default function Dashboard({ user: userProp }) {
         }
       })
       .then(data => {
-        if (data) setSavedConnections(data);
+        if (Array.isArray(data)) setSavedConnections(data);
       });
   }, [navigate]);
 
@@ -556,7 +579,7 @@ export default function Dashboard({ user: userProp }) {
                     <ul className="list-group w-100 mb-3 border-0">
                       {paginatedConnections.map((conn, idx) => {
                         const clusterName = getClusterName(conn.connectionString);
-                        const displayName = truncateName(clusterName);
+                        const displayName = truncateName(clusterName, 10);
                         const isLoading = useLoading === conn.connectionString;
                         return (
                           <li key={conn._id} className="list-group-item border-0 mb-2 rounded-3 d-flex justify-content-between align-items-center" style={{
@@ -564,14 +587,27 @@ export default function Dashboard({ user: userProp }) {
                             boxShadow: '0 2px 8px #6366f111'
                           }}>
                             <div>
-                              <span className="fw-bold px-3 py-1 rounded-2" style={{
-                                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                                color: '#fff',
-                                fontSize: 17,
-                                letterSpacing: '0.5px',
-                                boxShadow: '0 2px 8px #6366f122'
-                              }}>
-                                {conn.clusterName || getClusterName(conn.connectionString)}
+                              <span
+                                className="fw-bold px-3 py-2 rounded-2 d-inline-block text-truncate"
+                                style={{
+                                  background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                                  color: '#fff',
+                                  fontSize: 17,
+                                  letterSpacing: '0.5px',
+                                  boxShadow: '0 2px 8px #6366f122',
+                                  minWidth: 120,
+                                  maxWidth: 120,
+                                  height: 40,
+                                  lineHeight: '24px',
+                                  verticalAlign: 'middle',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  textAlign: 'center'
+                                }}
+                                title={conn.clusterName || clusterName}
+                              >
+                                {displayName}
                               </span>
                             </div>
                             <div className="d-flex gap-2 align-items-center">
@@ -584,19 +620,34 @@ export default function Dashboard({ user: userProp }) {
                                   color: '#fff',
                                   borderRadius: 8,
                                   minWidth: 90,
+                                  height: 40,
                                   fontSize: 15,
                                   opacity: isLoading ? 0.7 : 1,
-                                  position: 'relative'
+                                  position: 'relative',
+                                  padding: '0 18px'
                                 }}
                                 onClick={() => handleUseConnection(conn.connectionString)}
                                 disabled={isLoading}
                               >
-                                {isLoading && (
-                                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" style={{ color: '#fff' }} />
-                                )}
-                                <span style={{ opacity: isLoading ? 0 : 1, transition: 'opacity 0.2s' }}>
-                                  <span role="img" aria-label="rocket" className="me-1">🚀</span>
-                                  Use
+                                <span
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    width: 54,
+                                    minWidth: 54,
+                                    height: 24,
+                                    position: 'relative'
+                                  }}
+                                >
+                                  {isLoading ? (
+                                    <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" style={{ color: '#fff' }} />
+                                  ) : (
+                                    <>
+                                      <span role="img" aria-label="rocket" className="me-1">🚀</span>
+                                      Use
+                                    </>
+                                  )}
                                 </span>
                               </button>
                               <button
