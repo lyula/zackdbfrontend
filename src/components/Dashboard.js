@@ -556,11 +556,12 @@ export default function Dashboard({ user: userProp }) {
       const res = await fetch(`${API_URL}/api/list-databases`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // <-- Added this line
+        credentials: 'include',
         body: JSON.stringify({ connectionString: connStr })
       });
       const dbs = await res.json();
-      navigate('/explore', { state: { connectionString: connStr, databases: dbs } }); // <-- Corrected line
+      // Pass user object in navigation state
+      navigate('/explore', { state: { connectionString: connStr, databases: dbs, user } });
     } catch {
       setError('Failed to fetch databases.');
     }

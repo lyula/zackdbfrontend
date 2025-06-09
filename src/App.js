@@ -35,7 +35,10 @@ function App() {
           path="/dashboard"
           element={user ? <Dashboard user={user} /> : <Navigate to="/login" />}
         />
-        <Route path="/explore" element={<DatabaseExplorer />} />
+        <Route
+          path="/explore"
+          element={<DatabaseExplorer />}
+        />
         <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
       </Routes>
     </Router>

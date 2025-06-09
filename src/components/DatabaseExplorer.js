@@ -16,7 +16,9 @@ function getCountryFlag(countryCode) {
 // 
 export default function DatabaseExplorer() {
   const { state } = useLocation();
-  const { connectionString, databases: initialDatabases, user } = state || {};
+  // Always extract user from navigation state
+  const { connectionString, databases: initialDatabases, user } = state || {}; // FIX 1: Use initialDatabases for useState below
+  // Now you have access to user.username and user.email everywhere in this component
   console.log('connectionString:', connectionString);
   const navigate = useNavigate();
 
@@ -39,7 +41,7 @@ export default function DatabaseExplorer() {
   const recordsPerPage = 10;
   const dbsPerPage = 5;
   const colsPerPage = 3;
-  const [databases, setDatabases] = useState(initialDatabases || []);
+  const [databases, setDatabases] = useState(initialDatabases || []); // FIX 2: Use initialDatabases here
 
   // For live time display
   const [now, setNow] = useState(new Date());
