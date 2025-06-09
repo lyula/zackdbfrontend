@@ -1130,30 +1130,29 @@ export default function Dashboard({ user: userProp }) {
                     className="modal-backdrop"
                     onClick={() => setConfirmDelete(null)}
                     style={{
-                      position: isMobile ? 'fixed' : 'absolute',
-                      top: isMobile ? 56 : 0, // below header on mobile
+                      position: 'absolute',
+                      top: 0,
                       left: 0,
-                      width: '100vw',
-                      height: isMobile ? 'calc(100vh - 56px)' : '100vh',
+                      width: '100%',
+                      height: '100%',
                       background: 'rgba(44, 62, 80, 0.18)',
                       zIndex: 120,
-                      borderRadius: isMobile ? 0 : 22
+                      borderRadius: 22
                     }}
                   />
-                  {/* Modal wrapper for scrollability */}
+                  {/* Modal for desktop: centered in card */}
                   <div
                     style={{
-                      position: isMobile ? 'fixed' : 'absolute',
-                      top: isMobile ? 56 : 0, // below header on mobile
+                      position: 'absolute',
+                      top: 0,
                       left: 0,
-                      width: '100vw',
-                      height: isMobile ? 'calc(100vh - 56px)' : '100vh',
+                      width: '100%',
+                      height: '100%',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       zIndex: 121,
-                      overflowY: 'auto',
-                      pointerEvents: 'none' // Prevents accidental clicks outside modal
+                      pointerEvents: 'none'
                     }}
                   >
                     <div
@@ -1161,8 +1160,7 @@ export default function Dashboard({ user: userProp }) {
                       style={{
                         position: 'relative',
                         minWidth: 280,
-                        maxWidth: isMobile ? '94vw' : 340,
-                        width: isMobile ? '94vw' : undefined,
+                        maxWidth: 340,
                         background: '#fff',
                         borderRadius: 16,
                         boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
@@ -1171,8 +1169,7 @@ export default function Dashboard({ user: userProp }) {
                         flexDirection: 'column',
                         alignItems: 'center',
                         boxSizing: 'border-box',
-                        margin: isMobile ? '32px 0' : undefined,
-                        pointerEvents: 'auto' // Allows interaction with modal
+                        pointerEvents: 'auto'
                       }}
                     >
                       <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 10, color: '#6366f1' }}>
@@ -1224,6 +1221,104 @@ export default function Dashboard({ user: userProp }) {
           </div>
         </div>
       </div>
+
+      {/* Mobile specific: Confirm Delete Modal (covers below header, overlays both cards) */}
+      {isMobile && confirmDelete && (
+        <>
+          {/* Backdrop for mobile: covers below header, overlays both cards */}
+          <div
+            className="modal-backdrop"
+            onClick={() => setConfirmDelete(null)}
+            style={{
+              position: 'fixed',
+              top: 56, // below mobile header
+              left: 0,
+              width: '100vw',
+              height: 'calc(100vh - 56px)',
+              background: 'rgba(44, 62, 80, 0.18)',
+              zIndex: 2000
+            }}
+          />
+          {/* Modal for mobile: centered over both cards */}
+          <div
+            style={{
+              position: 'fixed',
+              top: 56,
+              left: 0,
+              width: '100vw',
+              height: 'calc(100vh - 56px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 2001,
+              overflowY: 'auto',
+              pointerEvents: 'none'
+            }}
+          >
+            <div
+              className="modal"
+              style={{
+                position: 'relative',
+                minWidth: 280,
+                maxWidth: '94vw',
+                width: '94vw',
+                background: '#fff',
+                borderRadius: 16,
+                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
+                padding: '32px 22px 22px 22px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                boxSizing: 'border-box',
+                margin: '32px 0',
+                pointerEvents: 'auto'
+              }}
+            >
+              <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 10, color: '#6366f1' }}>
+                Confirm Delete
+              </div>
+              <div style={{ color: '#23272f', fontSize: 15, marginBottom: 26, textAlign: 'center' }}>
+                Are you sure you want to delete this connection?
+              </div>
+              <div style={{ display: 'flex', gap: 18 }}>
+                <button
+                  onClick={() => {
+                    handleDeleteConnection(confirmDelete);
+                    setConfirmDelete(null);
+                  }}
+                  style={{
+                    background: '#f87171',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '10px 22px',
+                    fontWeight: 700,
+                    fontSize: 15,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setConfirmDelete(null)}
+                  style={{
+                    background: '#e0e7ff',
+                    color: '#6366f1',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '10px 22px',
+                    fontWeight: 700,
+                    fontSize: 15,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
