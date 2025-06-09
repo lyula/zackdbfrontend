@@ -14,7 +14,7 @@ function getCountryFlag(countryCode) {
     .map(char => String.fromCodePoint(127397 + char.charCodeAt()))
     .join('');
 }
-// 
+
 export default function DatabaseExplorer() {
   const { state } = useLocation();
   // Always extract user from navigation state
@@ -47,6 +47,7 @@ export default function DatabaseExplorer() {
   // For live time display
   const [now, setNow] = useState(new Date());
   const [country, setCountry] = useState('');
+  const [userTimezone, setUserTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
 
   // Loading states
   const [isLoadingCollections, setIsLoadingCollections] = useState(false);
@@ -63,15 +64,19 @@ export default function DatabaseExplorer() {
     return () => clearInterval(timer);
   }, []);
 
-  // Get user's country using geolocation API
+  // Get user's country and timezone using geolocation API
   useEffect(() => {
     fetch('https://ipapi.co/json/')
       .then(res => res.json())
-      .then(data => setCountry(data.country_code)) // Always use the 2-letter code for flag
+      .then(data => {
+        setCountry(data.country_code);
+        setUserTimezone(data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
+      })
       .catch(() => {
         // fallback to locale if geolocation fails
         const locale = Intl.DateTimeFormat().resolvedOptions().locale;
         setCountry(locale.split('-')[1] || 'US');
+        setUserTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
       });
   }, []);
 
@@ -423,7 +428,7 @@ export default function DatabaseExplorer() {
               minute: '2-digit',
               second: '2-digit',
               hour12: false,
-              timeZoneName: 'short'
+              timeZone: userTimezone // Show time in user's timezone, but do not display the timezone name
             })}
           </span>
         </div>
