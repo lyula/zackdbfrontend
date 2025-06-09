@@ -14,8 +14,12 @@ function getClusterName(connectionString) {
   return match ? match[1] : 'Unknown Cluster';
 }
 
+// Update truncateName to always add ... at the 11th character if needed
 function truncateName(name, maxLength = 10) {
-  return name.length > maxLength ? name.slice(0, maxLength) + '...' : name;
+  if (name.length > maxLength) {
+    return name.slice(0, maxLength) + '...';
+  }
+  return name;
 }
 
 // Hamburger icon for mobile header (white color for both states)
@@ -643,35 +647,54 @@ export default function Dashboard({ user: userProp }) {
                         <div
                           key={conn._id}
                           className="d-flex align-items-center justify-content-between bg-light rounded-3 p-3 mb-3 shadow-sm"
-                          style={{ border: '1px solid #e0e7ff' }}
+                          style={{
+                            border: '1px solid #e0e7ff',
+                            minHeight: isMobile ? 64 : undefined, // Ensure consistent row height on mobile
+                            height: isMobile ? 64 : undefined
+                          }}
                         >
                           {/* Left: Connection info */}
                           <div className="d-flex align-items-center gap-3" style={{ flex: 1 }}>
-                            <div
-                              className="d-flex align-items-center justify-content-center"
-                              style={{
-                                width: 48,
-                                height: 48,
-                                borderRadius: '50%',
-                                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                                color: '#fff',
-                                fontSize: 24,
-                                boxShadow: '0 2px 12px rgba(99,102,241,0.2)'
-                              }}
-                            >
-                              <span role="img" aria-label="database" style={{ lineHeight: 1 }}>📦</span>
-                            </div>
-                            <div className="d-flex flex-column" style={{ flex: 1 }}>
-                              <div className="fw-semibold" style={{ fontSize: 16, color: '#333' }}>
-                                {truncateName(getClusterName(conn.connectionString), 20)}
+                            {/* Remove icon on mobile */}
+                            {!isMobile && (
+                              <div
+                                className="d-flex align-items-center justify-content-center"
+                                style={{
+                                  width: 48,
+                                  height: 48,
+                                  borderRadius: '50%',
+                                  background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                                  color: '#fff',
+                                  fontSize: 24,
+                                  boxShadow: '0 2px 12px rgba(99,102,241,0.2)'
+                                }}
+                              >
+                                <span role="img" aria-label="database" style={{ lineHeight: 1 }}>📦</span>
                               </div>
-                              {/* <div className="text-muted" style={{ fontSize: 14 }}>
-                                {conn.connectionString}
-                              </div> */}
+                            )}
+                            <div className="d-flex flex-column justify-content-center" style={{ flex: 1, minWidth: 0 }}>
+                              <div
+                                className="fw-semibold"
+                                style={{
+                                  fontSize: 16,
+                                  color: '#333',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  maxWidth: isMobile ? 120 : 220, // Fixed width for cluster name on mobile
+                                  minWidth: isMobile ? 0 : 120,
+                                  textAlign: 'left'
+                                }}
+                              >
+                                {isMobile
+                                  ? truncateName(getClusterName(conn.connectionString), 10)
+                                  : truncateName(getClusterName(conn.connectionString), 20)
+                                }
+                              </div>
                             </div>
                           </div>
                           {/* Right: Action buttons */}
-                          <div className="d-flex align-items-center gap-2">
+                          <div className="d-flex align-items-center gap-2" style={{ minWidth: isMobile ? 150 : undefined }}>
                             <button
                               className="btn fw-bold d-flex align-items-center justify-content-center shadow-sm"
                               onClick={() => handleUseConnection(conn.connectionString)}
@@ -695,7 +718,6 @@ export default function Dashboard({ user: userProp }) {
                               style={{
                                 height: 38,
                                 fontSize: 18,
-                                // Remove background and color for bin icon button
                                 background: 'transparent',
                                 color: '#6366f1',
                                 border: 'none',

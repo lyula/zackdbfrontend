@@ -169,6 +169,7 @@ export default function DatabaseExplorer() {
 
   const [totalDocuments, setTotalDocuments] = useState(0);
   const [preloadedDocuments, setPreloadedDocuments] = useState({});
+  const [allDocuments, setAllDocuments] = useState([]);
 
   // Fetch documents for a collection with backend pagination
   const fetchDocuments = async (dbName, collectionName, page = 1, { preload = false } = {}) => {
@@ -249,6 +250,73 @@ export default function DatabaseExplorer() {
       }
     } finally {
       if (!preload) setIsLoadingDocuments(false);
+    }
+  };
+
+  // Fetch all documents for a collection (no pagination)
+  const fetchAllDocuments = async (dbName, collectionName) => {
+    if (!connectionString || !dbName || !collectionName) {
+      setError('Missing connection info.');
+      setAllDocuments([]);
+      setDocuments([]);
+      setColumns([]);
+      setColumnVisibility({});
+      return;
+    }
+    setIsLoadingDocuments(true);
+    setError('');
+    try {
+      const params = new URLSearchParams({
+        connectionString: encodeURIComponent(connectionString),
+        dbName: encodeURIComponent(dbName),
+        collectionName: encodeURIComponent(collectionName)
+      });
+      // You need to implement this endpoint to return ALL docs!
+      const res = await fetch(`${API_URL}/api/documents-all?${params.toString()}`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`HTTP error! status: ${res.status} - ${text}`);
+      }
+      const data = await res.json();
+      const docs = data.documents || [];
+      setAllDocuments(docs);
+      setTotalDocuments(docs.length);
+      setCurrentPage(1);
+      // Set columns and visibility
+      const cols = docs.length > 0 ? Object.keys(docs[0]) : [];
+      setColumns(cols);
+      const initialVisibility = {};
+      cols.forEach(col => {
+        if (
+          col === 'password' ||
+          col === '_V' ||
+          col === '__v' ||
+          col.startsWith('-')
+        ) {
+          initialVisibility[col] = false;
+        } else {
+          initialVisibility[col] = true;
+        }
+      });
+      setColumnVisibility(initialVisibility);
+      // Set first page
+      setDocuments(docs.slice(0, recordsPerPage));
+    } catch (err) {
+      setAllDocuments([]);
+      setDocuments([]);
+      setColumns([]);
+      setColumnVisibility({});
+      setError(err.message || 'Failed to fetch documents.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed to Fetch Documents',
+        text: err.message || 'Unknown error occurred while fetching documents.'
+      });
+    } finally {
+      setIsLoadingDocuments(false);
     }
   };
 
@@ -458,8 +526,8 @@ export default function DatabaseExplorer() {
     setError('');
     setCurrentPage(1);
     stopAutoRefresh();
-    fetchDocuments(selectedDb, collectionName, 1);
-    if (isMobile) setIsSidebarVisible(false); // Hide sidebar on mobile in tables view
+    fetchAllDocuments(selectedDb, collectionName);
+    if (isMobile) setIsSidebarVisible(false);
   };
 
   // Spinner logic: only one spinner per device type
