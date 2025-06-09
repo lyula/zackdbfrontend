@@ -9,13 +9,12 @@ function isValidMongoAtlasConnectionString(str) {
 }
 
 function getClusterName(connectionString) {
-  // Example: extract cluster name from MongoDB URI
-  try {
-    const match = connectionString.match(/\/\/([^./]+)/);
-    return match ? match[1] : 'Unknown Cluster';
-  } catch {
-    return 'Unknown Cluster';
-  }
+  const match = connectionString.match(/@([^\.]+)/);
+  return match ? match[1] : 'Unknown Cluster';
+}
+
+function truncateName(name, maxLength = 20) {
+  return name.length > maxLength ? name.slice(0, maxLength) + '...' : name;
 }
 
 // Hamburger icon for mobile header (white color for both states)
@@ -955,89 +954,93 @@ export default function Dashboard({ user: userProp }) {
                 <div style={{ color: '#888', fontSize: 16, marginTop: 24 }}>No saved connections yet.</div>
               ) : (
                 <ul style={{ width: '100%', padding: 0, margin: 0, listStyle: 'none' }}>
-                  {paginatedConnections.map((conn, idx) => (
-                    <li key={conn.connectionString} style={{
-                      background: 'rgba(245,245,255,0.88)',
-                      borderRadius: 12,
-                      marginBottom: 14,
-                      padding: '18px 16px',
-                      boxShadow: '0 2px 8px #6366f111',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: 10
-                    }}>
-                      <div>
-                        {/* Cluster name with theme gradient */}
-                        <div
-                          style={{
-                            fontWeight: 700,
-                            fontSize: 17,
-                            background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                            color: '#fff',
-                            padding: '4px 16px',
-                            borderRadius: 8,
-                            display: 'inline-block',
-                            boxShadow: '0 2px 8px #6366f122',
-                            letterSpacing: '0.5px'
-                          }}
-                        >
-                          {conn.clusterName || getClusterName(conn.connectionString)}
+                  {paginatedConnections.map((conn, idx) => {
+                    const clusterName = getClusterName(conn.connectionString);
+                    const displayName = truncateName(clusterName);
+                    return (
+                      <li key={conn._id} style={{
+                        background: 'rgba(245,245,255,0.88)',
+                        borderRadius: 12,
+                        marginBottom: 14,
+                        padding: '18px 16px',
+                        boxShadow: '0 2px 8px #6366f111',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 10
+                      }}>
+                        <div>
+                          {/* Cluster name with theme gradient */}
+                          <div
+                            style={{
+                              fontWeight: 700,
+                              fontSize: 17,
+                              background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                              color: '#fff',
+                              padding: '4px 16px',
+                              borderRadius: 8,
+                              display: 'inline-block',
+                              boxShadow: '0 2px 8px #6366f122',
+                              letterSpacing: '0.5px'
+                            }}
+                          >
+                            {conn.clusterName || getClusterName(conn.connectionString)}
+                          </div>
+                          {/* Optionally, remove or hide the connection string */}
+                          {/* <div style={{ fontSize: 14, color: '#6366f1', wordBreak: 'break-all', opacity: 0.85 }}>
+                            {conn.connectionString}
+                          </div> */}
                         </div>
-                        {/* Optionally, remove or hide the connection string */}
-                        {/* <div style={{ fontSize: 14, color: '#6366f1', wordBreak: 'break-all', opacity: 0.85 }}>
-                          {conn.connectionString}
-                        </div> */}
-                      </div>
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button
-                          onClick={() => handleUseConnection(conn.connectionString)}
-                          style={{
-                            background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: 8,
-                            padding: '7px 18px',
-                            fontWeight: 700,
-                            fontSize: 15,
-                            cursor: 'pointer',
-                            boxShadow: '0 2px 8px #6366f122'
-                          }}
-                        >
-                          Use
-                        </button>
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          aria-label="delete"
-                          title="Delete"
-                          ref={el => deleteBtnRefs.current[conn.connectionString] = el}
-                          onClick={() => setConfirmDelete(conn.connectionString)}
-                          onKeyPress={e => {
-                            if (e.key === 'Enter' || e.key === ' ') setConfirmDelete(conn.connectionString);
-                          }}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: 28,
-                            height: 28,
-                            fontSize: 22,
-                            cursor: 'pointer',
-                            background: 'none',
-                            border: 'none',
-                            outline: 'none',
-                            boxShadow: 'none',
-                            userSelect: 'none',
-                            padding: 0,
-                            margin: 0
-                          }}
-                        >
-                          🗑️
-                        </span>
-                      </div>
-                    </li>
-                  ))}
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button
+                            onClick={() => handleUseConnection(conn.connectionString)}
+                            style={{
+                              background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: 8,
+                              padding: '7px 18px',
+                              fontWeight: 700,
+                              fontSize: 15,
+                              cursor: 'pointer',
+                              boxShadow: '0 2px 8px #6366f122'
+                            }}
+                          >
+                            Use
+                          </button>
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            aria-label="delete"
+                            title="Delete"
+                            ref={el => deleteBtnRefs.current[conn.connectionString] = el}
+                            onClick={() => setConfirmDelete(conn.connectionString)}
+                            onKeyPress={e => {
+                              if (e.key === 'Enter' || e.key === ' ') setConfirmDelete(conn.connectionString);
+                            }}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: 28,
+                              height: 28,
+                              fontSize: 22,
+                              cursor: 'pointer',
+                              background: 'none',
+                              border: 'none',
+                              outline: 'none',
+                              boxShadow: 'none',
+                              userSelect: 'none',
+                              padding: 0,
+                              margin: 0
+                            }}
+                          >
+                            🗑️
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
 
