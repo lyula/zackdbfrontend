@@ -417,6 +417,20 @@ export default function DatabaseExplorer() {
   // Spinner logic: only one spinner per device type
   const showSpinner = isLoadingCollections || isLoadingDocuments;
 
+  // Add state for search/filter
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchField, setSearchField] = useState('');
+
+  // Add a filteredDocuments variable for client-side filtering (optional)
+  // If you want to filter on the backend, you would need to pass searchTerm/searchField to fetchDocuments
+  const filteredDocuments = searchTerm && searchField
+    ? documents.filter(doc =>
+        String(doc[searchField] || '')
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      )
+    : documents;
+
   return (
     <div style={{
       padding: 24,
@@ -684,6 +698,7 @@ export default function DatabaseExplorer() {
                 marginTop: 0,
                 width: '100%'
               }}>
+                {/* Table title pushed left */}
                 <h4 style={{
                   color: 'transparent',
                   background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
@@ -692,8 +707,9 @@ export default function DatabaseExplorer() {
                   fontWeight: 800,
                   fontSize: 20,
                   margin: 0,
-                  textAlign: 'center',
-                  width: '100%'
+                  textAlign: 'left', // push left
+                  width: 'auto',
+                  minWidth: 120
                 }}>
                   Table: <span style={{
                     color: '#6366f1',
@@ -702,6 +718,52 @@ export default function DatabaseExplorer() {
                     backgroundClip: 'initial'
                   }}>{selectedCollection}</span>
                 </h4>
+                {/* Search/filter input */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  marginLeft: 16,
+                  flex: 1,
+                  justifyContent: 'flex-end'
+                }}>
+                  <select
+                    value={searchField}
+                    onChange={e => setSearchField(e.target.value)}
+                    style={{
+                      padding: '7px 12px',
+                      borderRadius: 6,
+                      border: '1.5px solid #6366f1',
+                      fontSize: 15,
+                      fontWeight: 500,
+                      color: '#23272f',
+                      background: '#fff',
+                      minWidth: 120
+                    }}
+                  >
+                    <option value="">Filter by...</option>
+                    {visibleColumns.map(col => (
+                      <option key={col} value={col}>{col}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    style={{
+                      padding: '7px 14px',
+                      borderRadius: 6,
+                      border: '1.5px solid #6366f1',
+                      fontSize: 15,
+                      minWidth: 180,
+                      background: '#fff',
+                      color: '#23272f'
+                    }}
+                    disabled={!searchField}
+                  />
+                </div>
+                {/* ...existing refresh/auto-refresh buttons... */}
                 <div style={{ marginLeft: 16, display: 'flex', gap: 12 }}>
                   {!isAutoRefreshing ? (
                     <>
@@ -753,7 +815,7 @@ export default function DatabaseExplorer() {
                     </tr>
                   </thead>
                   <tbody>
-                    {documents.map((doc, idx) => {
+                    {(searchTerm && searchField ? filteredDocuments : documents).map((doc, idx) => {
                       // Numbering: latest document is totalDocuments, then totalDocuments-1, ...
                       const descendingNumber = totalDocuments - ((currentPage - 1) * recordsPerPage + idx);
                       return (
@@ -946,4 +1008,4 @@ function AtlasSpinner() {
   );
 }
 
-// reverted commit 
+// reverted commit
