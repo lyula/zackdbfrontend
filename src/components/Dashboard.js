@@ -47,13 +47,13 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
 
   const currentYear = new Date().getFullYear();
 
-  // Sidebar: hidden by default on mobile, toggled by hamburger; always visible/collapsed on desktop
+  // Custom sidebar gradient and white text, no Bootstrap bg classes
   const sidebarStyles = {
-    width: sidebarOpen ? 270 : 72,
+    width: isMobile ? 270 : (sidebarOpen ? 270 : 72), // Always full width on mobile, collapsible on desktop
     minWidth: 0,
     maxWidth: 270,
     height: '100vh',
-    background: 'linear-gradient(120deg, #7c3aed 0%, #6366f1 50%, #818cf8 100%)',
+    background: 'linear-gradient(120deg, #b7b5fa 0%, #a5b4fc 50%, #818cf8 100%)', // lighter purple gradient
     boxShadow: '0 0 32px 0 rgba(99,102,241,0.13), 0 2px 12px #818cf855',
     borderTopRightRadius: 18,
     borderBottomRightRadius: 18,
@@ -65,12 +65,12 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
     left: 0,
     display: isMobile ? (sidebarOpen ? 'flex' : 'none') : 'flex',
     flexDirection: 'column',
-    color: '#fff'
+    color: '#fff', // force white text
   };
 
   return (
     <nav
-      className="d-flex flex-column bg-gradient"
+      className="d-flex flex-column"
       style={sidebarStyles}
     >
       {/* Collapse/Expand Button */}
@@ -450,14 +450,25 @@ export default function Dashboard({ user: userProp }) {
         />
       )}
       {/* Sidebar */}
-      <div style={{ zIndex: 20, position: isMobile ? 'relative' : 'static', width: isMobile ? '100%' : undefined }}>
-        <Sidebar
-          user={user}
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-          isMobile={isMobile}
-        />
-      </div>
+      {(isMobile
+    ? sidebarOpen // Only render on mobile if open
+    : true        // Always render on desktop
+  ) && (
+  <div style={{
+    zIndex: 20,
+    position: isMobile ? 'fixed' : 'static',
+    width: isMobile ? '100%' : undefined,
+    top: 0,
+    left: 0
+  }}>
+    <Sidebar
+      user={user}
+      sidebarOpen={sidebarOpen}
+      setSidebarOpen={setSidebarOpen}
+      isMobile={isMobile}
+    />
+  </div>
+)}
       {/* Overlay for mobile sidebar */}
       {isMobile && sidebarOpen && (
         <div
@@ -536,11 +547,12 @@ export default function Dashboard({ user: userProp }) {
                   <button
                     className="btn fw-bold mb-2 px-4 py-2"
                     style={{
-                      background: 'linear-gradient(120deg, #7c3aed 0%, #6366f1 50%, #818cf8 100%)', // Match clustername and use buttons
-                      color: '#fff',
+                      background: 'linear-gradient(90deg, #ede9fe 0%, #c7d2fe 50%, #a5b4fc 100%)',
+                      color: '#4f46e5',
                       borderRadius: 10,
                       fontSize: 17,
-                      letterSpacing: '0.5px'
+                      letterSpacing: '0.5px',
+                      border: 'none'
                     }}
                     onClick={() => handleConnect(input)}
                     disabled={!input}
@@ -593,8 +605,8 @@ export default function Dashboard({ user: userProp }) {
                               <span
                                 className="fw-bold px-3 py-2 rounded-2 d-inline-block text-truncate"
                                 style={{
-                                  background: 'linear-gradient(90deg, #7c3aed 0%, #6366f1 50%, #818cf8 100%)',
-                                  color: '#fff',
+                                  background: 'linear-gradient(90deg, #ede9fe 0%, #c7d2fe 50%, #a5b4fc 100%)', // lighter purple/blue
+                                  color: '#4f46e5', // dark purple text for contrast
                                   fontSize: 17,
                                   letterSpacing: '0.5px',
                                   boxShadow: '0 2px 8px #6366f122',
@@ -616,9 +628,9 @@ export default function Dashboard({ user: userProp }) {
                                 className="btn fw-bold d-flex align-items-center justify-content-center"
                                 style={{
                                   background: isLoading
-                                    ? 'linear-gradient(90deg, #818cf8 0%, #6366f1 100%)'
-                                    : 'linear-gradient(120deg, #7c3aed 0%, #6366f1 50%, #818cf8 100%)',
-                                  color: '#fff',
+                                    ? 'linear-gradient(90deg, #a5b4fc 0%, #818cf8 100%)'
+                                    : 'linear-gradient(90deg, #ede9fe 0%, #c7d2fe 50%, #a5b4fc 100%)',
+                                  color: '#4f46e5',
                                   borderRadius: 8,
                                   minWidth: 90,
                                   height: 40,
@@ -626,7 +638,8 @@ export default function Dashboard({ user: userProp }) {
                                   opacity: isLoading ? 0.7 : 1,
                                   position: 'relative',
                                   padding: '0 18px',
-                                  marginLeft: isMobile ? 0 : 0
+                                  marginLeft: isMobile ? 0 : 0,
+                                  border: 'none'
                                 }}
                                 onClick={() => handleUseConnection(conn.connectionString)}
                                 disabled={isLoading}
