@@ -72,6 +72,7 @@ export default function DatabaseExplorer() {
   const dbsPerPage = isMobile ? 3 : 5;
   const colsPerPage = isMobile ? 3 : 3;
   const [databases, setDatabases] = useState(initialDatabases || []);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
   // For live time display
   const [now, setNow] = useState(new Date());
@@ -196,7 +197,12 @@ export default function DatabaseExplorer() {
       setColumns(cols);
       const initialVisibility = {};
       cols.forEach(col => {
-        if (col === 'password' || col === '_V' || col.startsWith('-')) {
+        if (
+          col === 'password' ||
+          col === '_V' ||
+          col === '__v' || // Always hide __v by default
+          col.startsWith('-')
+        ) {
           initialVisibility[col] = false;
         } else {
           initialVisibility[col] = true;
@@ -405,6 +411,7 @@ export default function DatabaseExplorer() {
     setCurrentPage(1);
     stopAutoRefresh();
     fetchDocuments(selectedDb, collectionName, 1);
+    if (isMobile) setIsSidebarVisible(false); // Hide sidebar on mobile
   };
 
   // Spinner logic: only one spinner per device type
@@ -503,99 +510,34 @@ export default function DatabaseExplorer() {
       {error && <div style={{ color: '#ff5252', marginBottom: 12, fontWeight: 600 }}>{error}</div>}
       <div style={{ display: 'flex', alignItems: 'flex-start' }}>
         {/* Sidebar */}
-        <div style={sidebarStyle}>
-          <div>
-            <h3 style={{
-              color: '#fff',
-              marginBottom: 10,
-              marginTop: 0,
-              fontSize: 19,
-              fontWeight: 800,
-              letterSpacing: '-0.5px'
-            }}>Databases</h3>
-            {paginatedDbs.map(db => (
-              <span
-                key={db}
-                style={selectedDb === db ? cardSelected : cardStyle}
-                onClick={() => handleSelectDb(db)}
-                title={db}
-              >
-                <span role="img" aria-label="database" style={{ marginRight: 10, fontSize: 18, verticalAlign: 'middle' }}>📁</span>
-                {db}
-              </span>
-            ))}
-            {/* Database Pagination */}
-            {totalDbPages > 1 && (
-              <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
-                <button
-                  onClick={() => setDbPage(p => Math.max(1, p - 1))}
-                  disabled={dbPage === 1}
-                  style={{
-                    background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 6,
-                    padding: '4px 14px',
-                    fontWeight: 700,
-                    fontSize: 14,
-                    cursor: dbPage === 1 ? 'not-allowed' : 'pointer',
-                    marginRight: 8,
-                    opacity: dbPage === 1 ? 0.5 : 1
-                  }}
-                >Prev</button>
-                <span style={{ fontSize: 14, color: '#fff', fontWeight: 700 }}>
-                  {dbPage}/{totalDbPages}
-                </span>
-                <button
-                  onClick={() => setDbPage(p => Math.min(totalDbPages, p + 1))}
-                  disabled={dbPage === totalDbPages}
-                  style={{
-                    background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 6,
-                    padding: '4px 14px',
-                    fontWeight: 700,
-                    fontSize: 14,
-                    cursor: dbPage === totalDbPages ? 'not-allowed' : 'pointer',
-                    marginLeft: 8,
-                    opacity: dbPage === totalDbPages ? 0.5 : 1
-                  }}
-                >Next</button>
-              </div>
-            )}
-          </div>
-          {collections.length > 0 && (
+        {(!isMobile || isSidebarVisible) && (
+          <div style={sidebarStyle}>
             <div>
               <h3 style={{
                 color: '#fff',
-                margin: '22px 0 10px 0',
+                marginBottom: 10,
+                marginTop: 0,
                 fontSize: 19,
                 fontWeight: 800,
                 letterSpacing: '-0.5px'
-              }}>
-                Collections
-              </h3>
-              {paginatedCols.map(col => {
-                const colName = typeof col === 'string' ? col : col.name;
-                return (
-                  <span
-                    key={colName}
-                    style={selectedCollection === colName ? cardSelected : cardStyle}
-                    onClick={() => handleSelectCollection(colName)}
-                    title={colName}
-                  >
-                    <span role="img" aria-label="collection" style={{ marginRight: 10, fontSize: 18, verticalAlign: 'middle' }}>📂</span>
-                    {colName}
-                  </span>
-                );
-              })}
-              {/* Collections Pagination */}
-              {totalColPages > 1 && (
+              }}>Databases</h3>
+              {paginatedDbs.map(db => (
+                <span
+                  key={db}
+                  style={selectedDb === db ? cardSelected : cardStyle}
+                  onClick={() => handleSelectDb(db)}
+                  title={db}
+                >
+                  <span role="img" aria-label="database" style={{ marginRight: 10, fontSize: 18, verticalAlign: 'middle' }}>📁</span>
+                  {db}
+                </span>
+              ))}
+              {/* Database Pagination */}
+              {totalDbPages > 1 && (
                 <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
                   <button
-                    onClick={() => setColPage(p => Math.max(1, p - 1))}
-                    disabled={colPage === 1}
+                    onClick={() => setDbPage(p => Math.max(1, p - 1))}
+                    disabled={dbPage === 1}
                     style={{
                       background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
                       color: '#fff',
@@ -604,17 +546,17 @@ export default function DatabaseExplorer() {
                       padding: '4px 14px',
                       fontWeight: 700,
                       fontSize: 14,
-                      cursor: colPage === 1 ? 'not-allowed' : 'pointer',
+                      cursor: dbPage === 1 ? 'not-allowed' : 'pointer',
                       marginRight: 8,
-                      opacity: colPage === 1 ? 0.5 : 1
+                      opacity: dbPage === 1 ? 0.5 : 1
                     }}
                   >Prev</button>
                   <span style={{ fontSize: 14, color: '#fff', fontWeight: 700 }}>
-                    {colPage}/{totalColPages}
+                    {dbPage}/{totalDbPages}
                   </span>
                   <button
-                    onClick={() => setColPage(p => Math.min(totalColPages, p + 1))}
-                    disabled={colPage === totalColPages}
+                    onClick={() => setDbPage(p => Math.min(totalDbPages, p + 1))}
+                    disabled={dbPage === totalDbPages}
                     style={{
                       background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
                       color: '#fff',
@@ -623,16 +565,83 @@ export default function DatabaseExplorer() {
                       padding: '4px 14px',
                       fontWeight: 700,
                       fontSize: 14,
-                      cursor: colPage === totalColPages ? 'not-allowed' : 'pointer',
+                      cursor: dbPage === totalDbPages ? 'not-allowed' : 'pointer',
                       marginLeft: 8,
-                      opacity: colPage === totalColPages ? 0.5 : 1
+                      opacity: dbPage === totalDbPages ? 0.5 : 1
                     }}
                   >Next</button>
                 </div>
               )}
             </div>
-          )}
-        </div>
+            {collections.length > 0 && (
+              <div>
+                <h3 style={{
+                  color: '#fff',
+                  margin: '22px 0 10px 0',
+                  fontSize: 19,
+                  fontWeight: 800,
+                  letterSpacing: '-0.5px'
+                }}>
+                  Collections
+                </h3>
+                {paginatedCols.map(col => {
+                  const colName = typeof col === 'string' ? col : col.name;
+                  return (
+                    <span
+                      key={colName}
+                      style={selectedCollection === colName ? cardSelected : cardStyle}
+                      onClick={() => handleSelectCollection(colName)}
+                      title={colName}
+                    >
+                      <span role="img" aria-label="collection" style={{ marginRight: 10, fontSize: 18, verticalAlign: 'middle' }}>📂</span>
+                      {colName}
+                    </span>
+                  );
+                })}
+                {/* Collections Pagination */}
+                {totalColPages > 1 && (
+                  <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
+                    <button
+                      onClick={() => setColPage(p => Math.max(1, p - 1))}
+                      disabled={colPage === 1}
+                      style={{
+                        background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 6,
+                        padding: '4px 14px',
+                        fontWeight: 700,
+                        fontSize: 14,
+                        cursor: colPage === 1 ? 'not-allowed' : 'pointer',
+                        marginRight: 8,
+                        opacity: colPage === 1 ? 0.5 : 1
+                      }}
+                    >Prev</button>
+                    <span style={{ fontSize: 14, color: '#fff', fontWeight: 700 }}>
+                      {colPage}/{totalColPages}
+                    </span>
+                    <button
+                      onClick={() => setColPage(p => Math.min(totalColPages, p + 1))}
+                      disabled={colPage === totalColPages}
+                      style={{
+                        background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 6,
+                        padding: '4px 14px',
+                        fontWeight: 700,
+                        fontSize: 14,
+                        cursor: colPage === totalColPages ? 'not-allowed' : 'pointer',
+                        marginLeft: 8,
+                        opacity: colPage === totalColPages ? 0.5 : 1
+                      }}
+                    >Next</button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
         {/* Main Table Area */}
         <div style={{
           flex: 1,
@@ -852,6 +861,28 @@ export default function DatabaseExplorer() {
           )}
         </div>
       </div>
+      {isMobile && !isSidebarVisible && (
+        <button
+          onClick={() => setIsSidebarVisible(true)}
+          style={{
+            position: 'fixed',
+            top: 80,
+            left: 12,
+            zIndex: 1001,
+            background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 24,
+            padding: '10px 18px',
+            fontWeight: 700,
+            fontSize: 16,
+            boxShadow: '0 2px 12px #6366f133',
+            cursor: 'pointer'
+          }}
+        >
+          📚 Show Sidebar
+        </button>
+      )}
     </div>
   );
 }
