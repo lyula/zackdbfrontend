@@ -510,6 +510,27 @@ export default function DatabaseExplorer() {
       <div style={{ display: 'flex', alignItems: 'flex-start' }}>
         {/* Sidebar */}
         <div style={sidebarStyle}>
+          {/* Show spinner above databases/collections on mobile when loading collections */}
+          {isMobile && isLoadingCollections && (
+            <div style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 9999,
+              background: 'rgba(255,255,255,0.85)',
+              borderRadius: 18,
+              boxShadow: '0 4px 24px #6366f144',
+              padding: 24,
+              width: '90vw',
+              maxWidth: 320,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+              <AtlasSpinner />
+            </div>
+          )}
           <div>
             <h3 style={{
               color: '#fff',
@@ -649,6 +670,27 @@ export default function DatabaseExplorer() {
           alignItems: 'flex-start',
           height: 'calc(100vh - 110px)'
         }}>
+          {/* Show spinner above table on mobile when loading documents */}
+          {isMobile && isLoadingDocuments && (
+            <div style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 9999,
+              background: 'rgba(255,255,255,0.85)',
+              borderRadius: 18,
+              boxShadow: '0 4px 24px #6366f144',
+              padding: 24,
+              width: '90vw',
+              maxWidth: 320,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+              <AtlasSpinner />
+            </div>
+          )}
           {columns.length > 0 && (
             <div style={tableContainerStyle}>
               {/* Table Title Row */}
@@ -835,6 +877,18 @@ export default function DatabaseExplorer() {
             </div>
           )}
           {(isLoadingCollections || isLoadingDocuments) && (
+            <div style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: 320
+            }}>
+              <AtlasSpinner />
+            </div>
+          )}
+          {/* Only show fallback spinner on desktop, or on mobile if neither collections nor documents are loading */}
+          {!isMobile && (isLoadingCollections || isLoadingDocuments) && (
             <div style={{
               width: '100%',
               display: 'flex',
