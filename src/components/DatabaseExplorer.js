@@ -81,7 +81,7 @@ export default function DatabaseExplorer() {
 
   // Loading states
   const [isLoadingCollections, setIsLoadingCollections] = useState(false);
-  const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
+  const [isInitialDocumentsLoad, setIsInitialDocumentsLoad] = useState(true); // NEW
 
   // Auto refresh state
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
@@ -138,7 +138,6 @@ export default function DatabaseExplorer() {
     : [];
 
   const handleSelectDb = async (dbName) => {
-    setPreloadedDocuments({});
     setSelectedDb(dbName);
     setSelectedCollection('');
     setDocuments([]);
@@ -168,19 +167,15 @@ export default function DatabaseExplorer() {
   };
 
   const [totalDocuments, setTotalDocuments] = useState(0);
-  const [preloadedDocuments, setPreloadedDocuments] = useState({});
-  const [allDocuments, setAllDocuments] = useState([]);
 
   // Fetch documents for a collection with backend pagination
-  const fetchDocuments = async (dbName, collectionName, page = 1, { preload = false } = {}) => {
+  const fetchDocuments = async (dbName, collectionName, page = 1) => {
     if (!connectionString || !dbName || !collectionName) {
       setError('Missing connection info.');
-      setDocuments([]);
-      setColumns([]);
-      setColumnVisibility({});
       return;
     }
-    setIsLoadingDocuments(!preload); // Only set loading if not preloading
+    // Only show spinner for the very first load
+    if (isInitialDocumentsLoad) setIsLoadingDocuments(true);
     setError('');
     try {
       const params = new URLSearchParams({
@@ -202,14 +197,9 @@ export default function DatabaseExplorer() {
       const docs = data.documents || [];
       setDocuments(docs);
       setTotalDocuments(data.total || 0);
-      if (preload) {
-        setPreloadedDocuments(prev => ({
-          ...prev,
-          [page]: data.documents || []
-        }));
-      } else {
-        setDocuments(data.documents || []);
-        setCurrentPage(page);
+      setCurrentPage(page);
+      // Only set columns/visibility if first load or columns are empty
+      if (columns.length === 0) {
         const cols = docs.length > 0 ? Object.keys(docs[0]) : [];
         setColumns(cols);
         const initialVisibility = {};
@@ -226,30 +216,17 @@ export default function DatabaseExplorer() {
           }
         });
         setColumnVisibility(initialVisibility);
-
-        // Preload next and previous pages if within bounds and not already loaded
-        const totalPages = Math.ceil((data.total || 0) / recordsPerPage);
-        if (page < totalPages && !preloadedDocuments[page + 1]) {
-          fetchDocuments(dbName, collectionName, page + 1, { preload: true });
-        }
-        if (page > 1 && !preloadedDocuments[page - 1]) {
-          fetchDocuments(dbName, collectionName, page - 1, { preload: true });
-        }
       }
     } catch (err) {
-      if (!preload) {
-        setDocuments([]);
-        setColumns([]);
-        setColumnVisibility({});
-        setError(err.message || 'Failed to fetch documents.');
-        Swal.fire({
-          icon: 'error',
-          title: 'Failed to Fetch Documents',
-          text: err.message || 'Unknown error occurred while fetching documents.'
-        });
-      }
+      setError(err.message || 'Failed to fetch documents.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed to Fetch Documents',
+        text: err.message || 'Unknown error occurred while fetching documents.'
+      });
     } finally {
-      if (!preload) setIsLoadingDocuments(false);
+      setIsLoadingDocuments(false);
+      setIsInitialDocumentsLoad(false); // Mark initial load as done
     }
   };
 
@@ -257,7 +234,6 @@ export default function DatabaseExplorer() {
   const fetchAllDocuments = async (dbName, collectionName) => {
     if (!connectionString || !dbName || !collectionName) {
       setError('Missing connection info.');
-      setAllDocuments([]);
       setDocuments([]);
       setColumns([]);
       setColumnVisibility({});
@@ -282,7 +258,7 @@ export default function DatabaseExplorer() {
       }
       const data = await res.json();
       const docs = data.documents || [];
-      setAllDocuments(docs);
+      setDocuments(docs);
       setTotalDocuments(docs.length);
       setCurrentPage(1);
       // Set columns and visibility
@@ -305,7 +281,6 @@ export default function DatabaseExplorer() {
       // Set first page
       setDocuments(docs.slice(0, recordsPerPage));
     } catch (err) {
-      setAllDocuments([]);
       setDocuments([]);
       setColumns([]);
       setColumnVisibility({});
@@ -362,22 +337,10 @@ export default function DatabaseExplorer() {
   // Pagination logic for table (now backend-driven)
   const totalPages = Math.ceil(totalDocuments / recordsPerPage);
 
-  // When page changes, fetch that page from backend
+  // When page changes, fetch only that page
   const handlePageChange = (page) => {
     if (page < 1 || page > totalPages) return;
-    if (preloadedDocuments[page]) {
-      setDocuments(preloadedDocuments[page]);
-      setCurrentPage(page);
-      // Preload next and previous pages if possible
-      if (page < totalPages && !preloadedDocuments[page + 1]) {
-        fetchDocuments(selectedDb, selectedCollection, page + 1, { preload: true });
-      }
-      if (page > 1 && !preloadedDocuments[page - 1]) {
-        fetchDocuments(selectedDb, selectedCollection, page - 1, { preload: true });
-      }
-    } else {
-      fetchDocuments(selectedDb, selectedCollection, page);
-    }
+    fetchDocuments(selectedDb, selectedCollection, page);
   };
 
   // --- Styling --- ULTRA MODERN THEME ---
@@ -521,16 +484,16 @@ export default function DatabaseExplorer() {
   }, [connectionString]);
 
   const handleSelectCollection = (collectionName) => {
-    setPreloadedDocuments({});
     setSelectedCollection(collectionName);
     setError('');
     setCurrentPage(1);
     stopAutoRefresh();
-    fetchAllDocuments(selectedDb, collectionName);
+    setIsInitialDocumentsLoad(true); // Reset for new collection
+    fetchDocuments(selectedDb, collectionName, 1);
     if (isMobile) setIsSidebarVisible(false);
   };
 
-  // Spinner logic: only one spinner per device type
+  // Spinner logic: only show spinner for initial collection load, not for page changes
   const showSpinner = isLoadingCollections || isLoadingDocuments;
 
   // Add state for search/filter
