@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMediaQuery } from 'react-responsive';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const API_URL = 'https://zackdbbackend.onrender.com';
 
@@ -46,84 +47,35 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
 
   const currentYear = new Date().getFullYear();
 
-  // On mobile, overlay the sidebar above content
-  const sidebarStyle = isMobile
-    ? {
-        width: sidebarOpen ? 270 : 0,
-        minWidth: 0,
-        maxWidth: 270,
-        height: '100vh',
-        background: 'linear-gradient(120deg, #6366f1 0%, #818cf8 100%)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'flex-start', // Start at top, but we'll add marginTop to move content down
-        padding: sidebarOpen ? '0' : '0',
-        transition: 'width 0.45s cubic-bezier(.4,1.6,.6,1), box-shadow 0.45s cubic-bezier(.4,1.6,.6,1), padding 0.3s',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        zIndex: 100,
-        boxShadow: sidebarOpen ? '0 0 32px 0 rgba(99,102,241,0.13), 0 2px 12px #818cf855' : 'none',
-        fontFamily: 'Inter, Segoe UI, Arial, sans-serif',
-        overflow: 'hidden',
-        borderTopRightRadius: 18,
-        borderBottomRightRadius: 18,
-        pointerEvents: sidebarOpen ? 'auto' : 'none'
-      }
-    : {
+  return (
+    <nav
+      className={`d-flex flex-column bg-gradient ${isMobile ? 'position-fixed top-0 start-0' : ''}`}
+      style={{
         width: sidebarOpen ? 270 : 72,
         minWidth: 0,
         maxWidth: 270,
         height: '100vh',
         background: 'linear-gradient(120deg, #6366f1 0%, #818cf8 100%)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: sidebarOpen ? 'flex-start' : 'center',
-        padding: sidebarOpen ? '38px 0 0 0' : '22px 0 0 0',
-        transition: 'width 0.55s cubic-bezier(.4,1.6,.6,1), box-shadow 0.55s cubic-bezier(.4,1.6,.6,1)',
-        position: 'relative',
-        zIndex: 11,
         boxShadow: '0 0 32px 0 rgba(99,102,241,0.13), 0 2px 12px #818cf855',
-        fontFamily: 'Inter, Segoe UI, Arial, sans-serif'
-      };
-
-  return (
-    <div style={sidebarStyle}>
+        borderTopRightRadius: 18,
+        borderBottomRightRadius: 18,
+        zIndex: 100,
+        transition: 'width 0.45s cubic-bezier(.4,1.6,.6,1)'
+      }}
+    >
       {/* Collapse/Expand Button */}
       {!isMobile && (
-        <div
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: sidebarOpen ? 'flex-end' : 'center',
-            padding: sidebarOpen ? '0 20px 0 0' : '0',
-            marginBottom: 44,
-            marginTop: 36
-          }}
-        >
+        <div className="d-flex justify-content-end align-items-center mt-4 mb-4 px-3">
           <button
-            onClick={() => setSidebarOpen(o => !o)}
+            className="btn btn-light shadow-sm fw-bold"
             style={{
               fontSize: 26,
-              cursor: 'pointer',
-              userSelect: 'none',
-              color: '#6366f1',
-              padding: '10px 16px',
               borderRadius: 24,
-              border: 'none',
-              background: '#fff',
-              boxShadow: '0 2px 16px #6366f144, 0 0 0 2px #818cf855',
-              transition: 'background 0.22s, box-shadow 0.22s',
-              outline: 'none',
-              fontWeight: 700,
-              filter: 'drop-shadow(0 2px 8px #818cf855)',
-              position: 'relative'
+              color: '#6366f1',
+              background: '#fff'
             }}
             title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-            onMouseOver={e => e.currentTarget.style.background = '#f1f5ff'}
-            onMouseOut={e => e.currentTarget.style.background = '#fff'}
+            onClick={() => setSidebarOpen(o => !o)}
           >
             {sidebarOpen ? '←' : '→'}
           </button>
@@ -131,295 +83,92 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
       )}
 
       {/* User Section */}
-      <div
-        style={{
-          width: '100%',
-          padding: sidebarOpen ? (isMobile ? '0' : '0 0 0 18px') : '0',
-          marginTop: isMobile && sidebarOpen ? 90 : 0, // Move down much further on mobile
-          marginBottom: isMobile && sidebarOpen ? 32 : 38,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: isMobile ? 'flex-start' : 'flex-start',
-        }}
-      >
-        {/* Avatar with white ring */}
+      <div className="d-flex flex-column align-items-center mb-4 px-2">
         <div
+          className="d-flex align-items-center justify-content-center mb-2"
           style={{
             width: sidebarOpen ? 88 : 40,
             height: sidebarOpen ? 88 : 40,
             borderRadius: '50%',
-            background: 'transparent',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: isMobile && sidebarOpen ? 22 : sidebarOpen ? 22 : 10,
             boxShadow: '0 0 0 4px #fff',
-            border: 'none',
-            position: 'relative',
-            transition: 'all 0.55s cubic-bezier(.4,1.6,.6,1)'
+            background: 'transparent'
           }}
         >
-          <span
-            role="img"
-            aria-label="user on laptop"
-            style={{
-              fontSize: sidebarOpen ? 56 : 24,
-              display: 'block',
-              color: '#fff',
-              filter: 'drop-shadow(0 2px 8px #6366f199)',
-              transition: 'font-size 0.55s cubic-bezier(.4,1.6,.6,1)'
-            }}
-          >🧑‍💻</span>
+          <span role="img" aria-label="user on laptop" style={{ fontSize: sidebarOpen ? 56 : 24, color: '#fff' }}>🧑‍💻</span>
         </div>
         {sidebarOpen && (
           <>
-            <div style={{
-              color: '#fff',
-              fontWeight: 800,
-              fontSize: 24,
-              marginBottom: isMobile ? 6 : 6,
-              letterSpacing: '0.3px',
-              textAlign: 'center',
-              width: '100%',
-              textShadow: '0 2px 12px #6366f155',
-              display: 'flex',
-              justifyContent: 'center'
-            }}>
+            <div className="fw-bold text-white fs-4 text-center mb-1" style={{ textShadow: '0 2px 12px #6366f155' }}>
               {user?.username || user?.email || 'User'}
             </div>
-            <div style={{
-              color: '#fff',
-              fontSize: 17,
-              fontWeight: 600,
-              marginBottom: isMobile ? 14 : 10,
-              textAlign: 'center',
-              width: '100%',
-              opacity: 0.96,
-              letterSpacing: '0.2px',
-              textShadow: '0 1px 8px #6366f122',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}>
+            <div className="text-white fs-6 fw-semibold mb-2 text-center" style={{ opacity: 0.96, textShadow: '0 1px 8px #6366f122' }}>
               {user?.email || ''}
+            </div>
+            <div className="text-white fs-6 fw-normal mb-2 text-center" style={{ opacity: 0.98, textShadow: '0 1px 8px #6366f122' }}>
+              Save and visualize your MongoDB databases with ease.
+            </div>
+            <div className="d-flex align-items-center justify-content-center gap-2 text-white opacity-75 fw-semibold mt-2" style={{ letterSpacing: '0.1em' }}>
+              <span className="fw-bold">zackdb</span>
+              <span className="bg-white text-primary rounded-circle px-2 py-1 fw-bold" style={{ fontSize: 13 }}>©</span>
+              <span>{currentYear}</span>
             </div>
           </>
         )}
-        {sidebarOpen && (
-          <div style={{
-            color: '#fff',
-            fontSize: 16,
-            fontWeight: 500,
-            marginTop: isMobile ? 18 : 18,
-            marginBottom: isMobile ? 18 : 10,
-            opacity: 0.98,
-            lineHeight: 1.5,
-            textAlign: 'center',
-            maxWidth: 210,
-            alignSelf: 'center',
-            letterSpacing: '0.13px',
-            textShadow: '0 1px 8px #6366f122',
-            wordBreak: 'break-word',
-            display: 'flex',
-            justifyContent: 'center'
-          }}>
-            Save and visualize your MongoDB databases with ease.
-          </div>
-        )}
-        {/* zackdb © YEAR */}
-        {sidebarOpen && (
-          <div style={{
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 6,
-            margin: isMobile ? '18px 0 0 0' : '10px 0 0 0',
-            fontSize: 15,
-            color: '#fff',
-            opacity: 0.75,
-            fontWeight: 600,
-            letterSpacing: '0.1em',
-            userSelect: 'none',
-            position: 'relative'
-          }}>
-            <span style={{ fontWeight: 700 }}>zackdb</span>
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 18,
-              height: 18,
-              borderRadius: '50%',
-              background: '#fff',
-              color: '#6366f1',
-              fontWeight: 900,
-              fontSize: 13,
-              marginLeft: 2,
-              marginRight: 2,
-              boxShadow: '0 1px 4px #6366f122'
-            }}>©</span>
-            <span>{currentYear}</span>
-          </div>
-        )}
       </div>
-
-      {/* Spacer to push logout to bottom */}
-      <div style={{ flex: 1 }} />
-
-      {/* Logout Button (desktop only, or mobile at bottom) */}
-      {(isMobile && sidebarOpen) ? (
-        <div style={{
-          width: '100%',
-          padding: '0 0 32px 0',
-          display: 'flex',
-          justifyContent: 'center'
-        }}>
-          <button
-            onClick={handleLogout}
-            style={{
-              minWidth: 0,
-              width: 160,
-              background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 22,
-              padding: '12px 0',
-              fontWeight: 700,
-              fontSize: 16,
-              cursor: 'pointer',
-              boxShadow: '0 2px 16px #6366f144, 0 0 0 2px #818cf855',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 10,
-              letterSpacing: '0.5px',
-              transition: 'width 0.22s, background 0.22s, border-radius 0.22s',
-              outline: 'none'
-            }}
-            title="Logout"
-          >
-            <span role="img" aria-label="logout" style={{ fontSize: 20 }}>🔒</span>
-            Logout
-          </button>
-        </div>
-      ) : !isMobile && (
-        <div style={{
-          width: '100%',
-          padding: sidebarOpen
-            ? '0 0 70px 0'
-            : '0 0 38px 0',
-          display: 'flex',
-          justifyContent: 'center'
-        }}>
-          <button
-            onClick={handleLogout}
-            style={{
-              minWidth: 0,
-              width: sidebarOpen ? 120 : 44,
-              background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 22,
-              padding: sidebarOpen ? '12px 0' : '12px',
-              fontWeight: 700,
-              fontSize: 16,
-              cursor: 'pointer',
-              boxShadow: '0 2px 16px #6366f144, 0 0 0 2px #818cf855',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: sidebarOpen ? 10 : 0,
-              letterSpacing: '0.5px',
-              transition: 'width 0.22s, background 0.22s, border-radius 0.22s',
-              outline: 'none'
-            }}
-            title="Logout"
-            onMouseOver={e => e.currentTarget.style.background = 'linear-gradient(90deg, #818cf8 0%, #6366f1 100%)'}
-            onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)'}
-          >
-            <span role="img" aria-label="logout" style={{ marginRight: sidebarOpen ? 8 : 0, fontSize: 20 }}>🔒</span>
-            {sidebarOpen && 'Logout'}
-          </button>
-        </div>
-      )}
-    </div>
+      <div className="flex-grow-1" />
+      {/* Logout Button */}
+      <div className="d-flex justify-content-center mb-4">
+        <button
+          className="btn fw-bold d-flex align-items-center gap-2"
+          style={{
+            width: sidebarOpen ? 120 : 44,
+            background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+            color: '#fff',
+            borderRadius: 22,
+            fontSize: 16,
+            boxShadow: '0 2px 16px #6366f144, 0 0 0 2px #818cf855'
+          }}
+          onClick={handleLogout}
+          title="Logout"
+        >
+          <span role="img" aria-label="logout" style={{ fontSize: 20 }}>🔒</span>
+          {sidebarOpen && 'Logout'}
+        </button>
+      </div>
+    </nav>
   );
 }
 
-// --- MOBILE HEADER ---
 function MobileHeader({ navigate, sidebarOpen, setSidebarOpen }) {
   return (
-    <div
+    <header className="d-flex align-items-center justify-content-between px-2 py-2 sticky-top shadow-sm"
       style={{
-        width: '100%',
-        height: 56,
         background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 8px 0 8px',
-        position: 'sticky',
-        top: 0,
-        zIndex: 101,
-        boxShadow: '0 2px 12px #6366f122'
-      }}
-    >
-      {/* Hamburger on far left */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        height: 56,
+        zIndex: 101
+      }}>
+      <div className="d-flex align-items-center">
         <HamburgerIcon open={sidebarOpen} onClick={() => setSidebarOpen(o => !o)} />
       </div>
-      {/* Title centered */}
-      <div style={{
-        fontWeight: 900,
-        fontSize: 22,
-        color: '#fff',
-        letterSpacing: '-1px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        textShadow: '0 2px 12px #6366f155'
-      }}>
+      <div className="fw-bold fs-4 text-white d-flex align-items-center gap-2" style={{ textShadow: '0 2px 12px #6366f155' }}>
         <span role="img" aria-label="rocket" style={{ fontSize: 24 }}>🚀</span> zackdb
       </div>
-      {/* Logout icon on far right, but with more left margin */}
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <button
-          onClick={() => {
-            localStorage.removeItem('token');
-            fetch(`${API_URL}/api/logout`, { credentials: 'include' }).finally(() => {
-              navigate('/login');
-            });
-          }}
-          style={{
-            background: '#fff',
-            color: '#6366f1',
-            border: 'none',
-            borderRadius: 22,
-            padding: '8px 14px',
-            fontWeight: 700,
-            fontSize: 15,
-            cursor: 'pointer',
-            boxShadow: '0 2px 12px #6366f122',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            letterSpacing: '0.5px',
-            transition: 'background 0.22s, box-shadow 0.22s, border-radius 0.22s',
-            outline: 'none',
-            marginLeft: 8,
-            marginRight: 12 // <-- Add more space from the right edge
-          }}
-          title="Logout"
-        >
-          <span role="img" aria-label="logout" style={{ fontSize: 18 }}>🔒</span>
-        </button>
-      </div>
-    </div>
+      <button
+        className="btn btn-light rounded-pill d-flex align-items-center"
+        style={{ color: '#6366f1', marginLeft: 8 }}
+        onClick={() => {
+          localStorage.removeItem('token');
+          fetch(`${API_URL}/api/logout`, { credentials: 'include' }).finally(() => {
+            navigate('/login');
+          });
+        }}
+        title="Logout"
+      >
+        <span role="img" aria-label="logout" style={{ fontSize: 18 }}>🔒</span>
+      </button>
+    </header>
   );
-};
+}
 
 export default function Dashboard({ user: userProp }) {
   const [user, setUser] = useState(userProp || null);
@@ -435,10 +184,7 @@ export default function Dashboard({ user: userProp }) {
   const deleteBtnRefs = useRef({});
   const connectionsPerPage = 5;
 
-  // Responsive: detect mobile
   const isMobile = useMediaQuery({ maxWidth: 768 });
-
-  // Sidebar open state: collapsed by default on mobile
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
 
   // Update sidebar state if screen size changes
@@ -661,14 +407,7 @@ export default function Dashboard({ user: userProp }) {
 
   if (loading) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: 22,
-        color: '#6366f1'
-      }}>
+      <div className="d-flex align-items-center justify-content-center vh-100 text-primary fs-4">
         Loading...
       </div>
     );
@@ -676,18 +415,7 @@ export default function Dashboard({ user: userProp }) {
 
   // --- MAIN RENDER ---
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        height: '100vh',
-        width: '100vw',
-        overflow: 'hidden',
-        background: 'linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%)',
-        display: 'flex',
-        flexDirection: isMobile ? 'column' : 'row',
-        fontFamily: 'Inter, Segoe UI, Arial, sans-serif'
-      }}
-    >
+    <div className="min-vh-100 w-100 bg-light d-flex flex-column flex-md-row" style={{ fontFamily: 'Inter, Segoe UI, Arial, sans-serif' }}>
       {/* Mobile Header */}
       {isMobile && (
         <MobileHeader
@@ -696,17 +424,8 @@ export default function Dashboard({ user: userProp }) {
           setSidebarOpen={setSidebarOpen}
         />
       )}
-
       {/* Sidebar */}
-      <div
-        style={{
-          zIndex: 20,
-          position: isMobile ? 'relative' : 'static',
-          width: isMobile ? '100%' : undefined,
-          boxShadow: isMobile ? '0 4px 24px 0 rgba(99,102,241,0.13), 0 2px 12px #818cf855' : undefined,
-          order: isMobile ? 1 : 0 // Sidebar appears below header on mobile
-        }}
-      >
+      <div style={{ zIndex: 20, position: isMobile ? 'relative' : 'static', width: isMobile ? '100%' : undefined }}>
         <Sidebar
           user={user}
           sidebarOpen={sidebarOpen}
@@ -714,7 +433,6 @@ export default function Dashboard({ user: userProp }) {
           isMobile={isMobile}
         />
       </div>
-
       {/* Overlay for mobile sidebar */}
       {isMobile && sidebarOpen && (
         <div
@@ -730,595 +448,314 @@ export default function Dashboard({ user: userProp }) {
           }}
         />
       )}
-
       {/* Main content area */}
-      <div
-        style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          height: isMobile ? 'auto' : '100vh',
-          overflow: 'hidden'
-        }}
-      >
+      <main className="flex-grow-1 d-flex flex-column" style={{ minHeight: isMobile ? 'auto' : '100vh', overflow: 'hidden' }}>
         {/* Desktop Header */}
-        <div
-          style={{
-            width: '100%',
-            background: 'rgba(255,255,255,0.85)',
-            boxShadow: '0 2px 16px #6366f122',
-            height: 64,
-            minHeight: 64,
-            maxHeight: 64,
-            display: isMobile ? 'none' : 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 140px 0 48px',
-            position: 'sticky',
-            top: 0,
-            zIndex: 10,
-            flexShrink: 0,
-            borderBottom: '1.5px solid #e0e7ff'
-          }}
-        >
-          <div style={{
-            fontWeight: 900,
-            fontSize: 26,
+        <header className="d-none d-md-flex align-items-center justify-content-between px-5 py-3 bg-white shadow-sm sticky-top" style={{ borderBottom: '1.5px solid #e0e7ff', minHeight: 64 }}>
+          <div className="fw-bold fs-3" style={{
             color: 'transparent',
-            letterSpacing: '-1px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
             background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
             WebkitBackgroundClip: 'text',
-            backgroundClip: 'text'
+            backgroundClip: 'text',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12
           }}>
             <span role="img" aria-label="rocket" style={{ fontSize: 30 }}>🚀</span> zackdb
           </div>
-        </div>
+        </header>
         {/* Main horizontal layout */}
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            width: '100%',
-            minHeight: isMobile ? 'calc(100vh - 56px)' : undefined,
-            background: 'linear-gradient(120deg, #f1f5f9 0%, #e0e7ff 100%)'
-          }}
-        >
-          <div
-            style={{
-              width: '100%',
-              maxWidth: isMobile ? '100%' : 980,
-              display: 'flex',
-              flexDirection: isMobile ? 'column' : 'row',
-              gap: isMobile ? 14 : 40,
-              justifyContent: isMobile ? 'center' : 'center',
-              alignItems: isMobile ? 'flex-start' : 'center',
-              margin: isMobile ? '0 auto' : undefined,
-              padding: isMobile ? '32px 0 24px 0' : '48px 0 0 0' // <-- More top padding on mobile
-            }}
-          >
+        <div className="container-fluid flex-grow-1 d-flex flex-column justify-content-center align-items-center py-4" style={{ background: 'linear-gradient(120deg, #f1f5f9 0%, #e0e7ff 100%)' }}>
+          <div className={`row w-100 justify-content-center align-items-start ${isMobile ? '' : 'gx-5'}`}>
             {/* Left: New Connection */}
-            <div
-              style={{
-                background: 'rgba(255,255,255,0.72)',
-                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.13)',
-                backdropFilter: 'blur(18px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(18px) saturate(180%)',
-                border: '1.5px solid rgba(200,200,255,0.13)',
-                flex: '0 1 420px',
-                borderRadius: 22,
-                padding: isMobile ? '24px 8px 18px 8px' : '44px 36px 36px 36px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                minWidth: 320,
-                maxWidth: 440,
-                width: isMobile ? '96vw' : 420,
-                height: isMobile ? 'auto' : 480, // Set fixed height on desktop
-                margin: isMobile ? '0 auto' : undefined,
-                boxSizing: 'border-box'
-              }}
-            >
-              <div style={{
-                fontSize: 54,
-                marginBottom: 12,
-                lineHeight: 1,
-                color: 'transparent',
-                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text'
+            <div className="col-12 col-md-6 col-lg-5 mb-4">
+              <div className="card shadow-lg border-0 rounded-4" style={{
+                background: 'rgba(255,255,255,0.85)',
+                minHeight: isMobile ? 'auto' : 480
               }}>
-                <span role="img" aria-label="rocket">🚀</span>
-              </div>
-              <h1 style={{
-                color: 'transparent',
-                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                fontWeight: 900,
-                fontSize: 30,
-                letterSpacing: '-1px',
-                marginBottom: 10
-              }}>
-                Welcome{user ? `, ${user.username}` : ''}!
-              </h1>
-              <div style={{
-                color: '#23272f',
-                fontSize: 18,
-                marginBottom: 28,
-                fontWeight: 500,
-                textAlign: 'center',
-                opacity: 0.85
-              }}>
-                Connect to your MongoDB database to get started.
-              </div>
-              <input
-                type="text"
-                placeholder="Paste your MongoDB connection string here"
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                style={{
-                  width: isMobile ? '90vw' : '100%', // Smaller width on mobile
-                  maxWidth: isMobile ? 300 : 340,    // Max width on mobile
-                  padding: '16px 22px',
-                  fontSize: 17,
-                  borderRadius: 10,
-                  border: '1.5px solid #6366f1',
-                  outline: 'none',
-                  background: 'rgba(255,255,255,0.85)',
-                  color: '#23272f',
-                  marginBottom: 20,
-                  boxShadow: '0 2px 12px #6366f122',
-                  transition: 'border 0.2s'
-                }}
-              />
-              <button
-                onClick={() => handleConnect(input)}
-                style={{
-                  background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 10,
-                  padding: '14px 36px',
-                  fontWeight: 800,
-                  fontSize: 17,
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 12px #6366f133',
-                  marginBottom: 6,
-                  letterSpacing: '0.5px',
-                  transition: 'background 0.2s'
-                }}
-                disabled={!input}
-              >
-                <span role="img" aria-label="rocket" style={{ marginRight: 8 }}>🚀</span>
-                Save & Connect
-              </button>
-              {error && (
-                <div style={{
-                  color: '#6366f1',
-                  background: 'none',
-                  border: 'none',
-                  borderRadius: 0,
-                  padding: 0,
-                  marginTop: 12,
-                  fontWeight: 700,
-                  fontSize: 15,
-                  textAlign: 'center',
-                  transition: 'opacity 0.3s'
-                }}>
-                  {error}
-                </div>
-              )}
-            </div>
-            {/* Right: Saved Connections */}
-            <div
-              className="saved-connections-card"
-              style={{
-                background: 'rgba(255,255,255,0.72)',
-                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.13)',
-                backdropFilter: 'blur(18px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(18px) saturate(180%)',
-                border: '1.5px solid rgba(200,200,255,0.13)',
-                flex: '0 1 420px',
-                borderRadius: 22,
-                padding: isMobile ? '24px 8px 18px 8px' : '44px 36px 36px 36px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                minWidth: 320,
-                maxWidth: 440,
-                width: isMobile ? '96vw' : 420,
-                height: isMobile ? 'auto' : 480, // Set fixed height on desktop
-                margin: isMobile ? '0 auto' : undefined,
-                marginTop: isMobile ? 14 : 0,
-                position: 'relative',
-                overflow: 'visible',
-                order: isMobile ? 2 : 0,
-                boxSizing: 'border-box'
-              }}
-            >
-              <div style={{
-                fontSize: 26,
-                fontWeight: 800,
-                marginBottom: 18,
-                color: 'transparent',
-                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text'
-              }}>
-                Saved Connections
-              </div>
-              {!isConnectionsArray ? (
-                <div style={{ color: '#f87171', fontSize: 16, marginTop: 24 }}>
-                  Failed to load saved connections. Please try again later.
-                </div>
-              ) : paginatedConnections.length === 0 ? (
-                <div style={{ color: '#888', fontSize: 16, marginTop: 24 }}>No saved connections yet.</div>
-              ) : (
-                <ul style={{ width: '100%', padding: 0, margin: 0, listStyle: 'none' }}>
-                  {paginatedConnections.map((conn, idx) => {
-                    const clusterName = getClusterName(conn.connectionString);
-                    const displayName = truncateName(clusterName);
-                    const isLoading = useLoading === conn.connectionString; // <-- Check loading
-                    return (
-                      <li key={conn._id} style={{
-                        background: 'rgba(245,245,255,0.88)',
-                        borderRadius: 12,
-                        marginBottom: 14,
-                        padding: '18px 16px',
-                        boxShadow: '0 2px 8px #6366f111',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: 10
-                      }}>
-                        <div>
-                          {/* Cluster name with theme gradient */}
-                          <div
-                            style={{
-                              fontWeight: 700,
-                              fontSize: 17,
-                              background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                              color: '#fff',
-                              padding: '4px 16px',
-                              borderRadius: 8,
-                              display: 'inline-block',
-                              boxShadow: '0 2px 8px #6366f122',
-                              letterSpacing: '0.5px'
-                            }}
-                          >
-                            {conn.clusterName || getClusterName(conn.connectionString)}
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <button
-                            onClick={() => handleUseConnection(conn.connectionString)}
-                            disabled={isLoading}
-                            style={{
-                              background: isLoading
-                                ? 'linear-gradient(90deg, #818cf8 0%, #6366f1 100%)'
-                                : 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                              color: '#fff',
-                              border: 'none',
-                              borderRadius: 8,
-                              padding: '7px 18px',
-                              fontWeight: 700,
-                              fontSize: 15,
-                              cursor: isLoading ? 'not-allowed' : 'pointer',
-                              boxShadow: '0 2px 8px #6366f122',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 8,
-                              opacity: isLoading ? 0.7 : 1,
-                              position: 'relative',
-                              minWidth: 90, // <-- Fixed width for button
-                              justifyContent: 'center',
-                              overflow: 'hidden'
-                            }}
-                          >
-                            {isLoading && (
-                              <span style={{
-                                position: 'absolute',
-                                left: '50%',
-                                top: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                              }}>
-                                <span style={{
-                                  display: 'inline-block',
-                                  width: 20,
-                                  height: 20,
-                                  border: '3px solid #fff',
-                                  borderTop: '3px solid #6366f1',
-                                  borderRadius: '50%',
-                                  animation: 'spin 1s linear infinite'
-                                }} />
-                              </span>
-                            )}
-                            <span style={{ opacity: isLoading ? 0 : 1, transition: 'opacity 0.2s' }}>
-                              <span role="img" aria-label="rocket">🚀</span>
-                              Use
-                            </span>
-                          </button>
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            aria-label="delete"
-                            title="Delete"
-                            ref={el => deleteBtnRefs.current[conn.connectionString] = el}
-                            onClick={() => setConfirmDelete(conn.connectionString)}
-                            onKeyPress={e => {
-                              if (e.key === 'Enter' || e.key === ' ') setConfirmDelete(conn.connectionString);
-                            }}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              width: 28,
-                              height: 28,
-                              fontSize: 22,
-                              cursor: 'pointer',
-                              background: 'none',
-                              border: 'none',
-                              outline: 'none',
-                              boxShadow: 'none',
-                              userSelect: 'none',
-                              padding: 0,
-                              margin: 0
-                            }}
-                          >
-                            🗑️
-                          </span>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-
-              {/* Pagination */}
-              {totalConnPages > 1 && (
-                <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
-                  <button
-                    onClick={() => setConnPage(p => Math.max(1, p - 1))}
-                    disabled={connPage === 1}
+                <div className="card-body d-flex flex-column align-items-center">
+                  <div className="mb-2" style={{
+                    fontSize: 54,
+                    color: 'transparent',
+                    background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                    WebkitBackgroundClip: 'text',
+                    backgroundClip: 'text'
+                  }}>
+                    <span role="img" aria-label="rocket">🚀</span>
+                  </div>
+                  <h1 className="fw-bold mb-2" style={{
+                    color: 'transparent',
+                    background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                    WebkitBackgroundClip: 'text',
+                    backgroundClip: 'text',
+                    fontSize: 30,
+                    letterSpacing: '-1px'
+                  }}>
+                    Welcome{user ? `, ${user.username}` : ''}!
+                  </h1>
+                  <div className="text-secondary fs-5 mb-3 fw-medium text-center opacity-85">
+                    Connect to your MongoDB database to get started.
+                  </div>
+                  <input
+                    type="text"
+                    className="form-control mb-3"
+                    placeholder="Paste your MongoDB connection string here"
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
                     style={{
-                      background: '#e0e7ff',
-                      color: '#6366f1',
-                      border: 'none',
-                      borderRadius: 8,
-                      padding: '6px 14px',
-                      fontWeight: 700,
-                      fontSize: 15,
-                      cursor: connPage === 1 ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    Prev
-                  </button>
-                  <span style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
-                    {connPage} / {totalConnPages}
-                  </span>
-                  <button
-                    onClick={() => setConnPage(p => Math.min(totalConnPages, p + 1))}
-                    disabled={connPage === totalConnPages}
-                    style={{
-                      background: '#e0e7ff',
-                      color: '#6366f1',
-                      border: 'none',
-                      borderRadius: 8,
-                      padding: '6px 14px',
-                      fontWeight: 700,
-                      fontSize: 15,
-                      cursor: connPage === totalConnPages ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    Next
-                  </button>
-                </div>
-              )}
-
-              {/* Modal Backdrop and Modal (inside the card, absolutely  positioned) */}
-              {!isMobile && confirmDelete && (
-                <>
-                  {/* Backdrop */}
-                  <div
-                    className="modal-backdrop"
-                    onClick={() => setConfirmDelete(null)}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      background: 'rgba(44, 62, 80, 0.18)',
-                      zIndex: 120,
-                      borderRadius: 22
+                      maxWidth: 340,
+                      border: '1.5px solid #6366f1',
+                      background: 'rgba(255,255,255,0.95)'
                     }}
                   />
-                  {/* Modal for desktop: centered in card */}
-                  <div
+                  <button
+                    className="btn fw-bold mb-2 px-4 py-2"
                     style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      zIndex: 121,
-                      pointerEvents: 'none'
+                      background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                      color: '#fff',
+                      borderRadius: 10,
+                      fontSize: 17,
+                      letterSpacing: '0.5px'
                     }}
+                    onClick={() => handleConnect(input)}
+                    disabled={!input}
                   >
-                    <div
-                      className="modal"
-                      style={{
-                        position: 'relative',
-                        minWidth: 280,
-                        maxWidth: 340,
-                        background: '#fff',
-                        borderRadius: 16,
-                        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
-                        padding: '32px 22px 22px 22px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        boxSizing: 'border-box',
-                        pointerEvents: 'auto'
-                      }}
-                    >
-                      <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 10, color: '#6366f1' }}>
-                        Confirm Delete
-                      </div>
-                      <div style={{ color: '#23272f', fontSize: 15, marginBottom: 26, textAlign: 'center' }}>
-                        Are you sure you want to delete this connection?
-                      </div>
-                      <div style={{ display: 'flex', gap: 18 }}>
-                        <button
-                          onClick={() => {
-                            handleDeleteConnection(confirmDelete);
-                            setConfirmDelete(null);
-                          }}
-                          style={{
-                            background: '#f87171',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: 8,
-                            padding: '10px 22px',
-                            fontWeight: 700,
-                            fontSize: 15,
-                            cursor: 'pointer'
-                          }}
-                        >
-                          Delete
-                        </button>
-                        <button
-                          onClick={() => setConfirmDelete(null)}
-                          style={{
-                            background: '#e0e7ff',
-                            color: '#6366f1',
-                            border: 'none',
-                            borderRadius: 8,
-                            padding: '10px 22px',
-                            fontWeight: 700,
-                            fontSize: 15,
-                            cursor: 'pointer'
-                          }}
-                        >
-                          Cancel
-                        </button>
-                      </div>
+                    <span role="img" aria-label="rocket" className="me-2">🚀</span>
+                    Save & Connect
+                  </button>
+                  {error && (
+                    <div className="text-primary fw-bold mt-2 text-center" style={{ fontSize: 15 }}>
+                      {error}
                     </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            {/* Right: Saved Connections */}
+            <div className="col-12 col-md-6 col-lg-5 mb-4">
+              <div className="card shadow-lg border-0 rounded-4 position-relative" style={{
+                background: 'rgba(255,255,255,0.85)',
+                minHeight: isMobile ? 'auto' : 480
+              }}>
+                <div className="card-body d-flex flex-column align-items-center">
+                  <div className="fw-bold fs-4 mb-3" style={{
+                    color: 'transparent',
+                    background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                    WebkitBackgroundClip: 'text',
+                    backgroundClip: 'text'
+                  }}>
+                    Saved Connections
                   </div>
-                </>
-              )}
+                  {!isConnectionsArray ? (
+                    <div className="text-danger fs-6 mt-4">
+                      Failed to load saved connections. Please try again later.
+                    </div>
+                  ) : paginatedConnections.length === 0 ? (
+                    <div className="text-muted fs-6 mt-4">No saved connections yet.</div>
+                  ) : (
+                    <ul className="list-group w-100 mb-3 border-0">
+                      {paginatedConnections.map((conn, idx) => {
+                        const clusterName = getClusterName(conn.connectionString);
+                        const displayName = truncateName(clusterName);
+                        const isLoading = useLoading === conn.connectionString;
+                        return (
+                          <li key={conn._id} className="list-group-item border-0 mb-2 rounded-3 d-flex justify-content-between align-items-center" style={{
+                            background: 'rgba(245,245,255,0.88)',
+                            boxShadow: '0 2px 8px #6366f111'
+                          }}>
+                            <div>
+                              <span className="fw-bold px-3 py-1 rounded-2" style={{
+                                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                                color: '#fff',
+                                fontSize: 17,
+                                letterSpacing: '0.5px',
+                                boxShadow: '0 2px 8px #6366f122'
+                              }}>
+                                {conn.clusterName || getClusterName(conn.connectionString)}
+                              </span>
+                            </div>
+                            <div className="d-flex gap-2 align-items-center">
+                              <button
+                                className="btn fw-bold d-flex align-items-center justify-content-center"
+                                style={{
+                                  background: isLoading
+                                    ? 'linear-gradient(90deg, #818cf8 0%, #6366f1 100%)'
+                                    : 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                                  color: '#fff',
+                                  borderRadius: 8,
+                                  minWidth: 90,
+                                  fontSize: 15,
+                                  opacity: isLoading ? 0.7 : 1,
+                                  position: 'relative'
+                                }}
+                                onClick={() => handleUseConnection(conn.connectionString)}
+                                disabled={isLoading}
+                              >
+                                {isLoading && (
+                                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" style={{ color: '#fff' }} />
+                                )}
+                                <span style={{ opacity: isLoading ? 0 : 1, transition: 'opacity 0.2s' }}>
+                                  <span role="img" aria-label="rocket" className="me-1">🚀</span>
+                                  Use
+                                </span>
+                              </button>
+                              <button
+                                className="btn btn-link p-0"
+                                title="Delete"
+                                ref={el => deleteBtnRefs.current[conn.connectionString] = el}
+                                onClick={() => setConfirmDelete(conn.connectionString)}
+                                style={{ fontSize: 22, color: '#f87171' }}
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                  {/* Pagination */}
+                  {totalConnPages > 1 && (
+                    <nav className="d-flex align-items-center gap-2 mt-2">
+                      <button
+                        className="btn btn-outline-primary btn-sm rounded-2"
+                        onClick={() => setConnPage(p => Math.max(1, p - 1))}
+                        disabled={connPage === 1}
+                      >
+                        Prev
+                      </button>
+                      <span className="fw-bold text-primary">{connPage} / {totalConnPages}</span>
+                      <button
+                        className="btn btn-outline-primary btn-sm rounded-2"
+                        onClick={() => setConnPage(p => Math.min(totalConnPages, p + 1))}
+                        disabled={connPage === totalConnPages}
+                      >
+                        Next
+                      </button>
+                    </nav>
+                  )}
+                  {/* Modal Backdrop and Modal */}
+                  {!isMobile && confirmDelete && (
+                    <>
+                      <div
+                        className="modal-backdrop fade show"
+                        onClick={() => setConfirmDelete(null)}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          background: 'rgba(44, 62, 80, 0.18)',
+                          zIndex: 120,
+                          borderRadius: 22
+                        }}
+                      />
+                      <div
+                        className="d-flex align-items-center justify-content-center"
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          zIndex: 121
+                        }}
+                      >
+                        <div className="modal-dialog modal-dialog-centered" style={{ minWidth: 280, maxWidth: 340 }}>
+                          <div className="modal-content rounded-4 shadow">
+                            <div className="modal-header border-0">
+                              <h5 className="modal-title text-primary fw-bold">Confirm Delete</h5>
+                            </div>
+                            <div className="modal-body text-center">
+                              Are you sure you want to delete this connection?
+                            </div>
+                            <div className="modal-footer border-0 d-flex justify-content-center gap-3">
+                              <button
+                                className="btn btn-danger px-4"
+                                onClick={() => {
+                                  handleDeleteConnection(confirmDelete);
+                                  setConfirmDelete(null);
+                                }}
+                              >
+                                Delete
+                              </button>
+                              <button
+                                className="btn btn-outline-primary px-4"
+                                onClick={() => setConfirmDelete(null)}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Mobile specific: Confirm Delete Modal (covers below header, overlays both cards) */}
-      {isMobile && confirmDelete && (
-        <>
-          {/* Backdrop for mobile: covers below header, overlays both cards */}
-          <div
-            className="modal-backdrop"
-            onClick={() => setConfirmDelete(null)}
-            style={{
-              position: 'fixed',
-              top: 56, // below mobile header
-              left: 0,
-              width: '100vw',
-              height: 'calc(100vh - 56px)',
-              background: 'rgba(44, 62, 80, 0.18)',
-              zIndex: 2000
-            }}
-          />
-          {/* Modal for mobile: centered over both cards */}
-          <div
-            style={{
-              position: 'fixed',
-              top: 56,
-              left: 0,
-              width: '100vw',
-              height: 'calc(100vh - 56px)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 2001,
-              overflowY: 'auto',
-              pointerEvents: 'none'
-            }}
-          >
+        {/* Mobile Confirm Delete Modal */}
+        {isMobile && confirmDelete && (
+          <>
             <div
-              className="modal"
+              className="modal-backdrop fade show"
+              onClick={() => setConfirmDelete(null)}
               style={{
-                position: 'relative',
-                minWidth: 280,
-                maxWidth: '94vw',
-                width: '94vw',
-                background: '#fff',
-                borderRadius: 16,
-                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
-                padding: '32px 22px 22px 22px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                boxSizing: 'border-box',
-                margin: '32px 0',
-                pointerEvents: 'auto'
+                position: 'fixed',
+                top: 56,
+                left: 0,
+                width: '100vw',
+                height: 'calc(100vh - 56px)',
+                background: 'rgba(44, 62, 80, 0.18)',
+                zIndex: 2000
+              }}
+            />
+            <div
+              className="d-flex align-items-center justify-content-center"
+              style={{
+                position: 'fixed',
+                top: 56,
+                left: 0,
+                width: '100vw',
+                height: 'calc(100vh - 56px)',
+                zIndex: 2001,
+                overflowY: 'auto'
               }}
             >
-              <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 10, color: '#6366f1' }}>
-                Confirm Delete
-              </div>
-              <div style={{ color: '#23272f', fontSize: 15, marginBottom: 26, textAlign: 'center' }}>
-                Are you sure you want to delete this connection?
-              </div>
-              <div style={{ display: 'flex', gap: 18 }}>
-                <button
-                  onClick={() => {
-                    handleDeleteConnection(confirmDelete);
-                    setConfirmDelete(null);
-                  }}
-                  style={{
-                    background: '#f87171',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 8,
-                    padding: '10px 22px',
-                    fontWeight: 700,
-                    fontSize: 15,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Delete
-                </button>
-                <button
-                  onClick={() => setConfirmDelete(null)}
-                  style={{
-                    background: '#e0e7ff',
-                    color: '#6366f1',
-                    border: 'none',
-                    borderRadius: 8,
-                    padding: '10px 22px',
-                    fontWeight: 700,
-                    fontSize: 15,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Cancel
-                </button>
+              <div className="modal-dialog modal-dialog-centered" style={{ minWidth: 280, maxWidth: '94vw' }}>
+                <div className="modal-content rounded-4 shadow">
+                  <div className="modal-header border-0">
+                    <h5 className="modal-title text-primary fw-bold">Confirm Delete</h5>
+                  </div>
+                  <div className="modal-body text-center">
+                    Are you sure you want to delete this connection?
+                  </div>
+                  <div className="modal-footer border-0 d-flex justify-content-center gap-3">
+                    <button
+                      className="btn btn-danger px-4"
+                      onClick={() => {
+                        handleDeleteConnection(confirmDelete);
+                        setConfirmDelete(null);
+                      }}
+                    >
+                      Delete
+                    </button>
+                    <button
+                      className="btn btn-outline-primary px-4"
+                      onClick={() => setConfirmDelete(null)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </main>
     </div>
   );
 }
