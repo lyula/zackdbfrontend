@@ -46,8 +46,7 @@ function getPaginatedDatabases(databases, dbPage, dbsPerPage) {
 export default function DatabaseExplorer() {
   const { state } = useLocation();
   // Always extract user from navigation state
-  const { connectionString, databases: initialDatabases, user } = state || {}; // FIX 1: Use initialDatabases for useState below
-  // Now you have access to user.username and user.email everywhere in this component
+  const { connectionString, databases: initialDatabases, user } = state || {};
   console.log('connectionString:', connectionString);
   const navigate = useNavigate();
 
@@ -71,8 +70,8 @@ export default function DatabaseExplorer() {
   // Responsive: detect mobile
   const isMobile = useIsMobile();
   const dbsPerPage = isMobile ? 3 : 5;
-  const colsPerPage = isMobile ? 3 : 3; // You can increase for desktop if you want
-  const [databases, setDatabases] = useState(initialDatabases || []); // FIX 2: Use initialDatabases here
+  const colsPerPage = isMobile ? 3 : 3;
+  const [databases, setDatabases] = useState(initialDatabases || []);
 
   // For live time display
   const [now, setNow] = useState(new Date());
@@ -115,7 +114,7 @@ export default function DatabaseExplorer() {
 
     fetchLocation();
     // Poll every 30 seconds for location change
-    intervalId = setInterval(fetchLocation, 3000);
+    intervalId = setInterval(fetchLocation, 30000);
 
     return () => clearInterval(intervalId);
   }, []);
@@ -139,7 +138,7 @@ export default function DatabaseExplorer() {
     setColPage(1);
     setError('');
     setIsLoadingCollections(true);
-    stopAutoRefresh(); // Stop auto refresh if running
+    stopAutoRefresh();
     try {
       const res = await fetch(`${API_URL}/api/list-collections`, {
         method: 'POST',
@@ -173,17 +172,10 @@ export default function DatabaseExplorer() {
     setIsLoadingDocuments(true);
     setError('');
     try {
-      const params = new URLSearchParams({
-        connectionString,
-        dbName,
-        collectionName,
-        page,
-        limit: recordsPerPage
-      });
       const res = await fetch(`${API_URL}/api/documents`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // <-- Required for JWT cookie
+        credentials: 'include',
         body: JSON.stringify({
           connectionString,
           dbName,
@@ -229,7 +221,7 @@ export default function DatabaseExplorer() {
 
   // Start auto refresh interval
   const startAutoRefresh = () => {
-    if (refreshIntervalRef.current) return; // FIX 2: add 'return' to prevent multiple intervals
+    if (refreshIntervalRef.current) return;
     refreshIntervalRef.current = setInterval(() => {
       fetchDocuments(selectedDb, selectedCollection);
     }, 5000);
@@ -253,7 +245,7 @@ export default function DatabaseExplorer() {
         refreshIntervalRef.current = null;
       }
     };
-  }, [selectedCollection]); // FIX 3: this is correct, but ensure cleanup is returned
+  }, [selectedCollection]);
 
   // Toggle column visibility
   const toggleColumn = (col) => {
@@ -417,7 +409,7 @@ export default function DatabaseExplorer() {
   };
 
   // Spinner logic: only one spinner per device type
-  const showSpinner = (isLoadingCollections || isLoadingDocuments);
+  const showSpinner = isLoadingCollections || isLoadingDocuments;
 
   return (
     <div style={{
@@ -472,7 +464,7 @@ export default function DatabaseExplorer() {
               minute: '2-digit',
               second: '2-digit',
               hour12: false,
-              timeZone: userTimezone // Show time in user's timezone, but do not display the timezone name
+              timeZone: userTimezone
             })}
           </span>
         </div>
@@ -513,27 +505,6 @@ export default function DatabaseExplorer() {
       <div style={{ display: 'flex', alignItems: 'flex-start' }}>
         {/* Sidebar */}
         <div style={sidebarStyle}>
-          {/* Show spinner above databases/collections on mobile when loading collections */}
-          {isMobile && isLoadingCollections && (
-            <div style={{
-              position: 'fixed',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              zIndex: 9999,
-              background: 'rgba(255,255,255,0.85)',
-              borderRadius: 18,
-              boxShadow: '0 4px 24px #6366f144',
-              padding: 24,
-              width: '90vw',
-              maxWidth: 320,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}>
-              <AtlasSpinner />
-            </div>
-          )}
           <div>
             <h3 style={{
               color: '#fff',
@@ -607,7 +578,6 @@ export default function DatabaseExplorer() {
                 Collections
               </h3>
               {paginatedCols.map(col => {
-                // If col is an object (e.g., { name: 'users' }), use col.name; otherwise use col
                 const colName = typeof col === 'string' ? col : col.name;
                 return (
                   <span
@@ -673,40 +643,29 @@ export default function DatabaseExplorer() {
           alignItems: 'flex-start',
           height: 'calc(100vh - 110px)'
         }}>
-          {/* Show spinner above table/sidebar on mobile when loading */}
-          {isMobile && showSpinner && (
+          {/* Unified spinner logic: one spinner for mobile or desktop */}
+          {showSpinner && (
             <div style={{
-              position: 'fixed',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              zIndex: 9999,
-              background: 'rgba(255,255,255,0.85)',
-              borderRadius: 18,
-              boxShadow: '0 4px 24px #6366f144',
-              padding: 24,
-              width: '90vw',
-              maxWidth: 320,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}>
-              <AtlasSpinner />
-            </div>
-          )}
-          {/* Show spinner in main area on desktop only */}
-          {!isMobile && showSpinner && (
-            <div style={{
-              width: '100%',
+              position: isMobile ? 'fixed' : 'relative',
+              top: isMobile ? '50%' : 'auto',
+              left: isMobile ? '50%' : 'auto',
+              transform: isMobile ? 'translate(-50%, -50%)' : 'none',
+              zIndex: isMobile ? 9999 : 'auto',
+              background: isMobile ? 'rgba(255,255,255,0.85)' : 'transparent',
+              borderRadius: isMobile ? 18 : 0,
+              boxShadow: isMobile ? '0 4px 24px #6366f144' : 'none',
+              padding: isMobile ? 24 : 0,
+              width: isMobile ? '90vw' : '100%',
+              maxWidth: isMobile ? 320 : 'none',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              minHeight: 320
+              minHeight: isMobile ? 'auto' : 320
             }}>
               <AtlasSpinner />
             </div>
           )}
-          {columns.length > 0 && (
+          {columns.length > 0 && !showSpinner && (
             <div style={tableContainerStyle}>
               {/* Table Title Row */}
               <div style={{
@@ -887,31 +846,8 @@ export default function DatabaseExplorer() {
                 opacity: 0.85,
                 letterSpacing: '0.5px'
               }}>
-                &copy; {new Date().getFullYear()} All Rights Reserved | ZACKDB
+                © {new Date().getFullYear()} All Rights Reserved | ZACKDB
               </footer>
-            </div>
-          )}
-          {(isLoadingCollections || isLoadingDocuments) && (
-            <div style={{
-              width: '100%',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              minHeight: 320
-            }}>
-              <AtlasSpinner />
-            </div>
-          )}
-          {/* Only show fallback spinner on desktop */}
-          {!isMobile && (isLoadingCollections || isLoadingDocuments) && (
-            <div style={{
-              width: '100%',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              minHeight: 320
-            }}>
-              <AtlasSpinner />
             </div>
           )}
         </div>
@@ -942,8 +878,8 @@ function AtlasSpinner() {
           position: 'absolute',
           width: 64,
           height: 64,
-          border: '6px solid #6366f1', // theme color
-          borderTop: '6px solid #818cf8', // lighter theme color
+          border: '6px solid #6366f1',
+          borderTop: '6px solid #818cf8',
           borderRadius: '50%',
           animation: 'atlas-spin 1.1s linear infinite'
         }} />
@@ -954,7 +890,7 @@ function AtlasSpinner() {
           width: 10,
           height: 10,
           borderRadius: '50%',
-          background: '#6366f1', // theme color
+          background: '#6366f1',
           boxShadow: '0 0 12px #818cf8'
         }} />
       </div>
