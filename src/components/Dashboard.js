@@ -1130,34 +1130,36 @@ export default function Dashboard({ user: userProp }) {
                     className="modal-backdrop"
                     onClick={() => setConfirmDelete(null)}
                     style={{
-                      position: 'absolute',
+                      position: isMobile ? 'fixed' : 'absolute',
                       top: 0,
                       left: 0,
-                      width: '100%',
-                      height: '100%',
+                      width: '100vw',
+                      height: '100vh',
                       background: 'rgba(44, 62, 80, 0.18)',
-                      zIndex: 20,
-                      borderRadius: 22
+                      zIndex: 120,
+                      borderRadius: isMobile ? 0 : 22
                     }}
                   />
                   {/* Modal */}
                   <div
                     className="modal"
                     style={{
-                      position: 'absolute',
+                      position: isMobile ? 'fixed' : 'absolute',
                       top: '50%',
                       left: '50%',
                       transform: 'translate(-50%, -50%)',
                       minWidth: 280,
-                      maxWidth: 340,
+                      maxWidth: isMobile ? '90vw' : 340,
+                      width: isMobile ? '90vw' : undefined,
                       background: '#fff',
                       borderRadius: 16,
                       boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
-                      zIndex: 21,
+                      zIndex: 121,
                       padding: '32px 22px 22px 22px',
                       display: 'flex',
                       flexDirection: 'column',
-                      alignItems: 'center'
+                      alignItems: 'center',
+                      boxSizing: 'border-box'
                     }}
                   >
                     <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 10, color: '#6366f1' }}>
