@@ -536,7 +536,7 @@ export default function Dashboard({ user: userProp }) {
                   <button
                     className="btn fw-bold mb-2 px-4 py-2"
                     style={{
-                      background: 'linear-gradient(120deg, #7c3aed 0%, #6366f1 50%, #818cf8 100%)',
+                      background: 'linear-gradient(120deg, #7c3aed 0%, #6366f1 50%, #818cf8 100%)', // Match clustername and use buttons
                       color: '#fff',
                       borderRadius: 10,
                       fontSize: 17,
@@ -812,21 +812,3 @@ export default function Dashboard({ user: userProp }) {
     </div>
   );
 }
-
-// In the Save & Connect button, use the same purple gradient as cluster/use buttons:
-{/* ...inside your Save & Connect button... */}
-<button
-  className="btn fw-bold mb-2 px-4 py-2"
-  style={{
-    background: 'linear-gradient(120deg, #7c3aed 0%, #6366f1 50%, #818cf8 100%)',
-    color: '#fff',
-    borderRadius: 10,
-    fontSize: 17,
-    letterSpacing: '0.5px'
-  }}
-  onClick={() => handleConnect(input)}
-  disabled={!input}
->
-  <span role="img" aria-label="rocket" className="me-2">🚀</span>
-  Save & Connect
-</button>
