@@ -81,7 +81,8 @@ export default function DatabaseExplorer() {
 
   // Loading states
   const [isLoadingCollections, setIsLoadingCollections] = useState(false);
-  const [isInitialDocumentsLoad, setIsInitialDocumentsLoad] = useState(true); // NEW
+  const [isInitialDocumentsLoad, setIsInitialDocumentsLoad] = useState(true);
+  const [isLoadingDocuments, setIsLoadingDocuments] = useState(false); // <-- Add this line
 
   // Auto refresh state
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
