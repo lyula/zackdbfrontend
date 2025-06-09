@@ -742,15 +742,27 @@ export default function DatabaseExplorer() {
                     }}
                   >
                     <option value="">Filter by...</option>
-                    {visibleColumns.map(col => (
-                      <option key={col} value={col}>{col}</option>
-                    ))}
+                    {/* Exclude 'password' from filter options */}
+                    {visibleColumns
+                      .filter(col => col !== 'password')
+                      .map(col => (
+                        <option key={col} value={col}>{col}</option>
+                      ))}
                   </select>
                   <input
                     type="text"
                     placeholder="Search..."
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
+                    onFocus={() => {
+                      if (!searchField) {
+                        Swal.fire({
+                          icon: 'info',
+                          title: 'Select a Filter',
+                          text: 'Please select a filter parameter before searching.'
+                        });
+                      }
+                    }}
                     style={{
                       padding: '7px 14px',
                       borderRadius: 6,
@@ -855,10 +867,10 @@ export default function DatabaseExplorer() {
                   </tbody>
                 </table>
               </div>
-              {/* Pagination Controls */}
+              {/* Move Pagination Controls here, just above the footer */}
               {totalPages > 1 && (
                 <div style={{
-                  marginTop: 14,
+                  marginTop: 32, // Increased margin to move it down
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
