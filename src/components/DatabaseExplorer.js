@@ -15,6 +15,17 @@ function getCountryFlag(countryCode) {
     .join('');
 }
 
+// Custom hook to determine if the device is mobile
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return isMobile;
+}
+
 export default function DatabaseExplorer() {
   const { state } = useLocation();
   // Always extract user from navigation state
@@ -40,8 +51,10 @@ export default function DatabaseExplorer() {
   const [dbPage, setDbPage] = useState(1);
   const [colPage, setColPage] = useState(1);
   const recordsPerPage = 10;
-  const dbsPerPage = 5;
-  const colsPerPage = 3;
+  // Responsive: detect mobile
+  const isMobile = useIsMobile();
+  const dbsPerPage = isMobile ? 3 : 5;
+  const colsPerPage = isMobile ? 3 : 3; // You can increase for desktop if you want
   const [databases, setDatabases] = useState(initialDatabases || []); // FIX 2: Use initialDatabases here
 
   // For live time display
@@ -93,11 +106,11 @@ export default function DatabaseExplorer() {
   // Pagination for databases and collections
   const totalDbPages = Math.ceil((Array.isArray(databases) ? databases.length : 0) / dbsPerPage);
   const paginatedDbs = Array.isArray(databases)
-    ? databases.slice((dbPage - 1) * dbsPerPage, dbPage * dbsPerPage)
+    ? databases.slice().reverse().slice((dbPage - 1) * dbsPerPage, dbPage * dbsPerPage)
     : [];
   const totalColPages = Math.ceil((Array.isArray(collections) ? collections.length : 0) / colsPerPage);
   const paginatedCols = Array.isArray(collections)
-    ? collections.slice((colPage - 1) * colsPerPage, colPage * colsPerPage)
+    ? collections.slice().reverse().slice((colPage - 1) * colsPerPage, colPage * colsPerPage)
     : [];
 
   const handleSelectDb = async (dbName) => {
@@ -247,14 +260,15 @@ export default function DatabaseExplorer() {
 
   // --- Styling --- ULTRA MODERN THEME ---
   const sidebarStyle = {
-    width: 260,
-    minWidth: 200,
+    width: isMobile ? '100%' : 260,
+    minWidth: isMobile ? 'unset' : 200,
     background: 'linear-gradient(160deg, #6366f1 60%, #818cf8 100%)',
     borderRadius: 18,
     boxShadow: '0 4px 24px #6366f144',
-    padding: '24px 14px',
-    marginRight: 32,
-    height: 'calc(100vh - 110px)',
+    padding: isMobile ? '12px 6px' : '24px 14px',
+    marginRight: isMobile ? 0 : 32,
+    height: isMobile ? 'auto' : 'calc(100vh - 110px)',
+    maxHeight: isMobile ? 'none' : 'calc(100vh - 110px)',
     overflowY: 'auto',
     display: 'flex',
     flexDirection: 'column',

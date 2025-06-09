@@ -550,8 +550,11 @@ export default function Dashboard({ user: userProp }) {
     }
   };
 
+  const [useLoading, setUseLoading] = useState(null); // <-- Add this state
+
   const handleUseConnection = async (connStr) => {
     setError('');
+    setUseLoading(connStr); // <-- Set loading for this connection
     try {
       const res = await fetch(`${API_URL}/api/list-databases`, {
         method: 'POST',
@@ -560,10 +563,11 @@ export default function Dashboard({ user: userProp }) {
         body: JSON.stringify({ connectionString: connStr })
       });
       const dbs = await res.json();
-      // Pass user object in navigation state
       navigate('/explore', { state: { connectionString: connStr, databases: dbs, user } });
     } catch {
       setError('Failed to fetch databases.');
+    } finally {
+      setUseLoading(null); // <-- Reset loading state
     }
   };
 
@@ -958,6 +962,7 @@ export default function Dashboard({ user: userProp }) {
                   {paginatedConnections.map((conn, idx) => {
                     const clusterName = getClusterName(conn.connectionString);
                     const displayName = truncateName(clusterName);
+                    const isLoading = useLoading === conn.connectionString; // <-- Check loading
                     return (
                       <li key={conn._id} style={{
                         background: 'rgba(245,245,255,0.88)',
@@ -987,30 +992,47 @@ export default function Dashboard({ user: userProp }) {
                           >
                             {conn.clusterName || getClusterName(conn.connectionString)}
                           </div>
-                          {/* Optionally, remove or hide the connection string */}
-                          {/* <div style={{ fontSize: 14, color: '#6366f1', wordBreak: 'break-all', opacity: 0.85 }}>
-                            {conn.connectionString}
-                          </div> */}
                         </div>
                         <div style={{ display: 'flex', gap: 8 }}>
                           <button
                             onClick={() => handleUseConnection(conn.connectionString)}
+                            disabled={isLoading}
                             style={{
-                              background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                              background: isLoading
+                                ? 'linear-gradient(90deg, #818cf8 0%, #6366f1 100%)'
+                                : 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
                               color: '#fff',
                               border: 'none',
                               borderRadius: 8,
                               padding: '7px 18px',
                               fontWeight: 700,
                               fontSize: 15,
-                              cursor: 'pointer',
+                              cursor: isLoading ? 'not-allowed' : 'pointer',
                               boxShadow: '0 2px 8px #6366f122',
                               display: 'flex',
                               alignItems: 'center',
-                              gap: 8
+                              gap: 8,
+                              opacity: isLoading ? 0.7 : 1,
+                              position: 'relative',
+                              minWidth: 70
                             }}
                           >
-                            <span role="img" aria-label="rocket">🚀</span> Use
+                            {isLoading ? (
+                              // Visually appealing spinner
+                              <span style={{
+                                display: 'inline-block',
+                                width: 20,
+                                height: 20,
+                                border: '3px solid #fff',
+                                borderTop: '3px solid #6366f1',
+                                borderRadius: '50%',
+                                animation: 'spin 1s linear infinite',
+                                marginRight: 8
+                              }} />
+                            ) : (
+                              <span role="img" aria-label="rocket">🚀</span>
+                            )}
+                            {isLoading ? 'Loading...' : 'Use'}
                           </button>
                           <span
                             role="button"
