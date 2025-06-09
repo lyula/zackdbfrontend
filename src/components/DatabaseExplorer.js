@@ -4,14 +4,15 @@ import Swal from 'sweetalert2';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
-// Helper to get country flag emoji from geolocation (if available), fallback to locale
+// Helper to get country flag emoji from country code (works for all ISO 3166-1 alpha-2 codes)
 function getCountryFlag(countryCode) {
-  if (!countryCode) return '🌍';
+  if (!countryCode || typeof countryCode !== 'string' || countryCode.length !== 2) return '🌍';
+  // Convert country code to regional indicator symbols
   return countryCode
     .toUpperCase()
-    .replace(/./g, char =>
-      String.fromCodePoint(127397 + char.charCodeAt())
-    );
+    .split('')
+    .map(char => String.fromCodePoint(127397 + char.charCodeAt()))
+    .join('');
 }
 // 
 export default function DatabaseExplorer() {
@@ -66,7 +67,7 @@ export default function DatabaseExplorer() {
   useEffect(() => {
     fetch('https://ipapi.co/json/')
       .then(res => res.json())
-      .then(data => setCountry(data.country_code)) // FIX 1: add parentheses around 'data'
+      .then(data => setCountry(data.country_code)) // Always use the 2-letter code for flag
       .catch(() => {
         // fallback to locale if geolocation fails
         const locale = Intl.DateTimeFormat().resolvedOptions().locale;
