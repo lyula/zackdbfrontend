@@ -168,8 +168,13 @@ export default function LoginForm({ setUser }) {
               autoComplete="current-password"
               style={{
                 border: '1.5px solid #6366f1',
-                background: 'rgba(248,250,252,0.95)',
-                color: '#23272f'
+                background: '#f1f5ff', // Match register page background
+                color: '#23272f',
+                borderTopRightRadius: 0,
+                borderBottomRightRadius: 0,
+                boxShadow: 'none',
+                fontSize: 15,
+                padding: '10px 12px'
               }}
             />
             <button
@@ -181,8 +186,11 @@ export default function LoginForm({ setUser }) {
               style={{
                 border: '1.5px solid #6366f1',
                 borderLeft: 'none',
-                background: 'rgba(248,250,252,0.95)',
-                color: '#6366f1'
+                background: '#f1f5ff', // Match register page background
+                color: '#6366f1',
+                borderTopLeftRadius: 0,
+                borderBottomLeftRadius: 0,
+                boxShadow: 'none'
               }}
             >
               {showPassword ? (
