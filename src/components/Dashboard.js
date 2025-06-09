@@ -1014,25 +1014,36 @@ export default function Dashboard({ user: userProp }) {
                               gap: 8,
                               opacity: isLoading ? 0.7 : 1,
                               position: 'relative',
-                              minWidth: 70
+                              minWidth: 90, // <-- Fixed width for button
+                              justifyContent: 'center',
+                              overflow: 'hidden'
                             }}
                           >
-                            {isLoading ? (
-                              // Visually appealing spinner
+                            {isLoading && (
                               <span style={{
-                                display: 'inline-block',
-                                width: 20,
-                                height: 20,
-                                border: '3px solid #fff',
-                                borderTop: '3px solid #6366f1',
-                                borderRadius: '50%',
-                                animation: 'spin 1s linear infinite',
-                                marginRight: 8
-                              }} />
-                            ) : (
-                              <span role="img" aria-label="rocket">🚀</span>
+                                position: 'absolute',
+                                left: '50%',
+                                top: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}>
+                                <span style={{
+                                  display: 'inline-block',
+                                  width: 20,
+                                  height: 20,
+                                  border: '3px solid #fff',
+                                  borderTop: '3px solid #6366f1',
+                                  borderRadius: '50%',
+                                  animation: 'spin 1s linear infinite'
+                                }} />
+                              </span>
                             )}
-                            {isLoading ? 'Loading...' : 'Use'}
+                            <span style={{ opacity: isLoading ? 0 : 1, transition: 'opacity 0.2s' }}>
+                              <span role="img" aria-label="rocket">🚀</span>
+                              Use
+                            </span>
                           </button>
                           <span
                             role="button"
