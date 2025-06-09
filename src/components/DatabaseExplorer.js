@@ -26,10 +26,10 @@ function useIsMobile() {
   return isMobile;
 }
 
-// Place this function in your Explore component or a utilities file
-function sortDatabases(databases) {
+// Remove dbsPerPage/dbPage from sortDatabases, just sort and split
+function getPaginatedDatabases(databases, dbPage, dbsPerPage) {
   const special = ['admin', 'local'];
-  const normalDbs = databases.filter(db => !special.includes(db)).sort((a, b) => b.localeCompare(a));
+  const normalDbs = databases.filter(db => !special.includes(db));
   const specialDbs = databases.filter(db => special.includes(db));
   const totalDbPages = Math.ceil((normalDbs.length + specialDbs.length) / dbsPerPage);
 
@@ -123,7 +123,7 @@ export default function DatabaseExplorer() {
   // Pagination for databases and collections
   const totalDbPages = Math.ceil((Array.isArray(databases) ? databases.length : 0) / dbsPerPage);
   const paginatedDbs = Array.isArray(databases)
-    ? sortDatabases(databases).slice((dbPage - 1) * dbsPerPage, dbPage * dbsPerPage)
+    ? getPaginatedDatabases(databases, dbPage, dbsPerPage)
     : [];
   const totalColPages = Math.ceil((Array.isArray(collections) ? collections.length : 0) / colsPerPage);
   const paginatedCols = Array.isArray(collections)
@@ -521,7 +521,7 @@ export default function DatabaseExplorer() {
               fontWeight: 800,
               letterSpacing: '-0.5px'
             }}>Databases</h3>
-            {sortedDatabases.map(db => (
+            {paginatedDbs.map(db => (
               <span
                 key={db}
                 style={selectedDb === db ? cardSelected : cardStyle}
