@@ -1131,10 +1131,10 @@ export default function Dashboard({ user: userProp }) {
                     onClick={() => setConfirmDelete(null)}
                     style={{
                       position: isMobile ? 'fixed' : 'absolute',
-                      top: 0,
+                      top: isMobile ? 56 : 0, // below header on mobile
                       left: 0,
                       width: '100vw',
-                      height: '100vh',
+                      height: isMobile ? 'calc(100vh - 56px)' : '100vh',
                       background: 'rgba(44, 62, 80, 0.18)',
                       zIndex: 120,
                       borderRadius: isMobile ? 0 : 22
@@ -1144,15 +1144,16 @@ export default function Dashboard({ user: userProp }) {
                   <div
                     style={{
                       position: isMobile ? 'fixed' : 'absolute',
-                      top: 0,
+                      top: isMobile ? 56 : 0, // below header on mobile
                       left: 0,
                       width: '100vw',
-                      height: '100vh',
+                      height: isMobile ? 'calc(100vh - 56px)' : '100vh',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       zIndex: 121,
-                      overflowY: 'auto'
+                      overflowY: 'auto',
+                      pointerEvents: 'none' // Prevents accidental clicks outside modal
                     }}
                   >
                     <div
@@ -1170,7 +1171,8 @@ export default function Dashboard({ user: userProp }) {
                         flexDirection: 'column',
                         alignItems: 'center',
                         boxSizing: 'border-box',
-                        margin: isMobile ? '32px 0' : undefined // margin for top/bottom breathing room
+                        margin: isMobile ? '32px 0' : undefined,
+                        pointerEvents: 'auto' // Allows interaction with modal
                       }}
                     >
                       <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 10, color: '#6366f1' }}>
