@@ -577,22 +577,34 @@ export default function Dashboard({ user: userProp }) {
                     <div className="input-group rounded-3 overflow-hidden" style={{ maxWidth: 480, width: '100%' }}>
                       <input
                         type="text"
-                        className="form-control border-0 rounded-start-3 shadow-sm"
+                        className="form-control border-0 rounded-3 shadow-sm"
                         placeholder="Enter your connection string"
                         aria-label="Connection string"
                         value={input}
                         onChange={e => setInput(e.target.value)}
                         style={{ height: 54, fontSize: 16 }}
                       />
-                      <button
-                        className="btn btn-primary rounded-end-3 shadow-sm"
-                        onClick={() => handleConnect(input)}
-                        style={{ height: 54, minWidth: 120, fontSize: 16 }}
-                        disabled={loading}
-                      >
-                        {loading ? 'Connecting...' : 'Connect'}
-                      </button>
                     </div>
+                    <button
+                      className="btn fw-bold d-flex align-items-center justify-content-center shadow-sm"
+                      onClick={() => handleConnect(input)}
+                      style={{
+                        height: 54,
+                        width: '100%',
+                        maxWidth: 480,
+                        fontSize: 17,
+                        background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 12,
+                        boxShadow: '0 2px 12px #6366f122',
+                        gap: 10
+                      }}
+                      disabled={loading}
+                    >
+                      <span role="img" aria-label="rocket" style={{ fontSize: 22 }}>🚀</span>
+                      {loading ? 'Connecting...' : 'Save & Connect'}
+                    </button>
                     {error && (
                       <div className="alert alert-danger text-center rounded-3 shadow-sm" style={{ maxWidth: 480, width: '100%', fontSize: 14 }}>
                         {error}
@@ -613,13 +625,7 @@ export default function Dashboard({ user: userProp }) {
                     <h2 className="fw-bold" style={{ fontSize: 22, color: '#333' }}>
                       Your Connections
                     </h2>
-                    <button
-                      className="btn btn-primary rounded-3 shadow-sm"
-                      onClick={() => setConnPage(1)}
-                      style={{ height: 38, fontSize: 14 }}
-                    >
-                      Refresh
-                    </button>
+                    {/* Refresh button removed */}
                   </div>
                   {/* Connection items list */}
                   <div className="flex-grow-1" style={{ overflowY: 'auto', paddingRight: isMobile ? 0 : 16 }}>
@@ -654,27 +660,46 @@ export default function Dashboard({ user: userProp }) {
                               <div className="fw-semibold" style={{ fontSize: 16, color: '#333' }}>
                                 {truncateName(getClusterName(conn.connectionString), 20)}
                               </div>
-                              <div className="text-muted" style={{ fontSize: 14 }}>
+                              {/* <div className="text-muted" style={{ fontSize: 14 }}>
                                 {conn.connectionString}
-                              </div>
+                              </div> */}
                             </div>
                           </div>
                           {/* Right: Action buttons */}
                           <div className="d-flex align-items-center gap-2">
                             <button
-                              className="btn btn-outline-primary rounded-3 shadow-sm"
+                              className="btn fw-bold d-flex align-items-center justify-content-center shadow-sm"
                               onClick={() => handleUseConnection(conn.connectionString)}
-                              style={{ height: 38, fontSize: 14 }}
+                              style={{
+                                height: 38,
+                                fontSize: 14,
+                                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: 8,
+                                minWidth: 100,
+                                boxShadow: '0 2px 12px #6366f122'
+                              }}
                               disabled={useLoading === conn.connectionString}
                             >
                               {useLoading === conn.connectionString ? 'Connecting...' : 'Connect'}
                             </button>
                             <button
-                              className="btn btn-danger rounded-3 shadow-sm"
+                              className="btn fw-bold d-flex align-items-center justify-content-center shadow-sm"
                               onClick={() => setConfirmDelete(conn.connectionString)}
-                              style={{ height: 38, fontSize: 14 }}
+                              style={{
+                                height: 38,
+                                fontSize: 18,
+                                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: 8,
+                                minWidth: 38,
+                                boxShadow: '0 2px 12px #6366f122'
+                              }}
+                              aria-label="Delete"
                             >
-                              Delete
+                              <span role="img" aria-label="delete">🗑️</span>
                             </button>
                           </div>
                         </div>
@@ -685,10 +710,19 @@ export default function Dashboard({ user: userProp }) {
                   {totalConnPages > 1 && (
                     <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
                       <button
-                        className="btn btn-light rounded-3 shadow-sm"
+                        className="btn fw-bold shadow-sm"
                         onClick={() => setConnPage(p => Math.max(p - 1, 1))}
                         disabled={connPage === 1}
-                        style={{ height: 38, fontSize: 14, minWidth: 80 }}
+                        style={{
+                          height: 38,
+                          fontSize: 14,
+                          minWidth: 80,
+                          background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          boxShadow: '0 2px 12px #6366f122'
+                        }}
                       >
                         Previous
                       </button>
@@ -696,10 +730,19 @@ export default function Dashboard({ user: userProp }) {
                         Page {connPage} of {totalConnPages}
                       </div>
                       <button
-                        className="btn btn-light rounded-3 shadow-sm"
+                        className="btn fw-bold shadow-sm"
                         onClick={() => setConnPage(p => Math.min(p + 1, totalConnPages))}
                         disabled={connPage === totalConnPages}
-                        style={{ height: 38, fontSize: 14, minWidth: 80 }}
+                        style={{
+                          height: 38,
+                          fontSize: 14,
+                          minWidth: 80,
+                          background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          boxShadow: '0 2px 12px #6366f122'
+                        }}
                       >
                         Next
                       </button>
@@ -722,19 +765,35 @@ export default function Dashboard({ user: userProp }) {
               </p>
               <div className="d-flex justify-content-end gap-2">
                 <button
-                  className="btn btn-secondary rounded-3 shadow-sm"
+                  className="btn fw-bold shadow-sm"
                   onClick={() => setConfirmDelete(null)}
-                  style={{ height: 38, fontSize: 14 }}
+                  style={{
+                    height: 38,
+                    fontSize: 14,
+                    background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 8,
+                    boxShadow: '0 2px 12px #6366f122'
+                  }}
                 >
                   Cancel
                 </button>
                 <button
-                  className="btn btn-danger rounded-3 shadow-sm"
+                  className="btn fw-bold shadow-sm"
                   onClick={() => {
                     handleDeleteConnection(confirmDelete);
                     setConfirmDelete(null);
                   }}
-                  style={{ height: 38, fontSize: 14 }}
+                  style={{
+                    height: 38,
+                    fontSize: 14,
+                    background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 8,
+                    boxShadow: '0 2px 12px #6366f122'
+                  }}
                 >
                   Delete
                 </button>

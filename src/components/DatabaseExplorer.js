@@ -340,9 +340,10 @@ export default function DatabaseExplorer() {
     borderSpacing: 0,
     width: '100%',
     background: '#fff',
-    borderRadius: 12,
+    borderRadius: 12, // Only here!
     boxShadow: '0 2px 8px #6366f122',
-    marginBottom: 0
+    marginBottom: 0,
+    overflow: 'hidden' // Ensures children don't overflow the rounded corners
   };
   const thStyle = {
     background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
@@ -351,8 +352,9 @@ export default function DatabaseExplorer() {
     fontWeight: 700,
     border: 'none',
     fontSize: 15,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8
+    // Remove border radius from columns
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0
   };
   const tdStyle = {
     padding: '10px 14px',
