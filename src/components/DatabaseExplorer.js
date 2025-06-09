@@ -745,17 +745,18 @@ export default function DatabaseExplorer() {
                   </thead>
                   <tbody>
                     {documents.map((doc, idx) => {
-                      const absoluteIdx = (currentPage - 1) * recordsPerPage + idx;
+                      // Numbering: latest document is totalDocuments, then totalDocuments-1, ...
+                      const descendingNumber = totalDocuments - ((currentPage - 1) * recordsPerPage + idx);
                       return (
                         <tr
                           key={idx}
                           style={{
-                            background: absoluteIdx % 2 === 0 ? 'rgba(255,255,255,0.95)' : '#f1f5fd',
+                            background: ((currentPage - 1) * recordsPerPage + idx) % 2 === 0 ? 'rgba(255,255,255,0.95)' : '#f1f5fd',
                             height: 38
                           }}
                         >
                           <td style={{ ...tdStyle, height: 38 }}>
-                            {absoluteIdx + 1}
+                            {descendingNumber}
                           </td>
                           {visibleColumns.map(col => (
                             <td key={col} style={{ ...tdStyle, height: 38 }}>
