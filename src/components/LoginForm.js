@@ -132,7 +132,13 @@ export default function LoginForm({ setUser }) {
           Login to ZackDB
         </h2>
         {/* Email Field */}
-        <div style={{ width: '100%', marginBottom: 10, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{
+          width: 220,
+          marginBottom: 10,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
+        }}>
           <label htmlFor="email" style={{
             display: 'block',
             marginBottom: 4,

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-// Import SweetAlert2
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { MONGO_CONNECTION_STRING, DB_NAME, USER_COLLECTION } from '../constants';
@@ -53,11 +52,10 @@ export default function RegisterForm() {
           collectionName: USER_COLLECTION,
           email,
           password,
-          username // <-- add this line
+          username
         })
       });
 
-      // If registration failed
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         const msg = data?.message || 'Registration failed. Try a different email.';
@@ -69,7 +67,6 @@ export default function RegisterForm() {
         return;
       }
 
-      // Registration succeeded
       Swal.fire({
         icon: 'success',
         title: 'Registration Successful!',
@@ -135,7 +132,13 @@ export default function RegisterForm() {
           Register for ZackDB
         </h2>
         {/* Username Field */}
-        <div style={{ width: '100%', marginBottom: 10, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{
+          width: 220,
+          marginBottom: 10,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
+        }}>
           <label htmlFor="username" style={{
             display: 'block',
             marginBottom: 4,
@@ -172,7 +175,13 @@ export default function RegisterForm() {
           />
         </div>
         {/* Email Field */}
-        <div style={{ width: '100%', marginBottom: 10, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{
+          width: 220,
+          marginBottom: 10,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
+        }}>
           <label htmlFor="email" style={{
             display: 'block',
             marginBottom: 4,
