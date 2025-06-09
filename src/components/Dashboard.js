@@ -47,13 +47,13 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
 
   const currentYear = new Date().getFullYear();
 
-  // Sidebar is always visible on desktop, but collapsed by default. On mobile, it toggles.
+  // Sidebar: hidden by default on mobile, toggled by hamburger; always visible/collapsed on desktop
   const sidebarStyles = {
-    width: sidebarOpen ? 270 : 72, // Collapsed width is 72px
+    width: sidebarOpen ? 270 : 72,
     minWidth: 0,
     maxWidth: 270,
     height: '100vh',
-    background: 'linear-gradient(120deg, #6366f1 0%, #818cf8 100%)',
+    background: 'linear-gradient(120deg, #7c3aed 0%, #6366f1 50%, #818cf8 100%)',
     boxShadow: '0 0 32px 0 rgba(99,102,241,0.13), 0 2px 12px #818cf855',
     borderTopRightRadius: 18,
     borderBottomRightRadius: 18,
@@ -209,11 +209,12 @@ export default function Dashboard({ user: userProp }) {
   const connectionsPerPage = 5;
 
   const isMobile = useMediaQuery({ maxWidth: 768 });
-  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
 
-  // Update sidebar state if screen size changes
+  // Sidebar: hidden by default on mobile, collapsed by default on desktop
+  const [sidebarOpen, setSidebarOpen] = useState(isMobile ? false : false);
+
   useEffect(() => {
-    setSidebarOpen(!isMobile);
+    setSidebarOpen(isMobile ? false : false); // Always hidden by default on mobile, collapsed on desktop
   }, [isMobile]);
 
   // Auto-hide error after 3 seconds
@@ -535,7 +536,7 @@ export default function Dashboard({ user: userProp }) {
                   <button
                     className="btn fw-bold mb-2 px-4 py-2"
                     style={{
-                      background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                      background: 'linear-gradient(120deg, #7c3aed 0%, #6366f1 50%, #818cf8 100%)',
                       color: '#fff',
                       borderRadius: 10,
                       fontSize: 17,
@@ -587,11 +588,12 @@ export default function Dashboard({ user: userProp }) {
                             background: 'rgba(245,245,255,0.88)',
                             boxShadow: '0 2px 8px #6366f111'
                           }}>
-                            <div>
+                            {/* Clustername, Use, Delete - always in a row */}
+                            <div className="d-flex align-items-center w-100" style={isMobile ? { gap: 10, flexDirection: 'row' } : { gap: 10 }}>
                               <span
                                 className="fw-bold px-3 py-2 rounded-2 d-inline-block text-truncate"
                                 style={{
-                                  background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                                  background: 'linear-gradient(90deg, #7c3aed 0%, #6366f1 50%, #818cf8 100%)',
                                   color: '#fff',
                                   fontSize: 17,
                                   letterSpacing: '0.5px',
@@ -604,21 +606,18 @@ export default function Dashboard({ user: userProp }) {
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
                                   whiteSpace: 'nowrap',
-                                  textAlign: 'center',
-                                  marginBottom: isMobile ? 8 : 0 // Add spacing below on mobile
+                                  textAlign: 'center'
                                 }}
                                 title={conn.clusterName || clusterName}
                               >
                                 {displayName}
                               </span>
-                            </div>
-                            <div className={`d-flex align-items-center${isMobile ? ' flex-column' : ' gap-2'}`} style={isMobile ? { gap: 10 } : {}}>
                               <button
                                 className="btn fw-bold d-flex align-items-center justify-content-center"
                                 style={{
                                   background: isLoading
                                     ? 'linear-gradient(90deg, #818cf8 0%, #6366f1 100%)'
-                                    : 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                                    : 'linear-gradient(120deg, #7c3aed 0%, #6366f1 50%, #818cf8 100%)',
                                   color: '#fff',
                                   borderRadius: 8,
                                   minWidth: 90,
@@ -627,7 +626,7 @@ export default function Dashboard({ user: userProp }) {
                                   opacity: isLoading ? 0.7 : 1,
                                   position: 'relative',
                                   padding: '0 18px',
-                                  marginTop: isMobile ? 8 : 0 // Add spacing above on mobile
+                                  marginLeft: isMobile ? 0 : 0
                                 }}
                                 onClick={() => handleUseConnection(conn.connectionString)}
                                 disabled={isLoading}
@@ -658,7 +657,7 @@ export default function Dashboard({ user: userProp }) {
                                 title="Delete"
                                 ref={el => deleteBtnRefs.current[conn.connectionString] = el}
                                 onClick={() => setConfirmDelete(conn.connectionString)}
-                                style={{ fontSize: 22, color: '#f87171', marginTop: isMobile ? 8 : 0 }}
+                                style={{ fontSize: 22, color: '#f87171', marginLeft: 8 }}
                               >
                                 🗑️
                               </button>
@@ -813,3 +812,21 @@ export default function Dashboard({ user: userProp }) {
     </div>
   );
 }
+
+// In the Save & Connect button, use the same purple gradient as cluster/use buttons:
+{/* ...inside your Save & Connect button... */}
+<button
+  className="btn fw-bold mb-2 px-4 py-2"
+  style={{
+    background: 'linear-gradient(120deg, #7c3aed 0%, #6366f1 50%, #818cf8 100%)',
+    color: '#fff',
+    borderRadius: 10,
+    fontSize: 17,
+    letterSpacing: '0.5px'
+  }}
+  onClick={() => handleConnect(input)}
+  disabled={!input}
+>
+  <span role="img" aria-label="rocket" className="me-2">🚀</span>
+  Save & Connect
+</button>
