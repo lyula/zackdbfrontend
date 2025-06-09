@@ -64,8 +64,8 @@ export default function LoginForm({ setUser }) {
       });
       if (userRes.ok) {
         const userData = await userRes.json();
-        setUser(userData.user || userData); // userData.user contains username and email
-        localStorage.setItem('token', 'dummy'); // Just to trigger App useEffect
+        setUser(userData.user || userData);
+        localStorage.setItem('token', 'dummy');
         navigate('/dashboard', { replace: true });
       } else {
         Swal.fire({
@@ -86,161 +86,104 @@ export default function LoginForm({ setUser }) {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontFamily: 'Inter, Segoe UI, Arial, sans-serif'
-    }}>
+    <div
+      className="d-flex align-items-center justify-content-center min-vh-100"
+      style={{
+        background: 'linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%)',
+        fontFamily: 'Inter, Segoe UI, Arial, sans-serif'
+      }}
+    >
       <form
-        onSubmit={handleLogin}
+        className="p-4 rounded-4 shadow-lg bg-white"
         style={{
-          background: 'rgba(255,255,255,0.92)',
-          borderRadius: 18,
-          boxShadow: '0 8px 32px 0 rgba(99,102,241,0.13)',
-          padding: '28px 28px 24px 28px',
           minWidth: 320,
-          maxWidth: 360,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 6
+          maxWidth: 370,
+          width: '100%',
+          border: 'none',
+          background: 'rgba(255,255,255,0.96)'
         }}
+        onSubmit={handleLogin}
       >
-        <div style={{
-          fontSize: 40,
-          marginBottom: 4,
-          color: 'transparent',
-          background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-          WebkitBackgroundClip: 'text',
-          backgroundClip: 'text'
-        }}>
-          <span role="img" aria-label="lock">🔒</span>
+        <div className="text-center mb-2">
+          <span
+            role="img"
+            aria-label="lock"
+            style={{
+              fontSize: 40,
+              background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              color: 'transparent'
+            }}
+          >
+            🔒
+          </span>
         </div>
-        <h2 style={{
-          color: 'transparent',
-          background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-          WebkitBackgroundClip: 'text',
-          backgroundClip: 'text',
-          fontWeight: 900,
-          fontSize: 22,
-          marginBottom: 12,
-          letterSpacing: '-1px'
-        }}>
+        <h2
+          className="text-center fw-bold mb-3"
+          style={{
+            fontSize: 22,
+            background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            color: 'transparent',
+            letterSpacing: '-1px'
+          }}
+        >
           Login to ZackDB
         </h2>
         {/* Email Field */}
-        <div style={{
-          width: 220,
-          marginBottom: 10,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center'
-        }}>
-          <label htmlFor="email" style={{
-            display: 'block',
-            marginBottom: 4,
-            fontWeight: 700,
-            color: '#6366f1',
-            fontSize: 14,
-            letterSpacing: '0.2px',
-            alignSelf: 'center'
-          }}>
+        <div className="mb-3">
+          <label htmlFor="email" className="form-label fw-semibold" style={{ color: '#6366f1', fontSize: 14 }}>
             Email
           </label>
           <input
             id="email"
             type="email"
+            className="form-control"
             placeholder="Enter your email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            style={{
-              width: 220,
-              padding: '10px 14px',
-              fontSize: 15,
-              borderRadius: 8,
-              border: '1.5px solid #6366f1',
-              outline: 'none',
-              background: 'rgba(248,250,252,0.95)',
-              color: '#23272f',
-              boxShadow: '0 2px 12px #6366f122',
-              transition: 'border 0.2s',
-              display: 'block',
-              marginLeft: 'auto',
-              marginRight: 'auto'
-            }}
             autoComplete="email"
+            style={{
+              border: '1.5px solid #6366f1',
+              background: 'rgba(248,250,252,0.95)',
+              color: '#23272f'
+            }}
           />
         </div>
         {/* Password Field */}
-        <div style={{
-          width: 220,
-          marginBottom: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center'
-        }}>
-          <label htmlFor="password" style={{
-            display: 'block',
-            marginBottom: 4,
-            fontWeight: 700,
-            color: '#6366f1',
-            fontSize: 14,
-            letterSpacing: '0.2px',
-            alignSelf: 'center'
-          }}>
+        <div className="mb-3">
+          <label htmlFor="password" className="form-label fw-semibold" style={{ color: '#6366f1', fontSize: 14 }}>
             Password
           </label>
-          <div style={{
-            position: 'relative',
-            width: 220,
-            display: 'flex',
-            alignItems: 'center'
-          }}>
+          <div className="input-group">
             <input
               id="password"
               type={showPassword ? 'text' : 'password'}
+              className="form-control"
               placeholder="Enter your password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              style={{
-                width: 220,
-                padding: '10px 38px 10px 14px',
-                fontSize: 15,
-                borderRadius: 8,
-                border: '1.5px solid #6366f1',
-                outline: 'none',
-                background: 'rgba(248,250,252,0.95)',
-                color: '#23272f',
-                boxShadow: '0 2px 12px #6366f122',
-                transition: 'border 0.2s',
-                display: 'block',
-                marginLeft: 'auto',
-                marginRight: 'auto'
-              }}
               autoComplete="current-password"
-            />
-            <span
-              onClick={() => setShowPassword(v => !v)}
               style={{
-                position: 'absolute',
-                right: 12,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                cursor: 'pointer',
-                fontSize: 18,
-                color: '#6366f1',
-                userSelect: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100%'
+                border: '1.5px solid #6366f1',
+                background: 'rgba(248,250,252,0.95)',
+                color: '#23272f'
               }}
+            />
+            <button
+              type="button"
+              className="btn"
               tabIndex={0}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
-              role="button"
+              onClick={() => setShowPassword(v => !v)}
+              style={{
+                border: '1.5px solid #6366f1',
+                borderLeft: 'none',
+                background: 'rgba(248,250,252,0.95)',
+                color: '#6366f1'
+              }}
             >
               {showPassword ? (
                 // Eye-off icon
@@ -255,28 +198,22 @@ export default function LoginForm({ setUser }) {
                   <circle cx="11" cy="11" r="3" stroke="#6366f1" strokeWidth="2"/>
                 </svg>
               )}
-            </span>
+            </button>
           </div>
         </div>
         {/* Login Button */}
         <button
           type="submit"
+          className="btn w-100 fw-bold mb-2"
           style={{
             background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
             color: '#fff',
             border: 'none',
             borderRadius: 10,
-            padding: '10px 0',
-            width: 220,
-            fontWeight: 800,
             fontSize: 16,
-            cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading ? 0.7 : 1,
             boxShadow: '0 2px 12px #6366f133',
-            letterSpacing: '0.5px',
-            marginBottom: 4,
-            transition: 'background 0.2s',
-            alignSelf: 'center',
-            opacity: loading ? 0.7 : 1
+            letterSpacing: '0.5px'
           }}
           disabled={loading}
         >
@@ -309,7 +246,7 @@ export default function LoginForm({ setUser }) {
           `}
         </style>
         {/* Register Link */}
-        <div style={{ marginTop: 8, fontSize: 14 }}>
+        <div className="text-center mt-2" style={{ fontSize: 14 }}>
           Don't have an account?{' '}
           <Link to="/register" style={{ color: '#6366f1', fontWeight: 700, textDecoration: 'none' }}>
             Register
