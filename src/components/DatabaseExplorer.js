@@ -26,6 +26,23 @@ function useIsMobile() {
   return isMobile;
 }
 
+// Place this function in your Explore component or a utilities file
+function sortDatabases(databases) {
+  const special = ['admin', 'local'];
+  const normalDbs = databases.filter(db => !special.includes(db)).sort((a, b) => b.localeCompare(a));
+  const specialDbs = databases.filter(db => special.includes(db));
+  const totalDbPages = Math.ceil((normalDbs.length + specialDbs.length) / dbsPerPage);
+
+  let paginatedDbs = normalDbs.slice((dbPage - 1) * dbsPerPage, dbPage * dbsPerPage);
+
+  // If this is the last page, append special dbs
+  if (dbPage === totalDbPages) {
+    paginatedDbs = paginatedDbs.concat(specialDbs);
+  }
+
+  return paginatedDbs;
+}
+
 export default function DatabaseExplorer() {
   const { state } = useLocation();
   // Always extract user from navigation state
@@ -106,11 +123,11 @@ export default function DatabaseExplorer() {
   // Pagination for databases and collections
   const totalDbPages = Math.ceil((Array.isArray(databases) ? databases.length : 0) / dbsPerPage);
   const paginatedDbs = Array.isArray(databases)
-    ? databases.slice().reverse().slice((dbPage - 1) * dbsPerPage, dbPage * dbsPerPage)
+    ? sortDatabases(databases).slice((dbPage - 1) * dbsPerPage, dbPage * dbsPerPage)
     : [];
   const totalColPages = Math.ceil((Array.isArray(collections) ? collections.length : 0) / colsPerPage);
   const paginatedCols = Array.isArray(collections)
-    ? collections.slice().reverse().slice((colPage - 1) * colsPerPage, colPage * colsPerPage)
+    ? collections.slice().reverse().slice((colPage - 1) * colsPerPage, colPage * colPage)
     : [];
 
   const handleSelectDb = async (dbName) => {
@@ -399,6 +416,8 @@ export default function DatabaseExplorer() {
     fetchDocuments(selectedDb, collectionName, 1);
   }; // FIX 5: ensure this function is not missing a closing brace
 
+  const sortedDatabases = sortDatabases(databases);
+
   return (
     <div style={{
       padding: 24,
@@ -502,7 +521,7 @@ export default function DatabaseExplorer() {
               fontWeight: 800,
               letterSpacing: '-0.5px'
             }}>Databases</h3>
-            {paginatedDbs.map(db => (
+            {sortedDatabases.map(db => (
               <span
                 key={db}
                 style={selectedDb === db ? cardSelected : cardStyle}
