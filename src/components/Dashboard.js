@@ -514,7 +514,6 @@ export default function Dashboard({ user: userProp }) {
       setError('Please enter a valid MongoDB Atlas connection string.');
       return;
     }
-    const name = getClusterName(connStr);
     try {
       const res = await fetch(`${API_URL}/api/saved-connections`, {
         method: 'POST',
@@ -522,7 +521,7 @@ export default function Dashboard({ user: userProp }) {
           'Content-Type': 'application/json'
         },
         credentials: 'include',
-        body: JSON.stringify({ connectionString: connStr, clusterName: name })
+        body: JSON.stringify({ connectionString: connStr }) // Only send connectionString
       });
 
       let data = {};
