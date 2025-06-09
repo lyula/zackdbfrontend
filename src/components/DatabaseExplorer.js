@@ -172,17 +172,16 @@ export default function DatabaseExplorer() {
     setIsLoadingDocuments(true);
     setError('');
     try {
-      const res = await fetch(`${API_URL}/api/documents`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          connectionString,
-          dbName,
-          collectionName,
-          page,
-          limit: recordsPerPage
-        })
+      const params = new URLSearchParams({
+        connectionString: encodeURIComponent(connectionString),
+        dbName: encodeURIComponent(dbName),
+        collectionName: encodeURIComponent(collectionName),
+        page,
+        limit: recordsPerPage
+      });
+      const res = await fetch(`${API_URL}/api/documents?${params.toString()}`, {
+        method: 'GET',
+        credentials: 'include'
       });
       if (!res.ok) {
         const text = await res.text();
