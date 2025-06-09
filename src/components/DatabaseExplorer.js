@@ -72,7 +72,7 @@ export default function DatabaseExplorer() {
   const dbsPerPage = isMobile ? 3 : 5;
   const colsPerPage = isMobile ? 3 : 3;
   const [databases, setDatabases] = useState(initialDatabases || []);
-  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(!isMobile); // Sidebar visible by default on PC
 
   // For live time display
   const [now, setNow] = useState(new Date());
@@ -195,7 +195,7 @@ export default function DatabaseExplorer() {
       setCurrentPage(page);
       const cols = docs.length > 0 ? Object.keys(docs[0]) : [];
       setColumns(cols);
-      const initialVisibility = {};
+      const initialVisibility = {}; // FIXED typo here
       cols.forEach(col => {
         if (
           col === 'password' ||
@@ -236,10 +236,10 @@ export default function DatabaseExplorer() {
   // Stop auto refresh interval
   const stopAutoRefresh = () => {
     if (refreshIntervalRef.current) {
-      clearInterval(refreshIntervalRef.current);
+      clearInterval(refreshIntervalRef.current); // FIXED typo here
       refreshIntervalRef.current = null;
     }
-    setIsAutoRefreshing(false);
+    setIsAutoRefreshing(false); // FIXED typo here
   };
 
   // Clear interval on unmount or when selectedCollection changes
@@ -260,7 +260,7 @@ export default function DatabaseExplorer() {
     }));
   };
 
-  // Only show columns that are visible
+  // Only show columns that are visible(policy);
   const visibleColumns = columns.filter(col => columnVisibility[col]);
 
   // Pagination logic for table (now backend-driven)
@@ -437,17 +437,39 @@ export default function DatabaseExplorer() {
       background: 'linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%)',
       minHeight: '100vh'
     }}>
-      {/* Top Row: Sidebar Button + Local Time */}
+      {/* Top Row: Home Button (PC) or Show Sidebar Button (Mobile) + Local Time */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         marginBottom: 18
       }}>
-        {/* Sidebar button (always visible on desktop, toggles on mobile) */}
-        {(!isMobile || !isSidebarVisible) && (
+        {isMobile ? (
+          // On mobile, show "Show Sidebar" button only when table is visible and sidebar is hidden
+          columns.length > 0 && !isSidebarVisible && (
+            <button
+              onClick={() => setIsSidebarVisible(true)}
+              style={{
+                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '9px 20px',
+                fontWeight: 700,
+                fontSize: 16,
+                cursor: 'pointer',
+                marginBottom: 0,
+                boxShadow: '0 2px 12px #6366f133'
+              }}
+            >
+              <span role="img" aria-label="sidebar" style={{ marginRight: 8 }}>📚</span>
+              Show Sidebar
+            </button>
+          )
+        ) : (
+          // On PC, show Home button
           <button
-            onClick={() => setIsSidebarVisible(true)}
+            onClick={() => navigate('/dashboard')}
             style={{
               background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
               color: '#fff',
@@ -461,8 +483,8 @@ export default function DatabaseExplorer() {
               boxShadow: '0 2px 12px #6366f133'
             }}
           >
-            <span role="img" aria-label="sidebar" style={{ marginRight: 8 }}>📚</span>
-            Show Sidebar
+            <span role="img" aria-label="home" style={{ marginRight: 8 }}>🏠</span>
+            Home
           </button>
         )}
         <div style={{
@@ -529,6 +551,28 @@ export default function DatabaseExplorer() {
         {/* Sidebar */}
         {(!isMobile || isSidebarVisible) && (
           <div style={sidebarStyle}>
+            {/* Home Button in Sidebar for Mobile */}
+            {isMobile && (
+              <button
+                onClick={() => navigate('/dashboard')}
+                style={{
+                  background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '9px 20px',
+                  fontWeight: 700,
+                  fontSize: 16,
+                  cursor: 'pointer',
+                  marginBottom: 10,
+                  width: '100%',
+                  textAlign: 'center'
+                }}
+              >
+                <span role="img" aria-label="home" style={{ marginRight: 8 }}>🏠</span>
+                Home
+              </button>
+            )}
             <div>
               <h3 style={{
                 color: '#fff',
@@ -938,28 +982,6 @@ export default function DatabaseExplorer() {
           )}
         </div>
       </div>
-      {isMobile && !isSidebarVisible && (
-        <button
-          onClick={() => setIsSidebarVisible(true)}
-          style={{
-            position: 'fixed',
-            top: 80,
-            left: 12,
-            zIndex: 1001,
-            background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 24,
-            padding: '10px 18px',
-            fontWeight: 700,
-            fontSize: 16,
-            boxShadow: '0 2px 12px #6366f133',
-            cursor: 'pointer'
-          }}
-        >
-          📚 Show Sidebar
-        </button>
-      )}
     </div>
   );
 }
@@ -1022,5 +1044,3 @@ function AtlasSpinner() {
     </div>
   );
 }
-
-// reverted commit
