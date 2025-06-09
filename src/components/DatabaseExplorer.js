@@ -887,7 +887,7 @@ export default function DatabaseExplorer() {
               <AtlasSpinner />
             </div>
           )}
-          {/* Only show fallback spinner on desktop, or on mobile if neither collections nor documents are loading */}
+          {/* Only show fallback spinner on desktop */}
           {!isMobile && (isLoadingCollections || isLoadingDocuments) && (
             <div style={{
               width: '100%',
