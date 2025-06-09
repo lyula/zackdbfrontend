@@ -437,31 +437,34 @@ export default function DatabaseExplorer() {
       background: 'linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%)',
       minHeight: '100vh'
     }}>
-      {/* Top Row: Home Button + Local Time */}
+      {/* Top Row: Sidebar Button + Local Time */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         marginBottom: 18
       }}>
-        <button
-          onClick={() => navigate('/dashboard')}
-          style={{
-            background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            padding: '9px 20px',
-            fontWeight: 700,
-            fontSize: 16,
-            cursor: 'pointer',
-            marginBottom: 0,
-            boxShadow: '0 2px 12px #6366f133'
-          }}
-        >
-          <span role="img" aria-label="home" style={{ marginRight: 8 }}>🏠</span>
-          Home
-        </button>
+        {/* Sidebar button (always visible on desktop, toggles on mobile) */}
+        {(!isMobile || !isSidebarVisible) && (
+          <button
+            onClick={() => setIsSidebarVisible(true)}
+            style={{
+              background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              padding: '9px 20px',
+              fontWeight: 700,
+              fontSize: 16,
+              cursor: 'pointer',
+              marginBottom: 0,
+              boxShadow: '0 2px 12px #6366f133'
+            }}
+          >
+            <span role="img" aria-label="sidebar" style={{ marginRight: 8 }}>📚</span>
+            Show Sidebar
+          </button>
+        )}
         <div style={{
           display: 'flex',
           alignItems: 'center',
