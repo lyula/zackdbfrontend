@@ -47,14 +47,14 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
 
   const currentYear = new Date().getFullYear();
 
-  // Sidebar visibility logic for both mobile and desktop
+  // Sidebar is always visible on desktop, but collapsed by default. On mobile, it toggles.
   const sidebarStyles = {
-    width: sidebarOpen ? 270 : 0,
+    width: sidebarOpen ? 270 : 72, // Collapsed width is 72px
     minWidth: 0,
     maxWidth: 270,
     height: '100vh',
     background: 'linear-gradient(120deg, #6366f1 0%, #818cf8 100%)',
-    boxShadow: sidebarOpen ? '0 0 32px 0 rgba(99,102,241,0.13), 0 2px 12px #818cf855' : 'none',
+    boxShadow: '0 0 32px 0 rgba(99,102,241,0.13), 0 2px 12px #818cf855',
     borderTopRightRadius: 18,
     borderBottomRightRadius: 18,
     zIndex: 200,
@@ -63,8 +63,9 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
     position: isMobile ? 'fixed' : 'static',
     top: 0,
     left: 0,
-    display: sidebarOpen ? 'flex' : 'none',
-    flexDirection: 'column'
+    display: isMobile ? (sidebarOpen ? 'flex' : 'none') : 'flex',
+    flexDirection: 'column',
+    color: '#fff'
   };
 
   return (
@@ -96,7 +97,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
         className="d-flex flex-column align-items-center mb-4 px-2"
         style={
           isMobile
-            ? { marginTop: 64 } // Move down on mobile
+            ? { marginTop: 120 } // Move user profile further down on mobile
             : {}
         }
       >
@@ -114,16 +115,16 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
         </div>
         {sidebarOpen && (
           <>
-            <div className="fw-bold text-white fs-4 text-center mb-1" style={{ textShadow: '0 2px 12px #6366f155' }}>
+            <div className="fw-bold fs-4 text-center mb-1" style={{ textShadow: '0 2px 12px #6366f155', color: '#fff' }}>
               {user?.username || user?.email || 'User'}
             </div>
-            <div className="text-white fs-6 fw-semibold mb-2 text-center" style={{ opacity: 0.96, textShadow: '0 1px 8px #6366f122' }}>
+            <div className="fs-6 fw-semibold mb-2 text-center" style={{ opacity: 0.96, textShadow: '0 1px 8px #6366f122', color: '#fff' }}>
               {user?.email || ''}
             </div>
-            <div className="text-white fs-6 fw-normal mb-2 text-center" style={{ opacity: 0.98, textShadow: '0 1px 8px #6366f122' }}>
+            <div className="fs-6 fw-normal mb-2 text-center" style={{ opacity: 0.98, textShadow: '0 1px 8px #6366f122', color: '#fff' }}>
               Save and visualize your MongoDB databases with ease.
             </div>
-            <div className="d-flex align-items-center justify-content-center gap-2 text-white opacity-75 fw-semibold mt-2" style={{ letterSpacing: '0.1em' }}>
+            <div className="d-flex align-items-center justify-content-center gap-2 opacity-75 fw-semibold mt-2" style={{ letterSpacing: '0.1em', color: '#fff' }}>
               <span className="fw-bold">zackdb</span>
               <span className="bg-white text-primary rounded-circle px-2 py-1 fw-bold" style={{ fontSize: 13 }}>©</span>
               <span>{currentYear}</span>
@@ -137,7 +138,7 @@ function Sidebar({ user, sidebarOpen, setSidebarOpen, isMobile }) {
         className="d-flex justify-content-center mb-4"
         style={
           isMobile
-            ? { marginBottom: 18, marginTop: 0, paddingBottom: 8 }
+            ? { marginBottom: 48, marginTop: 0, paddingBottom: 8 } // Move logout button up on mobile
             : {}
         }
       >
@@ -603,14 +604,15 @@ export default function Dashboard({ user: userProp }) {
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
                                   whiteSpace: 'nowrap',
-                                  textAlign: 'center'
+                                  textAlign: 'center',
+                                  marginBottom: isMobile ? 8 : 0 // Add spacing below on mobile
                                 }}
                                 title={conn.clusterName || clusterName}
                               >
                                 {displayName}
                               </span>
                             </div>
-                            <div className="d-flex gap-2 align-items-center">
+                            <div className={`d-flex align-items-center${isMobile ? ' flex-column' : ' gap-2'}`} style={isMobile ? { gap: 10 } : {}}>
                               <button
                                 className="btn fw-bold d-flex align-items-center justify-content-center"
                                 style={{
@@ -624,7 +626,8 @@ export default function Dashboard({ user: userProp }) {
                                   fontSize: 15,
                                   opacity: isLoading ? 0.7 : 1,
                                   position: 'relative',
-                                  padding: '0 18px'
+                                  padding: '0 18px',
+                                  marginTop: isMobile ? 8 : 0 // Add spacing above on mobile
                                 }}
                                 onClick={() => handleUseConnection(conn.connectionString)}
                                 disabled={isLoading}
@@ -655,7 +658,7 @@ export default function Dashboard({ user: userProp }) {
                                 title="Delete"
                                 ref={el => deleteBtnRefs.current[conn.connectionString] = el}
                                 onClick={() => setConfirmDelete(conn.connectionString)}
-                                style={{ fontSize: 22, color: '#f87171' }}
+                                style={{ fontSize: 22, color: '#f87171', marginTop: isMobile ? 8 : 0 }}
                               >
                                 🗑️
                               </button>
