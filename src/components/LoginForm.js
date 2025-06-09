@@ -157,7 +157,7 @@ export default function LoginForm({ setUser }) {
           <label htmlFor="password" className="form-label fw-semibold" style={{ color: '#6366f1', fontSize: 14 }}>
             Password
           </label>
-          <div className="input-group">
+          <div style={{ position: 'relative' }}>
             <input
               id="password"
               type={showPassword ? 'text' : 'password'}
@@ -168,29 +168,30 @@ export default function LoginForm({ setUser }) {
               autoComplete="current-password"
               style={{
                 border: '1.5px solid #6366f1',
-                background: '#f1f5ff', // Match register page background
+                background: '#f1f5ff',
                 color: '#23272f',
-                borderTopRightRadius: 0,
-                borderBottomRightRadius: 0,
-                boxShadow: 'none',
                 fontSize: 15,
-                padding: '10px 12px'
+                padding: '10px 40px 10px 12px' // space for icon
               }}
             />
             <button
               type="button"
-              className="btn"
+              className="btn p-0"
               tabIndex={0}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
               onClick={() => setShowPassword(v => !v)}
               style={{
-                border: '1.5px solid #6366f1',
-                borderLeft: 'none',
-                background: '#f1f5ff', // Match register page background
+                position: 'absolute',
+                top: '50%',
+                right: 10,
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
                 color: '#6366f1',
-                borderTopLeftRadius: 0,
-                borderBottomLeftRadius: 0,
-                boxShadow: 'none'
+                boxShadow: 'none',
+                lineHeight: 1,
+                padding: 0,
+                minWidth: 0
               }}
             >
               {showPassword ? (
