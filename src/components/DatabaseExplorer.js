@@ -830,7 +830,7 @@ export default function DatabaseExplorer() {
                 ) : (
                   <span style={{ color: '#fff', fontSize: 15 }}>No databases available</span>
                 )}
-                {/* Database Pagination */}
+                {/* Database Pagination - resetting to this state commit*/}
                 {totalDbPages > 1 && (
                   <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
                     <button
