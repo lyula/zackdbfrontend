@@ -704,16 +704,16 @@ export default function DatabaseExplorer() {
           .bootstrap-table tr:hover td {
             background: #f1f5fd !important;
           }
+          /* --- Alternating Solid Row Colors --- */
+          .bootstrap-table .alt-row-even > td, .bootstrap-table .alt-row-even {
+            background: #f8fafc !important;
+          }
+          .bootstrap-table .alt-row-odd > td, .bootstrap-table .alt-row-odd {
+            background: #e0e7ff !important;
+          }
           .dot-anim {
             display: inline-block;
             animation: dot-flash 1s infinite linear;
-          }
-          /* --- Alternating Solid Row Colors --- */
-          .alt-row-even {
-            background: #f8fafc !important;
-          }
-          .alt-row-odd {
-            background: #e0e7ff !important;
           }
         `}
       </style>
