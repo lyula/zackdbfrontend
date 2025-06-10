@@ -87,6 +87,7 @@ export default function DatabaseExplorer() {
 
   // Auto refresh state
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
+  const [refreshingType, setRefreshingType] = useState(''); // '', 'manual', 'auto'
 
   // Ref to store interval ID for auto-refresh
   const refreshIntervalRef = useRef(null);
@@ -175,13 +176,12 @@ export default function DatabaseExplorer() {
   const [documentsCache, setDocumentsCache] = useState({});
 
   // Prefetch surrounding pages for a given collection
-  const prefetchPages = (dbName, collectionName, centerPage, totalDocs, rangeSmall = 10, rangeLarge = 5) => {
-    // Use a smaller prefetch window for large datasets
+  const prefetchPages = (dbName, collectionName, centerPage, totalDocs, rangeSmall = 10, rangeLarge = 5, forceBackend = false) => {
     const range = totalDocs > 5000 ? rangeLarge : rangeSmall;
     for (let i = centerPage - range; i <= centerPage + range; i++) {
       if (i > 0) {
         const cacheKey = `${dbName}_${collectionName}_${i}`;
-        if (!documentsCache[cacheKey]) {
+        if (forceBackend || !documentsCache[cacheKey]) {
           fetch(`${API_URL}/api/documents?${new URLSearchParams({
             connectionString: encodeURIComponent(connectionString),
             dbName: encodeURIComponent(dbName),
@@ -208,12 +208,13 @@ export default function DatabaseExplorer() {
   };
 
   // Fetch documents for a collection with backend pagination
-  const fetchDocuments = async (dbName, collectionName, page = 1, forceBackend = false) => {
+  const fetchDocuments = async (dbName, collectionName, page = 1, forceBackend = false, refreshType = '') => {
     if (!connectionString || !dbName || !collectionName) {
       setError('Missing connection info.');
       return;
     }
     setIsLoadingDocuments(true);
+    setRefreshingType(refreshType); // <-- set type
     setError('');
     try {
       const params = new URLSearchParams({
@@ -265,8 +266,8 @@ export default function DatabaseExplorer() {
           setColumnVisibility(initialVisibility);
         }
 
-        // Prefetch 10 pages before and after
-        prefetchPages(dbName, collectionName, page, data.total || 0, 10, 5);
+        // Prefetch 10 pages before and after, always force prefetch on refresh
+        prefetchPages(dbName, collectionName, page, data.total || 0, 10, 5, true);
       } else {
         // Use cache if not forced
         setDocuments(documentsCache[`${dbName}_${collectionName}_${page}`]);
@@ -281,6 +282,7 @@ export default function DatabaseExplorer() {
       });
     } finally {
       setIsLoadingDocuments(false);
+      setRefreshingType('');
       setIsInitialDocumentsLoad(false);
     }
   };
@@ -351,8 +353,9 @@ export default function DatabaseExplorer() {
   // Start auto-refresh interval
   const startAutoRefresh = () => {
     if (refreshIntervalRef.current) return;
+    fetchDocuments(selectedDb, selectedCollection, currentPage, true, 'auto'); // Initial fetch
     refreshIntervalRef.current = setInterval(() => {
-      fetchDocuments(selectedDb, selectedCollection, currentPage);
+      fetchDocuments(selectedDb, selectedCollection, currentPage, true, 'auto');
     }, 5000);
     setIsAutoRefreshing(true);
   };
@@ -635,6 +638,12 @@ export default function DatabaseExplorer() {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }
+          @keyframes dot-flash {
+            0% { opacity: 1; }
+            33% { opacity: 0.5; }
+            66% { opacity: 0.2; }
+            100% { opacity: 1; }
+          }
           .bootstrap-table th, .bootstrap-table td {
             border-bottom: 1px solid #e0e7ff;
           }
@@ -646,6 +655,10 @@ export default function DatabaseExplorer() {
           }
           .bootstrap-table tr:hover td {
             background: #f1f5fd !important;
+          }
+          .dot-anim {
+            display: inline-block;
+            animation: dot-flash 1s infinite linear;
           }
         `}
       </style>
@@ -1001,7 +1014,7 @@ export default function DatabaseExplorer() {
                     {!isAutoRefreshing ? (
                       <>
                         <button
-                          onClick={() => fetchDocuments(selectedDb, selectedCollection, currentPage)}
+                          onClick={() => fetchDocuments(selectedDb, selectedCollection, currentPage, true, 'manual')}
                           disabled={isLoadingDocuments || !selectedCollection}
                           style={{
                             ...buttonStyle,
@@ -1010,7 +1023,9 @@ export default function DatabaseExplorer() {
                           }}
                           title="Manual Refresh"
                         >
-                          {isLoadingDocuments ? 'Refreshing...' : '🔄 Manual Refresh'}
+                          {isLoadingDocuments && refreshingType === 'manual'
+                            ? <span><span className="dot-anim">Refreshing</span>...</span>
+                            : '🔄 Manual Refresh'}
                         </button>
                         <button
                           onClick={startAutoRefresh}
@@ -1022,7 +1037,9 @@ export default function DatabaseExplorer() {
                           }}
                           title="Start Auto Refresh"
                         >
-                          🔁 Auto Refresh
+                          {isLoadingDocuments && refreshingType === 'auto'
+                            ? <span><span className="dot-anim">Auto Refreshing</span>...</span>
+                            : '🔁 Auto Refresh'}
                         </button>
                       </>
                     ) : (
