@@ -208,7 +208,7 @@ export default function DatabaseExplorer() {
   };
 
   // Fetch documents for a collection with backend pagination
-  const fetchDocuments = async (dbName, collectionName, page = 1) => {
+  const fetchDocuments = async (dbName, collectionName, page = 1, forceBackend = false) => {
     if (!connectionString || !dbName || !collectionName) {
       setError('Missing connection info.');
       return;
@@ -223,47 +223,54 @@ export default function DatabaseExplorer() {
         page,
         limit: recordsPerPage
       });
-      const res = await fetch(`${API_URL}/api/documents?${params.toString()}`, {
-        method: 'GET',
-        credentials: 'include'
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`HTTP error! status: ${res.status} - ${text}`);
-      }
-      const data = await res.json();
-      if (!data || !Array.isArray(data.documents)) {
-        throw new Error('Invalid documents data');
-      }
-      const docs = data.documents;
-      setDocuments(docs);
-      setTotalDocuments(data.total || 0);
-      setCurrentPage(page);
-
-      // Cache this page with composite key
-      const cacheKey = `${dbName}_${collectionName}_${page}`;
-      setDocumentsCache(prev => ({
-        ...prev,
-        [cacheKey]: docs
-      }));
-
-      // Prefetch nearby pages, using totalDocuments to determine range
-      prefetchPages(dbName, collectionName, page, data.total || 0);
-
-      // Only set columns/visibility if first load or columns are empty
-      if (columns.length === 0) {
-        const cols = docs.length > 0 ? Object.keys(docs[0]) : [];
-        setColumns(cols);
-        const initialVisibility = {};
-        cols.forEach(col => {
-          initialVisibility[col] = !(
-            col === 'password' ||
-            col === '_V' ||
-            col === '__v' ||
-            col.startsWith('-')
-          );
+      // Always fetch from backend if forceBackend is true
+      if (forceBackend || !documentsCache[`${dbName}_${collectionName}_${page}`]) {
+        const res = await fetch(`${API_URL}/api/documents?${params.toString()}`, {
+          method: 'GET',
+          credentials: 'include'
         });
-        setColumnVisibility(initialVisibility);
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`HTTP error! status: ${res.status} - ${text}`);
+        }
+        const data = await res.json();
+        if (!data || !Array.isArray(data.documents)) {
+          throw new Error('Invalid documents data');
+        }
+        const docs = data.documents;
+        setDocuments(docs);
+        setTotalDocuments(data.total || 0);
+        setCurrentPage(page);
+
+        // Cache this page
+        const cacheKey = `${dbName}_${collectionName}_${page}`;
+        setDocumentsCache(prev => ({
+          ...prev,
+          [cacheKey]: docs
+        }));
+
+        // Set columns and visibility for new collection
+        if (forceBackend || columns.length === 0) {
+          const cols = docs.length > 0 ? Object.keys(docs[0]) : [];
+          setColumns(cols);
+          const initialVisibility = {};
+          cols.forEach(col => {
+            initialVisibility[col] = !(
+              col === 'password' ||
+              col === '_V' ||
+              col === '__v' ||
+              col.startsWith('-')
+            );
+          });
+          setColumnVisibility(initialVisibility);
+        }
+
+        // Prefetch 10 pages before and after
+        prefetchPages(dbName, collectionName, page, data.total || 0, 10, 5);
+      } else {
+        // Use cache if not forced
+        setDocuments(documentsCache[`${dbName}_${collectionName}_${page}`]);
+        setCurrentPage(page);
       }
     } catch (err) {
       setError(err.message || 'Failed to fetch documents.');
@@ -547,8 +554,17 @@ export default function DatabaseExplorer() {
     setCurrentPage(1);
     stopAutoRefresh();
     setIsInitialDocumentsLoad(true);
-    setDocumentsCache({}); // Clear cache on collection change
-    fetchDocuments(selectedDb, collectionName, 1);
+
+    // Clear all caches and columns for previous collection
+    setDocumentsCache({});
+    setColumns([]);
+    setColumnVisibility({});
+    setDocuments([]);
+    setTotalDocuments(0);
+
+    // Fetch fresh data for the new collection
+    fetchDocuments(selectedDb, collectionName, 1, true); // Pass a flag to force backend fetch
+
     if (isMobile) setIsSidebarVisible(false);
   };
 
