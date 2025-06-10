@@ -95,7 +95,7 @@ export default function DatabaseExplorer() {
   // Responsive: records per page
   // 45 per page on 50" and above, 40 per page on 32-50", 15 per page on 24-32", 10 per page otherwise
   const recordsPerPage =
-    screenCategory === 'xxlarge' ? 45 :
+    screenCategory === 'xxlarge' ? 39 :
     isXLargeScreen ? 40 :
     isLargeScreen ? 15 :
     10;
