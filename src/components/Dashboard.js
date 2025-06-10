@@ -313,8 +313,7 @@ export default function Dashboard({ user: userProp }) {
         },
         credentials: 'include',
         body: JSON.stringify({
-          connectionString: connStr,
-          username: user?.username // <-- Add this line to send username
+          connectionString: connStr
         })
       });
 
