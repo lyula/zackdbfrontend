@@ -591,11 +591,11 @@ export default function Dashboard({ user: userProp }) {
         aria-label="wave"
         style={{
           marginLeft: 6,
-          // Remove background/text color so emoji uses its native color
+          // Force emoji to use native color by resetting all inherited styles
+          color: 'initial',
           background: 'none',
-          WebkitBackgroundClip: 'initial',
-          backgroundClip: 'initial',
-          color: 'inherit',
+          WebkitBackgroundClip: 'unset',
+          backgroundClip: 'unset',
           filter: 'none'
         }}
       >👋</span>
