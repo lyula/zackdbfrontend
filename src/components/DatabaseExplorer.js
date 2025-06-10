@@ -708,12 +708,12 @@ export default function DatabaseExplorer() {
             display: inline-block;
             animation: dot-flash 1s infinite linear;
           }
-          /* --- Alternating Row Colors --- */
-          .alt-row-even td {
-            background: #f8fafc;
+          /* --- Alternating Gradient Row Colors --- */
+          .gradient-row-even td {
+            background: linear-gradient(90deg, #f8fafc 0%, #e0e7ff 100%) !important;
           }
-          .alt-row-odd td {
-            background: #e0e7ff;
+          .gradient-row-odd td {
+            background: linear-gradient(90deg, #e0e7ff 0%, #f8fafc 100%) !important;
           }
         `}
       </style>
@@ -1147,18 +1147,28 @@ export default function DatabaseExplorer() {
                     <tbody>
                       {(searchTerm && searchField ? filteredDocuments : documents).map((doc, idx) => {
                         const descendingNumber = totalDocuments - ((currentPage - 1) * recordsPerPage + idx);
-                        // Use idx % 2 for true alternating color
                         const isEven = idx % 2 === 0;
                         return (
                           <tr
                             key={doc._id || `${selectedCollection}-${idx}`}
-                            className={isEven ? 'alt-row-even' : 'alt-row-odd'}
+                            className={isEven ? 'gradient-row-even' : 'gradient-row-odd'}
                             style={{
-                              background: 'transparent',
                               transition: 'background-color 0.2s'
                             }}
-                            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f0f0f5'}
-                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                            onMouseEnter={e => {
+                              // Remove background-image on hover for clarity
+                              Array.from(e.currentTarget.children).forEach(td => {
+                                td.style.backgroundImage = 'none';
+                                td.style.backgroundColor = '#f0f0f5';
+                              });
+                            }}
+                            onMouseLeave={e => {
+                              // Restore gradient background on mouse leave
+                              Array.from(e.currentTarget.children).forEach((td, tdIdx) => {
+                                td.style.backgroundImage = '';
+                                td.style.backgroundColor = '';
+                              });
+                            }}
                           >
                             <td style={tdStyle}>{descendingNumber}</td>
                             {visibleColumns.map(col => (
