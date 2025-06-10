@@ -605,7 +605,10 @@ export default function Dashboard({ user: userProp }) {
   {user ? (
     <>
       <span style={{ marginLeft: isMobile ? 6 : 0 }}>
-        , {getShortestName(user.username)}!
+        , {isMobile
+          ? getShortestName(user.username)
+          : user.username
+        }!
       </span>
       <span
         role="img"
