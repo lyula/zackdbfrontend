@@ -708,12 +708,12 @@ export default function DatabaseExplorer() {
             display: inline-block;
             animation: dot-flash 1s infinite linear;
           }
-          /* --- Gradient Table Row Styling --- */
-          .gradient-row-odd td {
-            background: linear-gradient(90deg, #e0e7ff 0%, #f8fafc 100%);
+          /* --- Alternating Row Colors --- */
+          .alt-row-even td {
+            background: #f8fafc;
           }
-          .gradient-row-even td {
-            background: linear-gradient(90deg, #f8fafc 0%, #e0e7ff 100%);
+          .alt-row-odd td {
+            background: #e0e7ff;
           }
         `}
       </style>
@@ -1151,7 +1151,7 @@ export default function DatabaseExplorer() {
                         return (
                           <tr
                             key={doc._id || `${selectedCollection}-${idx}`}
-                            className={isEven ? 'gradient-row-even' : 'gradient-row-odd'}
+                            className={isEven ? 'alt-row-even' : 'alt-row-odd'}
                             style={{
                               background: 'transparent',
                               transition: 'background-color 0.2s'
