@@ -574,20 +574,19 @@ export default function Dashboard({ user: userProp }) {
     backgroundClip: 'text',
     fontSize: 30,
     letterSpacing: '-1px',
-    display: isMobile ? 'flex' : undefined,           // <-- Add flex on mobile
-    flexDirection: isMobile ? 'row' : undefined,      // <-- Row direction on mobile
-    alignItems: isMobile ? 'center' : undefined,      // <-- Center vertically
-    gap: isMobile ? 6 : undefined                     // <-- Small gap between text and username
+    display: isMobile ? 'flex' : undefined,
+    flexDirection: isMobile ? 'row' : undefined,
+    alignItems: isMobile ? 'center' : undefined,
+    gap: isMobile ? 6 : undefined
   }}
 >
-  Welcome
+  Hey
   {user ? (
     <>
       <span style={{ marginLeft: isMobile ? 6 : 0 }}>
         , {user.username}
       </span>
-      {/* Fix: Always show ! at the end, but only once */}
-      <span>!</span>
+      <span role="img" aria-label="wave" style={{ marginLeft: 6 }}>👋</span>
     </>
   ) : null}
 </h1>
