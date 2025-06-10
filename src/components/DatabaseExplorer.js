@@ -708,12 +708,12 @@ export default function DatabaseExplorer() {
             display: inline-block;
             animation: dot-flash 1s infinite linear;
           }
-          /* --- Alternating Gradient Row Colors --- */
-          .gradient-row-even td {
-            background: linear-gradient(90deg, #f8fafc 0%, #e0e7ff 100%) !important;
+          /* --- Alternating Solid Row Colors --- */
+          .alt-row-even {
+            background: #f8fafc !important;
           }
-          .gradient-row-odd td {
-            background: linear-gradient(90deg, #e0e7ff 0%, #f8fafc 100%) !important;
+          .alt-row-odd {
+            background: #e0e7ff !important;
           }
         `}
       </style>
@@ -1151,23 +1151,15 @@ export default function DatabaseExplorer() {
                         return (
                           <tr
                             key={doc._id || `${selectedCollection}-${idx}`}
-                            className={isEven ? 'gradient-row-even' : 'gradient-row-odd'}
+                            className={isEven ? 'alt-row-even' : 'alt-row-odd'}
                             style={{
                               transition: 'background-color 0.2s'
                             }}
                             onMouseEnter={e => {
-                              // Remove background-image on hover for clarity
-                              Array.from(e.currentTarget.children).forEach(td => {
-                                td.style.backgroundImage = 'none';
-                                td.style.backgroundColor = '#f0f0f5';
-                              });
+                              e.currentTarget.style.backgroundColor = '#f0f0f5';
                             }}
                             onMouseLeave={e => {
-                              // Restore gradient background on mouse leave
-                              Array.from(e.currentTarget.children).forEach((td, tdIdx) => {
-                                td.style.backgroundImage = '';
-                                td.style.backgroundColor = '';
-                              });
+                              e.currentTarget.style.backgroundColor = '';
                             }}
                           >
                             <td style={tdStyle}>{descendingNumber}</td>
