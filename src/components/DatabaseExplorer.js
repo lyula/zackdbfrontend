@@ -6,12 +6,13 @@ const API_URL = process.env.REACT_APP_API_URL;
 
 // Helper to get country flag emoji from country code (works for all ISO 3166-1 alpha-2 codes)
 function getCountryFlag(countryCode) {
-  if (!countryCode || typeof countryCode !== 'string' || countryCode.length !== 2) return '🌍';
-  // Convert country code to regional indicator symbols
+  if (!countryCode || typeof countryCode !== 'string' || countryCode.length !== 2 || !/^[A-Z]{2}$/i.test(countryCode)) {
+    return '🌍';
+  }
   return countryCode
     .toUpperCase()
     .split('')
-    .map(char => String.fromCodePoint(127397 + char.charCodeAt()))
+    .map(char => String.fromCodePoint(127397 + char.charCodeAt(0)))
     .join('');
 }
 
@@ -82,7 +83,7 @@ export default function DatabaseExplorer() {
   // Loading states
   const [isLoadingCollections, setIsLoadingCollections] = useState(false);
   const [isInitialDocumentsLoad, setIsInitialDocumentsLoad] = useState(true);
-  const [isLoadingDocuments, setIsLoadingDocuments] = useState(false); // <-- Add this line
+  const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
 
   // Auto refresh state
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
@@ -103,7 +104,7 @@ export default function DatabaseExplorer() {
       fetch('https://ipapi.co/json/')
         .then(res => res.json())
         .then(data => {
-          setCountry(data.country_code);
+          setCountry(data.country_code || 'US');
           setUserTimezone(data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
         })
         .catch(() => {
@@ -129,11 +130,11 @@ export default function DatabaseExplorer() {
   }, [selectedCollection, isMobile]);
 
   // Pagination for databases and collections
-  const totalDbPages = Math.ceil((Array.isArray(databases) ? databases.length : 0) / dbsPerPage);
+  const totalDbPages = Math.ceil((Array.isArray(databases) ? databases.length : 0) / dbsPerPage) || 1;
   const paginatedDbs = Array.isArray(databases)
     ? getPaginatedDatabases(databases, dbPage, dbsPerPage)
     : [];
-  const totalColPages = Math.ceil((Array.isArray(collections) ? collections.length : 0) / colsPerPage);
+  const totalColPages = Math.ceil((Array.isArray(collections) ? collections.length : 0) / colsPerPage) || 1;
   const paginatedCols = Array.isArray(collections)
     ? collections.slice().reverse().slice((colPage - 1) * colsPerPage, colPage * colsPerPage)
     : [];
@@ -158,6 +159,9 @@ export default function DatabaseExplorer() {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
       const cols = await res.json();
+      if (!Array.isArray(cols)) {
+        throw new Error('Invalid collections data');
+      }
       setCollections(cols);
     } catch (err) {
       setError('Failed to fetch collections.');
@@ -168,6 +172,40 @@ export default function DatabaseExplorer() {
   };
 
   const [totalDocuments, setTotalDocuments] = useState(0);
+  const [documentsCache, setDocumentsCache] = useState({});
+
+  // Prefetch surrounding pages for a given collection
+  const prefetchPages = (dbName, collectionName, centerPage, totalDocs, rangeSmall = 10, rangeLarge = 5) => {
+    // Use a smaller prefetch window for large datasets
+    const range = totalDocs > 5000 ? rangeLarge : rangeSmall;
+    for (let i = centerPage - range; i <= centerPage + range; i++) {
+      if (i > 0) {
+        const cacheKey = `${dbName}_${collectionName}_${i}`;
+        if (!documentsCache[cacheKey]) {
+          fetch(`${API_URL}/api/documents?${new URLSearchParams({
+            connectionString: encodeURIComponent(connectionString),
+            dbName: encodeURIComponent(dbName),
+            collectionName: encodeURIComponent(collectionName),
+            page: i,
+            limit: recordsPerPage
+          }).toString()}`, {
+            method: 'GET',
+            credentials: 'include'
+          })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+              if (data && Array.isArray(data.documents)) {
+                setDocumentsCache(prev => ({
+                  ...prev,
+                  [cacheKey]: data.documents
+                }));
+              }
+            })
+            .catch(() => {});
+        }
+      }
+    }
+  };
 
   // Fetch documents for a collection with backend pagination
   const fetchDocuments = async (dbName, collectionName, page = 1) => {
@@ -175,8 +213,7 @@ export default function DatabaseExplorer() {
       setError('Missing connection info.');
       return;
     }
-    // Only show spinner for the very first load
-    if (isInitialDocumentsLoad) setIsLoadingDocuments(true);
+    setIsLoadingDocuments(true);
     setError('');
     try {
       const params = new URLSearchParams({
@@ -195,26 +232,36 @@ export default function DatabaseExplorer() {
         throw new Error(`HTTP error! status: ${res.status} - ${text}`);
       }
       const data = await res.json();
-      const docs = data.documents || [];
+      if (!data || !Array.isArray(data.documents)) {
+        throw new Error('Invalid documents data');
+      }
+      const docs = data.documents;
       setDocuments(docs);
       setTotalDocuments(data.total || 0);
       setCurrentPage(page);
+
+      // Cache this page with composite key
+      const cacheKey = `${dbName}_${collectionName}_${page}`;
+      setDocumentsCache(prev => ({
+        ...prev,
+        [cacheKey]: docs
+      }));
+
+      // Prefetch nearby pages, using totalDocuments to determine range
+      prefetchPages(dbName, collectionName, page, data.total || 0);
+
       // Only set columns/visibility if first load or columns are empty
       if (columns.length === 0) {
         const cols = docs.length > 0 ? Object.keys(docs[0]) : [];
         setColumns(cols);
         const initialVisibility = {};
         cols.forEach(col => {
-          if (
+          initialVisibility[col] = !(
             col === 'password' ||
             col === '_V' ||
             col === '__v' ||
             col.startsWith('-')
-          ) {
-            initialVisibility[col] = false;
-          } else {
-            initialVisibility[col] = true;
-          }
+          );
         });
         setColumnVisibility(initialVisibility);
       }
@@ -227,7 +274,7 @@ export default function DatabaseExplorer() {
       });
     } finally {
       setIsLoadingDocuments(false);
-      setIsInitialDocumentsLoad(false); // Mark initial load as done
+      setIsInitialDocumentsLoad(false);
     }
   };
 
@@ -248,7 +295,6 @@ export default function DatabaseExplorer() {
         dbName: encodeURIComponent(dbName),
         collectionName: encodeURIComponent(collectionName)
       });
-      // You need to implement this endpoint to return ALL docs!
       const res = await fetch(`${API_URL}/api/documents-all?${params.toString()}`, {
         method: 'GET',
         credentials: 'include'
@@ -258,7 +304,10 @@ export default function DatabaseExplorer() {
         throw new Error(`HTTP error! status: ${res.status} - ${text}`);
       }
       const data = await res.json();
-      const docs = data.documents || [];
+      if (!data || !Array.isArray(data.documents)) {
+        throw new Error('Invalid documents data');
+      }
+      const docs = data.documents;
       setDocuments(docs);
       setTotalDocuments(docs.length);
       setCurrentPage(1);
@@ -267,25 +316,21 @@ export default function DatabaseExplorer() {
       setColumns(cols);
       const initialVisibility = {};
       cols.forEach(col => {
-        if (
+        initialVisibility[col] = !(
           col === 'password' ||
           col === '_V' ||
           col === '__v' ||
           col.startsWith('-')
-        ) {
-          initialVisibility[col] = false;
-        } else {
-          initialVisibility[col] = true;
-        }
+        );
       });
       setColumnVisibility(initialVisibility);
       // Set first page
       setDocuments(docs.slice(0, recordsPerPage));
     } catch (err) {
       setDocuments([]);
+      setError(err.message || 'Failed to fetch documents.');
       setColumns([]);
       setColumnVisibility({});
-      setError(err.message || 'Failed to fetch documents.');
       Swal.fire({
         icon: 'error',
         title: 'Failed to Fetch Documents',
@@ -296,16 +341,16 @@ export default function DatabaseExplorer() {
     }
   };
 
-  // Start auto refresh interval
+  // Start auto-refresh interval
   const startAutoRefresh = () => {
     if (refreshIntervalRef.current) return;
     refreshIntervalRef.current = setInterval(() => {
-      fetchDocuments(selectedDb, selectedCollection);
+      fetchDocuments(selectedDb, selectedCollection, currentPage);
     }, 5000);
     setIsAutoRefreshing(true);
   };
 
-  // Stop auto refresh interval
+  // Stop auto-refresh interval
   const stopAutoRefresh = () => {
     if (refreshIntervalRef.current) {
       clearInterval(refreshIntervalRef.current);
@@ -341,7 +386,15 @@ export default function DatabaseExplorer() {
   // When page changes, fetch only that page
   const handlePageChange = (page) => {
     if (page < 1 || page > totalPages) return;
-    fetchDocuments(selectedDb, selectedCollection, page);
+    const cacheKey = `${selectedDb}_${selectedCollection}_${page}`;
+    if (documentsCache[cacheKey]) {
+      setDocuments(documentsCache[cacheKey]);
+      setCurrentPage(page);
+      // Prefetch around this page too, using totalDocuments to determine range
+      prefetchPages(selectedDb, selectedCollection, page, totalDocuments);
+    } else {
+      fetchDocuments(selectedDb, selectedCollection, page);
+    }
   };
 
   // --- Styling --- ULTRA MODERN THEME ---
@@ -379,7 +432,7 @@ export default function DatabaseExplorer() {
   };
   const cardSelected = {
     ...cardStyle,
-    background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+    background: 'linear-gradient(90deg, #6366f1 0%, #818cf8)',
     color: '#fff',
     border: '2px solid #818cf8'
   };
@@ -394,7 +447,7 @@ export default function DatabaseExplorer() {
     display: 'flex',
     flexDirection: 'column',
     color: '#23272f',
-    padding: isMobile ? 0 : '18px 18px 0 18px',
+    padding: isMobile ? '0' : '18px 18px 0 18px',
     // Only scroll vertically on mobile
     height: isMobile ? 'calc(100vh - 110px)' : 'auto',
     overflowY: isMobile ? 'auto' : 'visible',
@@ -402,46 +455,45 @@ export default function DatabaseExplorer() {
   };
   const tableStyle = {
     borderCollapse: 'separate',
-    borderSpacing: 0,
+    borderSpacing: 0, // FIX 1: Remove stray quote
     width: '100%',
     background: '#fff',
     borderRadius: 12, // Only here!
     boxShadow: '0 2px 8px #6366f122',
     marginBottom: 0,
-    overflow: 'hidden' // Ensures children don't overflow the rounded corners
+    overflow: 'hidden' // Ensures children from overflowing rounded corners
   };
   const thStyle = {
     background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
     color: '#fff',
-    padding: '6px 10px', // Reduced padding
+    padding: '6px 10px',
     fontWeight: 700,
     border: 'none',
-    fontSize: 14,        // Slightly smaller font
+    fontSize: 14,
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0
   };
   const tdStyle = {
-    padding: '6px 10px', // Reduced padding
+    padding: '6px 10px',
     border: 'none',
-    fontSize: 13,        // Slightly smaller font
+    fontSize: 13,
     background: '#fff',
     color: '#23272f',
     verticalAlign: 'middle',
-    height: 32           // Explicit row height for compactness
+    height: 32
   };
-
   const buttonStyle = {
-    padding: '6px 14px',
-    fontSize: 14,
-    fontWeight: 700,
-    borderRadius: 6,
+    padding: '10px 14px',
+    fontSize: '14px',
+    fontWeight: '700',
+    borderRadius: '6px',
     border: 'none',
     cursor: 'pointer',
-    background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
+    background: 'linear-gradient(to right, #6366f1, #818cf8)',
     color: '#fff',
     boxShadow: '0 2px 8px #6366f133',
     userSelect: 'none',
-    minWidth: 130,
+    minWidth: '130px'
   };
 
   const handleFetchDatabases = async (connectionString) => {
@@ -457,23 +509,26 @@ export default function DatabaseExplorer() {
         Swal.fire({
           icon: 'error',
           title: 'Database Fetch Failed',
-          text: data.error || 'Failed to fetch databases.'
+          description: data.error || 'Failed to fetch databases.'
         }).then(() => {
           navigate('/dashboard');
         });
-        setError(data.error || 'Failed to fetch databases.');
+        setError(data.error || 'Failed to fetch databases');
         return;
       }
+      if (!Array.isArray(data)) {
+        throw new Error('Invalid databases data');
+      }
       setDatabases(data);
-    } catch {
+    } catch (err) {
+      setError('Failed to fetch databases.');
       Swal.fire({
         icon: 'error',
         title: 'Database Fetch Failed',
-        text: 'Failed to fetch databases.'
+        description: 'Failed to fetch databases.'
       }).then(() => {
         navigate('/dashboard');
       });
-      setError('Failed to fetch databases.');
     }
   };
 
@@ -486,567 +541,536 @@ export default function DatabaseExplorer() {
 
   const handleSelectCollection = (collectionName) => {
     setSelectedCollection(collectionName);
+    setSearchTerm('');
+    setSearchField('');
     setError('');
     setCurrentPage(1);
     stopAutoRefresh();
-    setIsInitialDocumentsLoad(true); // Reset for new collection
+    setIsInitialDocumentsLoad(true);
+    setDocumentsCache({}); // Clear cache on collection change
     fetchDocuments(selectedDb, collectionName, 1);
     if (isMobile) setIsSidebarVisible(false);
   };
 
-  // Spinner logic: only show spinner for initial collection load, not for page changes
-  const showSpinner = isLoadingCollections || isLoadingDocuments;
+  // Spinner logic: only show spinner for initial load
+  const showSpinner = isLoadingCollections || (isInitialDocumentsLoad && isLoadingDocuments);
 
   // Add state for search/filter
   const [searchTerm, setSearchTerm] = useState('');
   const [searchField, setSearchField] = useState('');
 
-  // Add a filteredDocuments variable for client-side filtering (optional)
-  // If you want to filter on the backend, you would need to pass searchTerm/searchField to fetchDocuments
+  // Filtered documents for client-side filtering
   const filteredDocuments = searchTerm && searchField
     ? documents.filter(doc =>
-        String(doc[searchField] || '')
+        String(doc[searchField]?.toString() || '')
           .toLowerCase()
           .includes(searchTerm.toLowerCase())
       )
     : documents;
 
   return (
-    <div style={{
-      padding: 24,
-      background: 'linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%)',
-      minHeight: '100vh'
-    }}>
-      {/* Top Row: Home Button (both) or Show Sidebar Button (Mobile, tables view) + Local Time */}
+    <>
+      <style>
+        {`
+          @keyframes table-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          .bootstrap-table th, .bootstrap-table td {
+            border-bottom: 1px solid #e0e7ff;
+          }
+          .bootstrap-table tr:last-child td {
+            border-bottom: none;
+          }
+          .bootstrap-table tr.table-row-striped {
+            background: #f8fafc;
+          }
+          .bootstrap-table tr:hover td {
+            background: #f1f5fd !important;
+          }
+        `}
+      </style>
       <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 18
+        padding: 24,
+        background: 'linear-gradient(120deg, #f8f9fa, #e0e7ff)',
+        minHeight: '100vh'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {/* Home Button (always on PC, always on mobile) or Show Sidebar (mobile, tables view) */}
-          {isMobile && columns.length > 0 && !isSidebarVisible ? (
-            <button
-              onClick={() => setIsSidebarVisible(true)}
-              style={{
-                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                padding: '9px 20px', // Match Home button
-                fontWeight: 700,
-                fontSize: 16,
-                cursor: 'pointer',
-                marginBottom: 0,
-                boxShadow: '0 2px 12px #6366f133', // Match Home button
-                minWidth: 130 // Match Home button minWidth
-              }}
-            >
-              <span role="img" aria-label="sidebar" style={{ marginRight: 8 }}>📚</span>
-              Show Sidebar
-            </button>
-          ) : (
-            <button
-              onClick={() => navigate('/dashboard')}
-              style={{
-                background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                padding: '9px 20px',
-                fontWeight: 700,
-                fontSize: 16,
-                cursor: 'pointer',
-                marginBottom: 0,
-                boxShadow: '0 2px 12px #6366f133'
-              }}
-            >
-              <span role="img" aria-label="home" style={{ marginRight: 8 }}>🏠</span>
-              Home
-            </button>
-          )}
+        {/* Top Row: Home Button or Sidebar Toggle + Local Time */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 18
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {isMobile && columns.length > 0 && !isSidebarVisible ? (
+              <button
+                onClick={() => setIsSidebarVisible(true)}
+                style={buttonStyle}
+              >
+                <span role="img" aria-label="sidebar" style={{ marginRight: 8 }}>📚</span>
+                Show Sidebar
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate('/')}
+                style={buttonStyle}
+              >
+                <span role="img" aria-label="home" style={{ marginRight: 8 }}>🏠</span>
+                Home
+              </button>
+            )}
+          </div>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            fontWeight: 'bold',
+            fontSize: 16,
+            color: '#23272f',
+            background: 'rgba(255, 255, 255, 0.7)',
+            borderRadius: 10,
+            padding: '7px 18px',
+            boxShadow: '0 2px 8px rgba(99, 102, 241, 0.1)'
+          }}>
+            <span style={{ fontSize: 22 }}>{getCountryFlag(country)}</span>
+            <span>
+              {now.toLocaleString(undefined, {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+                timeZone: userTimezone
+              })}
+            </span>
+          </div>
         </div>
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 10,
-          fontWeight: 700,
-          fontSize: 16,
-          color: '#23272f',
-          background: 'rgba(255,255,255,0.7)',
-          borderRadius: 10,
-          padding: '7px 18px',
-          boxShadow: '0 2px 8px #6366f122'
+          justifyContent: 'space-between',
+          marginBottom: 18,
+          flexWrap: 'wrap'
         }}>
-          <span style={{ fontSize: 22 }}>{getCountryFlag(country)}</span>
-          <span>
-            {now.toLocaleString(undefined, {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit',
-              hour12: false,
-              timeZone: userTimezone
-            })}
-          </span>
-        </div>
-      </div>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 18,
-        marginTop: 0,
-        flexWrap: 'wrap'
-      }}>
-        <h2 style={{
-          color: 'transparent',
-          background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-          WebkitBackgroundClip: 'text',
-          backgroundClip: 'text',
-          fontWeight: 900,
-          fontSize: 28,
-          margin: 0
-        }}>Database Explorer</h2>
-        {columns.length > 0 && (
-          <div>
-            {columns.map(col => (
-              <label key={col} style={{ marginRight: 14, fontWeight: 500, fontSize: 15, color: '#23272f' }}>
-                <input
-                  type="checkbox"
-                  checked={!!columnVisibility[col]}
-                  onChange={() => toggleColumn(col)}
-                  style={{ marginRight: 4 }}
-                /> Show {col}
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
-      {error && <div style={{ color: '#ff5252', marginBottom: 12, fontWeight: 600 }}>{error}</div>}
-      <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-        {/* Sidebar */}
-        {(!isMobile || isSidebarVisible) && (
-          <div style={sidebarStyle}>
+          <h2 style={{
+            color: 'transparent',
+            background: 'linear-gradient(90deg, #6366f1, #818cf8)',
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            fontWeight: 900,
+            fontSize: 28,
+            margin: 0
+          }}>Database Explorer</h2>
+          {columns.length > 0 && (
             <div>
-              <h3 style={{
-                color: '#fff',
-                marginBottom: 10,
-                marginTop: 0,
-                fontSize: 19,
-                fontWeight: 800,
-                letterSpacing: '-0.5px'
-              }}>Databases</h3>
-              {paginatedDbs.length > 0 ? (
-                paginatedDbs.map(db => (
-                  <span
-                    key={db}
-                    style={selectedDb === db ? cardSelected : cardStyle}
-                    onClick={() => handleSelectDb(db)}
-                    title={db}
-                  >
-                    <span role="img" aria-label="database" style={{ marginRight: 10, fontSize: 18, verticalAlign: 'middle' }}>📁</span>
-                    {db}
-                  </span>
-                ))
-              ) : (
-                <span style={{ color: '#fff', fontSize: 15 }}>No databases available</span>
-              )}
-              {/* Database Pagination */}
-              {totalDbPages > 1 && (
-                <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
-                  <button
-                    onClick={() => setDbPage(p => Math.max(1, p - 1))}
-                    disabled={dbPage === 1}
-                    style={{
-                      background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: 6,
-                      padding: '4px 14px',
-                      fontWeight: 700,
-                      fontSize: 14,
-                      cursor: dbPage === 1 ? 'not-allowed' : 'pointer',
-                      marginRight: 8,
-                      opacity: dbPage === 1 ? 0.5 : 1
-                    }}
-                  >Prev</button>
-                  <span style={{ fontSize: 14, color: '#fff', fontWeight: 700 }}>
-                    {dbPage}/{totalDbPages}
-                  </span>
-                  <button
-                    onClick={() => setDbPage(p => Math.min(totalDbPages, p + 1))}
-                    disabled={dbPage === totalDbPages}
-                    style={{
-                      background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: 6,
-                      padding: '4px 14px',
-                      fontWeight: 700,
-                      fontSize: 14,
-                      cursor: dbPage === totalDbPages ? 'not-allowed' : 'pointer',
-                      marginLeft: 8,
-                      opacity: dbPage === totalDbPages ? 0.5 : 1
-                    }}
-                  >Next</button>
-                </div>
-              )}
+              {columns.map(col => (
+                <label key={col} style={{ marginRight: 14, fontWeight: 500, fontSize: 15, color: '#23272f' }}>
+                  <input
+                    type="checkbox"
+                    checked={columnVisibility[col] ?? true}
+                    onChange={() => toggleColumn(col)}
+                    style={{ marginRight: 4 }}
+                  />
+                  Show {col}
+                </label>
+              ))}
             </div>
-            {collections.length > 0 && (
+          )}
+        </div>
+        {error && <div style={{ color: '#dc3545', marginBottom: 12, fontWeight: 600 }}>{error}</div>}
+        <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+          {/* Sidebar */}
+          {(!isMobile || isSidebarVisible) && (
+            <div style={sidebarStyle}>
               <div>
                 <h3 style={{
                   color: '#fff',
-                  margin: '22px 0 10px 0',
+                  marginBottom: 10,
+                  marginTop: 0,
                   fontSize: 19,
                   fontWeight: 800,
                   letterSpacing: '-0.5px'
-                }}>
-                  Collections
-                </h3>
-                {paginatedCols.map(col => {
-                  const colName = typeof col === 'string' ? col : col.name;
-                  return (
+                }}>Databases</h3>
+                {paginatedDbs.length > 0 ? (
+                  paginatedDbs.map(db => (
                     <span
-                      key={colName}
-                      style={selectedCollection === colName ? cardSelected : cardStyle}
-                      onClick={() => handleSelectCollection(colName)}
-                      title={colName}
+                      key={db}
+                      style={selectedDb === db ? cardSelected : cardStyle}
+                      onClick={() => handleSelectDb(db)}
+                      title={db}
                     >
-                      <span role="img" aria-label="collection" style={{ marginRight: 10, fontSize: 18, verticalAlign: 'middle' }}>📂</span>
-                      {colName}
+                      <span role="img" aria-label="database" style={{ marginRight: 10, fontSize: 18, verticalAlign: 'middle' }}>📁</span>
+                      {db}
                     </span>
-                  );
-                })}
-                {/* Collections Pagination */}
-                {totalColPages > 1 && (
+                  ))
+                ) : (
+                  <span style={{ color: '#fff', fontSize: 15 }}>No databases available</span>
+                )}
+                {/* Database Pagination */}
+                {totalDbPages > 1 && (
                   <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
                     <button
-                      onClick={() => setColPage(p => Math.max(1, p - 1))}
-                      disabled={colPage === 1}
+                      onClick={() => setDbPage(p => Math.max(1, p - 1))}
+                      disabled={dbPage === 1}
                       style={{
-                        background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 6,
+                        ...buttonStyle,
                         padding: '4px 14px',
-                        fontWeight: 700,
                         fontSize: 14,
-                        cursor: colPage === 1 ? 'not-allowed' : 'pointer',
+                        cursor: dbPage === 1 ? 'not-allowed' : 'pointer',
                         marginRight: 8,
-                        opacity: colPage === 1 ? 0.5 : 1
+                        opacity: dbPage === 1 ? 0.5 : 1
                       }}
                     >Prev</button>
                     <span style={{ fontSize: 14, color: '#fff', fontWeight: 700 }}>
-                      {colPage}/{totalColPages}
+                      {dbPage}/{totalDbPages}
                     </span>
                     <button
-                      onClick={() => setColPage(p => Math.min(totalColPages, p + 1))}
-                      disabled={colPage === totalColPages}
+                      onClick={() => setDbPage(p => Math.min(totalDbPages, p + 1))}
+                      disabled={dbPage === totalDbPages}
                       style={{
-                        background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 6,
+                        ...buttonStyle,
                         padding: '4px 14px',
-                        fontWeight: 700,
                         fontSize: 14,
-                        cursor: colPage === totalColPages ? 'not-allowed' : 'pointer',
+                        cursor: dbPage === totalDbPages ? 'not-allowed' : 'pointer',
                         marginLeft: 8,
-                        opacity: colPage === totalColPages ? 0.5 : 1
+                        opacity: dbPage === totalDbPages ? 0.5 : 1
                       }}
                     >Next</button>
                   </div>
                 )}
               </div>
-            )}
-          </div>
-        )}
-        {/* Main Table Area */}
-        <div style={{
-          flex: 1,
-          minWidth: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-start',
-          height: 'calc(100vh - 110px)'
-        }}>
-          {/* Unified spinner logic: one spinner for mobile or desktop */}
-          {showSpinner && (
-            <div style={{
-              position: isMobile ? 'fixed' : 'relative',
-              top: isMobile ? '50%' : 'auto',
-              left: isMobile ? '50%' : 'auto',
-              transform: isMobile ? 'translate(-50%, -50%)' : 'none',
-              zIndex: isMobile ? 9999 : 'auto',
-              background: isMobile ? 'rgba(255,255,255,0.85)' : 'transparent',
-              borderRadius: isMobile ? 18 : 0,
-              boxShadow: isMobile ? '0 4px 24px #6366f144' : 'none',
-              padding: isMobile ? 24 : 0,
-              width: isMobile ? '90vw' : '100%',
-              maxWidth: isMobile ? 320 : 'none',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              minHeight: isMobile ? 'auto' : 320
-            }}>
-              <AtlasSpinner />
-            </div>
-          )}
-          {columns.length > 0 && !showSpinner && (
-            <div style={tableContainerStyle}>
-              {/* Table Title Row */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: 10,
-                marginTop: 0,
-                width: '100%'
-              }}>
-                {/* Table title pushed left */}
-                <h4 style={{
-                  color: 'transparent',
-                  background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
-                  WebkitBackgroundClip: 'text',
-                  backgroundClip: 'text',
-                  fontWeight: 800,
-                  fontSize: 20,
-                  margin: 0,
-                  textAlign: 'left', // push left
-                  width: 'auto',
-                  minWidth: 120
-                }}>
-                  Table: <span style={{
-                    color: '#6366f1',
-                    background: 'none',
-                    WebkitBackgroundClip: 'initial',
-                    backgroundClip: 'initial'
-                  }}>{selectedCollection}</span>
-                </h4>
-                {/* Search/filter input */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  marginLeft: 16,
-                  flex: 1,
-                  justifyContent: 'flex-end'
-                }}>
-                  <select
-                    value={searchField}
-                    onChange={e => setSearchField(e.target.value)}
-                    style={{
-                      padding: '7px 12px',
-                      borderRadius: 6,
-                      border: '1.5px solid #6366f1',
-                      fontSize: 15,
-                      fontWeight: 500,
-                      color: '#23272f',
-                      background: '#fff',
-                      minWidth: 120
-                    }}
-                  >
-                    <option value="">Filter by...</option>
-                    {/* Exclude 'password' from filter options */}
-                    {visibleColumns
-                      .filter(col => col !== 'password')
-                      .map(col => (
-                        <option key={col} value={col}>{col}</option>
-                      ))}
-                  </select>
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    onFocus={() => {
-                      if (!searchField) {
-                        Swal.fire({
-                          icon: 'info',
-                          title: 'Select a Filter',
-                          text: 'Please select a filter parameter before searching.'
-                        });
-                      }
-                    }}
-                    style={{
-                      padding: '7px 14px',
-                      borderRadius: 6,
-                      border: '1.5px solid #6366f1',
-                      fontSize: 15,
-                      minWidth: 180,
-                      background: '#fff',
-                      color: '#23272f'
-                    }}
-                    disabled={!searchField}
-                  />
-                </div>
-                {/* ...existing refresh/auto-refresh buttons... */}
-                <div style={{ marginLeft: 16, display: 'flex', gap: 12 }}>
-                  {!isAutoRefreshing ? (
-                    <>
-                      <button
-                        onClick={() => fetchDocuments(selectedDb, selectedCollection)}
-                        disabled={isLoadingDocuments || !selectedCollection}
-                        style={buttonStyle}
-                        title="Manual Refresh"
+              {collections.length > 0 && (
+                <div>
+                  <h3 style={{
+                    color: '#fff',
+                    margin: '22px 0 10px 0',
+                    fontSize: 19,
+                    fontWeight: 800,
+                    letterSpacing: '-0.5px'
+                  }}>
+                    Collections
+                  </h3>
+                  {paginatedCols.map(col => {
+                    const colName = typeof col === 'string' ? col : col.name || String(col);
+                    return (
+                      <span
+                        key={colName}
+                        style={selectedCollection === colName ? cardSelected : cardStyle}
+                        onClick={() => handleSelectCollection(colName)}
+                        title={colName}
                       >
-                        {isLoadingDocuments ? 'Refreshing...' : '🔄 Manual Refresh'}
-                      </button>
+                        <span role="img" aria-label="collection" style={{ marginRight: 10, fontSize: 18, verticalAlign: 'middle' }}>📂</span>
+                        {colName}
+                      </span>
+                    );
+                  })}
+                  {/* Collection Pagination */}
+                  {totalColPages > 1 && (
+                    <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
                       <button
-                        onClick={startAutoRefresh}
-                        disabled={isLoadingDocuments || !selectedCollection}
-                        style={buttonStyle}
-                        title="Start Auto Refresh"
-                      >
-                        🔁 Auto Refresh
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={stopAutoRefresh}
-                      style={buttonStyle}
-                      title="Stop Auto Refresh"
-                    >
-                      ⏹️ Stop Auto Refresh
-                    </button>
+                        onClick={() => setColPage(p => Math.max(1, p - 1))}
+                        disabled={colPage === 1}
+                        style={{
+                          ...buttonStyle,
+                          padding: '4px 14px',
+                          fontSize: 14,
+                          cursor: colPage === 1 ? 'not-allowed' : 'pointer',
+                          marginRight: 8,
+                          opacity: colPage === 1 ? 0.5 : 1
+                        }}
+                      >Prev</button>
+                      <span style={{ fontSize: 14, color: '#fff', fontWeight: 700 }}>
+                        {colPage}/{totalColPages}
+                      </span>
+                      <button
+                        onClick={() => setColPage(p => Math.min(totalColPages, p + 1))}
+                        disabled={colPage === totalColPages}
+                        style={{
+                          ...buttonStyle,
+                          padding: '4px 14px',
+                          fontSize: 14,
+                          cursor: colPage === totalColPages ? 'not-allowed' : 'pointer',
+                          marginLeft: 8,
+                          opacity: colPage === totalColPages ? 0.5 : 1
+                        }}
+                      >Next</button>
+                    </div>
                   )}
                 </div>
-              </div>
-              {/* Table */}
-              <div style={{
-                flex: 1,
-                overflow: 'auto',
-                minHeight: 0,
-                width: '100%',
-                maxWidth: 980,
-                display: 'flex',
-                justifyContent: 'center'
-              }}>
-                <table className="zackdb-table">
-                  <thead>
-                    <tr>
-                      <th style={thStyle}>#</th>
-                      {visibleColumns.map(col => (
-                        <th key={col} style={thStyle}>{col}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(searchTerm && searchField ? filteredDocuments : documents).map((doc, idx) => {
-                      const descendingNumber = totalDocuments - ((currentPage - 1) * recordsPerPage + idx);
-                      return (
-                        <tr
-                          key={idx}
-                          className={((currentPage - 1) * recordsPerPage + idx) % 2 === 1 ? 'table-row-striped' : ''}
-                          style={{
-                            background: 'none',
-                            transition: 'background 0.2s'
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.background = '#f1f5fd'}
-                          onMouseLeave={e => e.currentTarget.style.background = ''}
-                        >
-                          <td style={tdStyle}>{descendingNumber}</td>
-                          {visibleColumns.map(col => (
-                            <td key={col} style={tdStyle}>
-                              {(col === 'createdAt' || col === 'updatedAt')
-                                ? (doc[col]
-                                    ? new Date(doc[col]).toLocaleString(undefined, { 
-                                        year: 'numeric', 
-                                        month: 'short', 
-                                        day: 'numeric', 
-                                        hour: '2-digit', 
-                                        minute: '2-digit', 
-                                        second: '2-digit',
-                                        hour12: false,
-                                        timeZoneName: 'short'
-                                      })
-                                    : ''
-                                  )
-                                : String(doc[col])
-                              }
-                            </td>
-                          ))}
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              {/* Pagination Controls */}
-              {totalPages > 1 && (
-                <div style={{
-                  marginTop: 18,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '8px 0'
-                }}>
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    style={{
-                      background: '#6366f1',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: 6,
-                      padding: '8px 22px',
-                      fontWeight: 700,
-                      fontSize: 15,
-                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                      marginRight: 10,
-                      opacity: currentPage === 1 ? 0.5 : 1,
-                      boxShadow: '0 2px 8px #6366f133'
-                    }}
-                  >
-                    Prev
-                  </button>
-                  <span style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    style={{
-                      background: '#6366f1',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: 6,
-                      padding: '8px 22px',
-                      fontWeight: 700,
-                      fontSize: 15,
-                      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                      marginLeft: 10,
-                      opacity: currentPage === totalPages ? 0.5 : 1,
-                      boxShadow: '0 2px 8px #6366f133'
-                    }}
-                  >
-                    Next
-                  </button>
-                </div>
               )}
-              {/* Footer directly below the table */}
-              <footer style={{
-                width: '100%',
-                textAlign: 'center',
-                marginTop: 24,
-                padding: '18px 0 8px 0',
-                color: '#6366f1',
-                fontWeight: 600,
-                fontSize: 15,
-                opacity: 0.85,
-                letterSpacing: '0.5px'
-              }}>
-                © {new Date().getFullYear()} All Rights Reserved | ZACKDB
-              </footer>
             </div>
           )}
+          {/* Main Table Area */}
+          <div style={{
+            flex: 1,
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            height: 'calc(100vh - 110px)'
+          }}>
+            {showSpinner && (
+              <div style={{
+                position: isMobile ? 'fixed' : 'relative',
+                top: isMobile ? '50%' : 'auto',
+                left: isMobile ? '50%' : 'auto',
+                transform: isMobile ? 'translate(-50%, -50%)' : 'none',
+                zIndex: isMobile ? 9999 : 'auto',
+                background: isMobile ? 'rgba(255,255,255,0.85)' : 'transparent',
+                borderRadius: isMobile ? 18 : 0,
+                boxShadow: isMobile ? '0 4px 24px rgba(99, 102, 241, 0.25)' : 'none',
+                padding: isMobile ? 24 : 0,
+                width: isMobile ? '90vw' : '100%',
+                maxWidth: isMobile ? 320 : 'none',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                minHeight: isMobile ? 'auto' : 320
+              }}>
+                <AtlasSpinner />
+              </div>
+            )}
+            {columns.length > 0 && !showSpinner && (
+              <div style={tableContainerStyle}>
+                {/* Table Title Row */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 10,
+                  marginTop: 0,
+                  width: '100%'
+                }}>
+                  <h4 style={{
+                    color: 'transparent',
+                    background: 'linear-gradient(90deg, #6366f1, #818cf8)',
+                    WebkitBackgroundClip: 'text',
+                    margin: 0,
+                    fontWeight: 800,
+                    fontSize: 20,
+                    textAlign: 'left',
+                    width: 'auto',
+                    minWidth: 120
+                  }}>
+                    Table: <span style={{
+                      color: '#6366f1',
+                      background: 'transparent',
+                      WebkitBackgroundClip: 'none'
+                    }}>{selectedCollection}</span>
+                  </h4>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    marginLeft: 16,
+                    flex: 1,
+                    justifyContent: 'flex-end'
+                  }}>
+                    <select
+                      value={searchField}
+                      onChange={e => setSearchField(e.target.value)}
+                      style={{
+                        padding: '7px 14px',
+                        borderRadius: 6,
+                        border: '1px solid #6366f1',
+                        fontSize: 15,
+                        fontWeight: 'normal',
+                        background: '#fff',
+                        color: '#23272f',
+                        minWidth: 120
+                      }}
+                    >
+                      <option value="">Filter by...</option>
+                      {visibleColumns
+                        .filter(col => col !== 'password')
+                        .map(col => (
+                          <option key={col} value={col}>{col}</option>
+                        ))}
+                    </select>
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
+                      onFocus={() => {
+                        if (!searchField) {
+                          Swal.fire({
+                            icon: 'info',
+                            title: 'Select a Filter',
+                            text: 'Please select a filter parameter before searching.'
+                          });
+                        }
+                      }}
+                      style={{
+                        padding: '7px 14px',
+                        borderRadius: 4,
+                        border: '1px solid #6366f1',
+                        fontSize: 15,
+                        minWidth: 180,
+                        background: '#fff',
+                        color: '#23272f'
+                      }}
+                      disabled={!searchField}
+                    />
+                  </div>
+                  <div style={{ marginLeft: 16, display: 'flex', gap: 12 }}>
+                    {!isAutoRefreshing ? (
+                      <>
+                        <button
+                          onClick={() => fetchDocuments(selectedDb, selectedCollection, currentPage)}
+                          disabled={isLoadingDocuments || !selectedCollection}
+                          style={{
+                            ...buttonStyle,
+                            opacity: (isLoadingDocuments || !selectedCollection) ? 0.6 : 1,
+                            cursor: (isLoadingDocuments || !selectedCollection) ? 'not-allowed' : 'pointer'
+                          }}
+                          title="Manual Refresh"
+                        >
+                          {isLoadingDocuments ? 'Refreshing...' : '🔄 Manual Refresh'}
+                        </button>
+                        <button
+                          onClick={startAutoRefresh}
+                          disabled={isLoadingDocuments || !selectedCollection}
+                          style={{
+                            ...buttonStyle,
+                            opacity: (isLoadingDocuments || !selectedCollection) ? 0.6 : 1,
+                            cursor: (isLoadingDocuments || !selectedCollection) ? 'not-allowed' : 'pointer'
+                          }}
+                          title="Start Auto Refresh"
+                        >
+                          🔁 Auto Refresh
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={stopAutoRefresh}
+                        style={buttonStyle}
+                        title="Stop Auto Refresh"
+                      >
+                        ⏸️ Stop Auto Refresh
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div style={{
+                  flex: 1,
+                  overflowX: 'auto',
+                  marginBottom: 12,
+                  width: '100%',
+                  maxWidth: '100%',
+                }}
+                >
+                  <table className="bootstrap-table" style={tableStyle}>
+                    <thead>
+                      <tr>
+                        <th style={thStyle}>#</th>
+                        {visibleColumns.map(col => (
+                          <th key={col} style={thStyle}>{col}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(searchTerm && searchField ? filteredDocuments : documents).map((doc, idx) => {
+                        const descendingNumber = totalDocuments - ((currentPage - 1) * recordsPerPage + idx);
+                        return (
+                          <tr
+                            key={doc._id || `${selectedCollection}-${idx}`}
+                            className={((currentPage - 1) * recordsPerPage + idx) % 2 === 1 ? 'table-row' : ''}
+                            style={{
+                              background: 'transparent',
+                              transition: 'background-color 0.2s'
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f0f0f5'}
+                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                          >
+                            <td style={tdStyle}>{descendingNumber}</td>
+                            {visibleColumns.map(col => (
+                              <td key={col} style={tdStyle}>
+                                {(col === 'createdAt' || col === 'updatedAt') ? (
+                                  doc[col]
+                                    ? new Date(doc[col]).toLocaleString(undefined, {
+                                      year: 'numeric',
+                                      month: 'short',
+                                      day: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                      second: '2-digit',
+                                      hour12: false,
+                                      timeZoneName: 'short'
+                                    })
+                                    : ''
+                                  ) : (
+                                  String(doc[col]?.toString() || '')
+                                )}
+                              </td>
+                            ))}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                {totalPages > 1 && (
+                  <div style={{
+                    marginTop: 18,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '8px 0'
+                  }}>
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      style={{
+                        ...buttonStyle,
+                        padding: '8px 22px',
+                        marginRight: '10px',
+                        opacity: currentPage === 1 ? '0.5' : 1,
+                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      Prev
+                    </button>
+                    <span style={{ fontWeight: 'bold', color: '#6366f1', fontSize: 15 }}>
+                      {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      style={{
+                        ...buttonStyle,
+                        padding: '8px 22px',
+                        marginLeft: '10px',
+                        opacity: currentPage === totalPages ? '0.5' : 1,
+                        cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+                <footer style={{
+                  width: '100%',
+                  textAlign: 'center',
+                  marginTop: 24,
+                  padding: '18px 0 8px',
+                  color: '#6366f1',
+                  fontWeight: 'bold',
+                  fontSize: 15,
+                  opacity: 0.85,
+                  letterSpacing: '0.5px'
+                }}>
+                  © {new Date().getFullYear()} All Rights Reserved | ZACKDB
+                </footer>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -1057,72 +1081,45 @@ function AtlasSpinner() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      height: 320,
+      height: '200px',
       width: '100%',
-      minHeight: 200
+      minHeight: '200px'
     }}>
       <div style={{
         position: 'relative',
-        width: 64,
-        height: 64,
+        width: '64px',
+        height: '64px',
         marginBottom: 18
       }}>
         <div style={{
           boxSizing: 'border-box',
           position: 'absolute',
-          width: 64,
-          height: 64,
+          width: '64px',
+          height: '64px',
           border: '6px solid #6366f1',
-          borderTop: '6px solid #818cf8',
+          borderTop: '6px solid transparent',
           borderRadius: '50%',
-          animation: 'atlas-spin 1.1s linear infinite'
+          animation: 'table-spin 0.6s linear infinite'
         }} />
         <div style={{
           position: 'absolute',
-          top: 6,
-          left: 29,
-          width: 10,
-          height: 10,
+          top: '6px',
+          left: '6px',
+          width: '10px',
+          height: '10px',
           borderRadius: '50%',
           background: '#6366f1',
-          boxShadow: '0 0 12px #818cf8'
+          boxShadow: '0 0 6px rgba(129, 140, 248, 0.5)'
         }} />
       </div>
       <span style={{
         color: '#6366f1',
-        fontWeight: 700,
+        fontWeight: 'bold',
         fontSize: 18,
         letterSpacing: '0.5px'
       }}>
         Loading...
       </span>
-      {/* Spinner keyframes */}
-      <style>
-        {`
-          @keyframes atlas-spin {
-            0% { transform: rotate(0deg);}
-            100% { transform: rotate(360deg);}
-          }
-        `}
-      </style>
     </div>
   );
 }
-
-/* Add Bootstrap-like table styles */
-<style>
-  {`
-    .bootstrap-table th, .bootstrap-table td {
-      border-bottom: 1px solid #e0e7ff;
-    }
-    .bootstrap-table tr:last-child td {
-      border-bottom: none;
-    }
-    .bootstrap-table tr.table-row-striped {
-      background: #f8fafc;
-    }
-    .bootstrap-table tr:hover td {
-      background: #f1f5fd !important;
-    }
-  `}
-</style>

@@ -321,7 +321,7 @@ export default function Dashboard({ user: userProp }) {
       } catch {}
 
       if (!res.ok) {
-        setError(data.message || 'Connection string already exists, check saved connections list');
+        setError(data.message || 'That onnection string already exists, check saved connections list');
         setSaveLoading(false); // <-- Stop saving
         return;
       }
