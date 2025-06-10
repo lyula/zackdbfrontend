@@ -590,9 +590,9 @@ export default function DatabaseExplorer() {
   const excludedFields = ['_id', 'id', 'userId', 'createdAt', 'updatedAt', '__v'];
 
   // Handler to submit new document
-  const handleAddDocument = async () => {
+  const handleAddDocument = async (newDoc) => {
     try {
-      const res = await fetch(`${API_URL}/api/insert-document`, {
+      const res = await fetch('/api/insert-document', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -603,13 +603,27 @@ export default function DatabaseExplorer() {
         })
       });
       const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.error || 'Insert failed');
-      setShowAddModal(false);
-      setNewDoc({});
-      fetchDocuments(selectedDb, selectedCollection, 1, true); // Refresh table
-      Swal.fire({ icon: 'success', title: 'Document Added!' });
+      if (data.success) {
+        setShowAddModal(false); // Close modal
+        setNewDoc({});          // Reset form state
+        fetchDocuments(selectedDb, selectedCollection, 1, true); // Refresh table
+      } else {
+        setShowAddModal(false); // Close modal on error
+        setNewDoc({});          // Reset form state
+        Swal.fire({
+          icon: 'error',
+          title: 'Insert Failed',
+          text: data.error || 'Insert failed.'
+        });
+      }
     } catch (err) {
-      Swal.fire({ icon: 'error', title: 'Insert Failed', text: err.message });
+      setShowAddModal(false); // Close modal on error
+      setNewDoc({});          // Reset form state
+      Swal.fire({
+        icon: 'error',
+        title: 'Insert Failed',
+        text: err.message || 'Insert failed.'
+      });
     }
   };
 
@@ -1146,7 +1160,7 @@ export default function DatabaseExplorer() {
               background: '#fff', borderRadius: 12, padding: 32, minWidth: 320, boxShadow: '0 4px 24px #6366f144'
             }}>
               <h3 style={{ marginTop: 0 }}>Add New Document</h3>
-              <form onSubmit={e => { e.preventDefault(); handleAddDocument(); }}>
+              <form onSubmit={e => { e.preventDefault(); handleAddDocument(newDoc); }}>
                 {columns.filter(col => !excludedFields.includes(col)).map(col => (
                   <div key={col} style={{ marginBottom: 14 }}>
                     <label style={{ fontWeight: 600 }}>{col}:</label>
