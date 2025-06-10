@@ -278,6 +278,22 @@ export default function Dashboard({ user: userProp }) {
     connPage * connectionsPerPage
   );
 
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [saveDots, setSaveDots] = useState(0);
+
+  // Animate dots for "Saving..."
+  useEffect(() => {
+    let interval;
+    if (saveLoading) {
+      interval = setInterval(() => {
+        setSaveDots(d => (d + 1) % 4);
+      }, 400);
+    } else {
+      setSaveDots(0);
+    }
+    return () => clearInterval(interval);
+  }, [saveLoading]);
+
   const handleConnect = async (connStr) => {
     setError('');
     if (!connStr) {
@@ -288,6 +304,7 @@ export default function Dashboard({ user: userProp }) {
       setError('Please enter a valid MongoDB Atlas connection string.');
       return;
     }
+    setSaveLoading(true); // <-- Start saving
     try {
       const res = await fetch(`${API_URL}/api/saved-connections`, {
         method: 'POST',
@@ -305,6 +322,7 @@ export default function Dashboard({ user: userProp }) {
 
       if (!res.ok) {
         setError(data.message || 'Connection string already exists, check saved connections list');
+        setSaveLoading(false); // <-- Stop saving
         return;
       }
 
@@ -322,6 +340,8 @@ export default function Dashboard({ user: userProp }) {
 
     } catch (err) {
       setError(err.message || 'Failed to save connection string.');
+    } finally {
+      setSaveLoading(false); // <-- Stop saving
     }
   };
 
@@ -609,11 +629,31 @@ export default function Dashboard({ user: userProp }) {
                         boxShadow: '0 2px 12px #6366f122',
                         gap: 10
                       }}
-                      disabled={loading}
+                      disabled={loading || saveLoading}
                     >
                       <span role="img" aria-label="rocket" style={{ fontSize: 22 }}>🚀</span>
-                      {loading ? 'Connecting...' : 'Save & Connect'}
+                      {saveLoading
+                        ? `Saving${'.'.repeat(saveDots)}`
+                        : (loading ? 'Connecting...' : 'Save & Connect')}
                     </button>
+                    {/* Show error or example connection string */}
+                    <div
+                      className={`text-center rounded-3 shadow-none mt-2`}
+                      style={{
+                        maxWidth: 480,
+                        width: '100%',
+                        fontSize: 14,
+                        minHeight: 22,
+                        color: error ? '#dc3545' : '#888',
+                        opacity: error ? 1 : 0.7,
+                        transition: 'color 0.2s, opacity 0.2s'
+                      }}
+                    >
+                      {error
+                        ? error
+                        : <>Example: <span style={{ fontFamily: 'monospace', color: '#aaa' }}>mongodb+srv://username:password@cluster0.abcde.mongodb.net/</span></>
+                      }
+                    </div>
                     {error && (
                       <div className="alert alert-danger text-center rounded-3 shadow-sm" style={{ maxWidth: 480, width: '100%', fontSize: 14 }}>
                         {error}
