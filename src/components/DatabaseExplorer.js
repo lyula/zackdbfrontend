@@ -84,13 +84,15 @@ export default function DatabaseExplorer() {
   const [currentPage, setCurrentPage] = useState(1);
   const [dbPage, setDbPage] = useState(1);
   const [colPage, setColPage] = useState(1);
-  const recordsPerPage = 10;
-  // Responsive: detect mobile
+  // Responsive: detect mobile and large screen
   const screenCategory = useScreenCategory();
   const isMobile = screenCategory === 'mobile';
   const isLargeScreen = screenCategory === 'large';
 
   // Responsive: records per page
+  // 100 per page on large screens (TVs, big monitors), 10 per page on normal PC and mobile
+  const recordsPerPage = isLargeScreen ? 100 : 10;
+
   const dbsPerPage = isMobile ? 3 : 5;
   const colsPerPage = isMobile ? 3 : 3;
   const [databases, setDatabases] = useState(initialDatabases || []);
@@ -206,8 +208,8 @@ export default function DatabaseExplorer() {
     forceBackend = false
   ) => {
     for (let i = centerPage - range; i <= centerPage + range; i++) {
-      if (i > 0) {
-        const cacheKey = `${dbName}_${collectionName}_${i}`;
+      if (i > 0 && i <= Math.ceil(totalDocs / recordsPerPage)) {
+        const cacheKey = `${dbName}_${collectionName}_${i}_${recordsPerPage}`;
         if (forceBackend || !documentsCache[cacheKey]) {
           fetch(`${API_URL}/api/documents?${new URLSearchParams({
             connectionString: encodeURIComponent(connectionString),
@@ -241,7 +243,7 @@ export default function DatabaseExplorer() {
       return;
     }
     setIsLoadingDocuments(true);
-    setRefreshingType(refreshType); // <-- set type
+    setRefreshingType(refreshType);
     setError('');
     try {
       const params = new URLSearchParams({
@@ -251,8 +253,8 @@ export default function DatabaseExplorer() {
         page,
         limit: recordsPerPage
       });
-      // Always fetch from backend if forceBackend is true
-      if (forceBackend || !documentsCache[`${dbName}_${collectionName}_${page}`]) {
+      const cacheKey = `${dbName}_${collectionName}_${page}_${recordsPerPage}`;
+      if (forceBackend || !documentsCache[cacheKey]) {
         const res = await fetch(`${API_URL}/api/documents?${params.toString()}`, {
           method: 'GET',
           credentials: 'include'
@@ -271,7 +273,6 @@ export default function DatabaseExplorer() {
         setCurrentPage(page);
 
         // Cache this page
-        const cacheKey = `${dbName}_${collectionName}_${page}`;
         setDocumentsCache(prev => ({
           ...prev,
           [cacheKey]: docs
@@ -279,7 +280,6 @@ export default function DatabaseExplorer() {
 
         // Set columns and visibility for new collection
         if (forceBackend || columns.length === 0) {
-          // Collect all unique keys from all fetched docs
           const allKeys = new Set();
           docs.forEach(doc => Object.keys(doc).forEach(key => allKeys.add(key)));
           const cols = Array.from(allKeys);
@@ -297,10 +297,9 @@ export default function DatabaseExplorer() {
         }
 
         // Prefetch 10 pages before and after, always force prefetch on refresh
-        prefetchPages(dbName, collectionName, page, data.total || 0, 10, 5, true);
+        prefetchPages(dbName, collectionName, page, data.total || 0, 10, true);
       } else {
-        // Use cache if not forced
-        setDocuments(documentsCache[`${dbName}_${collectionName}_${page}`]);
+        setDocuments(documentsCache[cacheKey]);
         setCurrentPage(page);
       }
     } catch (err) {
@@ -426,12 +425,12 @@ export default function DatabaseExplorer() {
   // When page changes, fetch only that page
   const handlePageChange = (page) => {
     if (page < 1 || page > totalPages) return;
-    const cacheKey = `${selectedDb}_${selectedCollection}_${page}`;
+    const cacheKey = `${selectedDb}_${selectedCollection}_${page}_${recordsPerPage}`;
     if (documentsCache[cacheKey]) {
       setDocuments(documentsCache[cacheKey]);
       setCurrentPage(page);
       // Prefetch around this page too, using totalDocuments to determine range
-      prefetchPages(selectedDb, selectedCollection, page, totalDocuments);
+      prefetchPages(selectedDb, selectedCollection, page, totalDocuments, 10, false);
     } else {
       fetchDocuments(selectedDb, selectedCollection, page);
     }
