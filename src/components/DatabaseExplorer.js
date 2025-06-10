@@ -447,6 +447,7 @@ export default function DatabaseExplorer() {
   // Responsive font size helper
   // base: normal PC/mobile, large: base+2, xlarge: base+3 (subtle, not too large)
   const responsiveFont = (base) =>
+    screenCategory === 'xxlarge' ? base + 8 :
     isXLargeScreen ? base + 3 :
     isLargeScreen ? base + 2 :
     base;
@@ -496,13 +497,13 @@ export default function DatabaseExplorer() {
     boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.13)',
     border: '1.5px solid #e0e7ff',
     borderRadius: 18,
-    marginTop: 0,
+    marginTop: screenCategory === 'xxlarge' || isXLargeScreen || isLargeScreen ? 32 : 0,
+    marginBottom: screenCategory === 'xxlarge' || isXLargeScreen || isLargeScreen ? 32 : 0,
     display: 'flex',
     flexDirection: 'column',
     color: '#23272f',
     padding: isMobile ? '0' : '18px 18px 0 18px',
     fontSize: responsiveFont(14),
-    // Only scroll vertically on mobile
     height: isMobile ? 'calc(100vh - 110px)' : 'auto',
     overflowY: isMobile ? 'auto' : 'visible',
     overflowX: 'auto'
