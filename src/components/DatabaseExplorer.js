@@ -742,7 +742,7 @@ export default function DatabaseExplorer() {
                 style={buttonStyle}
               >
                 <span role="img" aria-label="sidebar" style={{ marginRight: 8 }}>📚</span>
-                Show Sidebar
+                Sidebar
               </button>
             ) : (
               <button
@@ -999,24 +999,25 @@ export default function DatabaseExplorer() {
                   <button
                     onClick={() => setShowAddModal(true)}
                     style={{
-                      background: '#22c55e',
-                      border: 'none',
+                      background: isMobile ? 'transparent' : '#22c55e',
+                      border: isMobile ? 'none' : 'none',
                       borderRadius: 6,
-                      color: '#fff',
+                      color: isMobile ? '#fff' : '#fff',
                       fontWeight: 700,
-                      fontSize: isMobile ? 14 : 16, // Smaller font on mobile
-                      padding: isMobile ? '5px 10px' : '7px 14px', // Smaller padding on mobile
+                      fontSize: isMobile ? 14 : 16,
+                      padding: isMobile ? '5px 10px' : '7px 14px',
                       marginLeft: 12,
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
-                      height: isMobile ? 32 : 38, // Smaller height on mobile
+                      height: isMobile ? 32 : 38,
                       minHeight: isMobile ? 32 : 38,
-                      minWidth: 0
+                      minWidth: 0,
+                      boxShadow: isMobile ? 'none' : undefined
                     }}
                     title="Add New Document"
                   >
-                    <span style={{ fontSize: isMobile ? 16 : 20, marginRight: 6 }}>➕</span>
+                    <span style={{ fontSize: isMobile ? 16 : 20, marginRight: 6, color: isMobile ? '#fff' : undefined }}>➕</span>
                     {isMobile ? '' : 'Add'}
                   </button>
                   <div style={{
