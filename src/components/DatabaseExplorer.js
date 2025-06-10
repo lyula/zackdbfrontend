@@ -90,8 +90,8 @@ export default function DatabaseExplorer() {
   const isLargeScreen = screenCategory === 'large';
 
   // Responsive: records per page
-  // 100 per page on large screens (TVs, big monitors), 10 per page on normal PC and mobile
-  const recordsPerPage = isLargeScreen ? 100 : 10;
+  // 40 per page on large screens (TVs, big monitors), 10 per page on normal PC and mobile
+  const recordsPerPage = isLargeScreen ? 40 : 10;
 
   const dbsPerPage = isMobile ? 3 : 5;
   const colsPerPage = isMobile ? 3 : 3;
@@ -438,8 +438,9 @@ export default function DatabaseExplorer() {
 
   // --- Styling --- ULTRA MODERN THEME ---
   // Responsive font size helper
+  // Reduce font size for PC (normal screens), keep smaller on mobile, moderate on large
   const responsiveFont = (base, large) =>
-    isLargeScreen ? large : isMobile ? base - 2 : base;
+    isLargeScreen ? large : isMobile ? base - 2 : base - 3;
 
   const sidebarStyle = {
     width: isMobile ? '100%' : 260,
