@@ -103,7 +103,7 @@ export default function DatabaseExplorer() {
     const fetchLocation = () => {
       fetch('https://ipapi.co/json/')
         .then(res => res.json())
-        .then(data => {
+        .then((data) => {
           setCountry(data.country_code || 'US');
           setUserTimezone(data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
         })
@@ -680,7 +680,8 @@ export default function DatabaseExplorer() {
             fontSize: 28,
             margin: 0
           }}>Database Explorer</h2>
-          {columns.length > 0 && (
+          {/* Only show column filters if NOT on mobile sidebar */}
+          {columns.length > 0 && !(isMobile && isSidebarVisible) && (
             <div>
               {columns.map(col => (
                 <label key={col} style={{ marginRight: 14, fontWeight: 500, fontSize: 15, color: '#23272f' }}>
