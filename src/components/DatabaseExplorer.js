@@ -584,6 +584,35 @@ export default function DatabaseExplorer() {
       )
     : documents;
 
+  // Add these states for the modal and form
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newDoc, setNewDoc] = useState({});
+  const excludedFields = ['_id', 'id', 'userId', 'createdAt', 'updatedAt', '__v'];
+
+  // Handler to submit new document
+  const handleAddDocument = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/insert-document`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          connectionString,
+          dbName: selectedDb,
+          collectionName: selectedCollection,
+          document: newDoc
+        })
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || 'Insert failed');
+      setShowAddModal(false);
+      setNewDoc({});
+      fetchDocuments(selectedDb, selectedCollection, 1, true); // Refresh table
+      Swal.fire({ icon: 'success', title: 'Document Added!' });
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: 'Insert Failed', text: err.message });
+    }
+  };
+
   return (
     <>
       <style>
@@ -878,6 +907,27 @@ export default function DatabaseExplorer() {
                       WebkitBackgroundClip: 'none'
                     }}>{selectedCollection}</span>
                   </h4>
+                  {/* Green Plus Button */}
+                  <button
+                    onClick={() => setShowAddModal(true)}
+                    style={{
+                      background: '#22c55e',
+                      border: 'none',
+                      borderRadius: 6,
+                      color: '#fff',
+                      fontWeight: 700,
+                      fontSize: 18,
+                      padding: '6px 14px',
+                      marginLeft: 12,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                    title="Add New Document"
+                  >
+                    <span style={{ fontSize: 22, marginRight: 6 }}>➕</span>
+                    Add
+                  </button>
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -1086,6 +1136,43 @@ export default function DatabaseExplorer() {
             )}
           </div>
         </div>
+        {/* Add Modal */}
+        {showAddModal && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            background: 'rgba(0,0,0,0.25)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <div style={{
+              background: '#fff', borderRadius: 12, padding: 32, minWidth: 320, boxShadow: '0 4px 24px #6366f144'
+            }}>
+              <h3 style={{ marginTop: 0 }}>Add New Document</h3>
+              <form onSubmit={e => { e.preventDefault(); handleAddDocument(); }}>
+                {columns.filter(col => !excludedFields.includes(col)).map(col => (
+                  <div key={col} style={{ marginBottom: 14 }}>
+                    <label style={{ fontWeight: 600 }}>{col}:</label>
+                    <input
+                      type={col === 'password' ? 'password' : 'text'}
+                      value={newDoc[col] || ''}
+                      onChange={e => setNewDoc({ ...newDoc, [col]: e.target.value })}
+                      style={{
+                        width: '100%', padding: 8, borderRadius: 6, border: '1px solid #6366f1', marginTop: 4
+                      }}
+                      required={col === 'password'}
+                    />
+                  </div>
+                ))}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                  <button type="button" onClick={() => setShowAddModal(false)} style={{
+                    background: '#e5e7eb', color: '#23272f', border: 'none', borderRadius: 6, padding: '8px 18px'
+                  }}>Cancel</button>
+                  <button type="submit" style={{
+                    background: '#22c55e', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 700
+                  }}>Add</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
