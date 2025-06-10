@@ -30,11 +30,11 @@ function useIsMobile() {
 // Custom hook to get screen size category
 function useScreenCategory() {
   const [category, setCategory] = useState(
-    window.innerWidth >= 1200 ? 'large' : window.innerWidth <= 768 ? 'mobile' : 'normal'
+    window.innerWidth >= 1920 ? 'large' : window.innerWidth <= 768 ? 'mobile' : 'normal'
   );
   useEffect(() => {
     const onResize = () => {
-      if (window.innerWidth >= 1200) setCategory('large');
+      if (window.innerWidth >= 1920) setCategory('large');
       else if (window.innerWidth <= 768) setCategory('mobile');
       else setCategory('normal');
     };
