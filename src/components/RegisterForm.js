@@ -14,7 +14,21 @@ export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [dotCount, setDotCount] = useState(0);
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    let interval;
+    if (loading) {
+      interval = setInterval(() => {
+        setDotCount(prev => (prev + 1) % 4);
+      }, 400);
+    } else {
+      setDotCount(0);
+    }
+    return () => clearInterval(interval);
+  }, [loading]);
 
   // Strong password validation: min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
   function isStrongPassword(pw) {
@@ -24,6 +38,7 @@ export default function RegisterForm() {
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       Swal.fire({
@@ -31,6 +46,7 @@ export default function RegisterForm() {
         title: 'Registration Failed',
         text: 'Passwords do not match.'
       });
+      setLoading(false);
       return;
     }
     if (!isStrongPassword(password)) {
@@ -40,6 +56,7 @@ export default function RegisterForm() {
         title: 'Weak Password',
         text: 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character.'
       });
+      setLoading(false);
       return;
     }
     try {
@@ -64,6 +81,7 @@ export default function RegisterForm() {
           title: 'Registration Failed',
           text: msg
         });
+        setLoading(false);
         return;
       }
 
@@ -74,7 +92,10 @@ export default function RegisterForm() {
         timer: 1800,
         showConfirmButton: false
       });
-      setTimeout(() => navigate('/login'), 1800);
+      setTimeout(() => {
+        setLoading(false);
+        navigate('/login');
+      }, 1800);
 
     } catch (err) {
       Swal.fire({
@@ -82,6 +103,7 @@ export default function RegisterForm() {
         title: 'Registration Failed',
         text: 'An unexpected error occurred. Please try again.'
       });
+      setLoading(false);
     }
   };
 
@@ -397,16 +419,20 @@ export default function RegisterForm() {
             width: 220,
             fontWeight: 800,
             fontSize: 16,
-            cursor: 'pointer',
+            cursor: loading ? 'not-allowed' : 'pointer',
             boxShadow: '0 2px 12px #6366f133',
             letterSpacing: '0.5px',
             marginBottom: 4,
             transition: 'background 0.2s',
-            alignSelf: 'center'
+            alignSelf: 'center',
+            opacity: loading ? 0.7 : 1
           }}
+          disabled={loading}
         >
           <span role="img" aria-label="register" style={{ marginRight: 8 }}>📝</span>
-          Register
+          {loading
+            ? `Registering${'.'.repeat(dotCount)}`
+            : 'Register'}
         </button>
         {/* Login Link */}
         <div style={{ marginTop: 8, fontSize: 14 }}>
