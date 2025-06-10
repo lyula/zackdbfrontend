@@ -1147,7 +1147,8 @@ export default function DatabaseExplorer() {
                     <tbody>
                       {(searchTerm && searchField ? filteredDocuments : documents).map((doc, idx) => {
                         const descendingNumber = totalDocuments - ((currentPage - 1) * recordsPerPage + idx);
-                        const isEven = ((currentPage - 1) * recordsPerPage + idx) % 2 === 0;
+                        // Use idx % 2 for true alternating color
+                        const isEven = idx % 2 === 0;
                         return (
                           <tr
                             key={doc._id || `${selectedCollection}-${idx}`}
