@@ -550,7 +550,14 @@ export default function Dashboard({ user: userProp }) {
           </button>
         </header>
         {/* Main horizontal layout */}
-        <div className="container-fluid flex-grow-1 d-flex flex-column justify-content-center align-items-center py-4" style={{ background: 'linear-gradient(120deg, #f1f5f9 0%, #e0e7ff 100%)' }}>
+        <div className="container-fluid flex-grow-1 d-flex flex-column justify-content-center align-items-center py-4"
+  style={{
+    background: 'linear-gradient(120deg, #f1f5f9 0%, #e0e7ff 100%)',
+    // maxWidth: 1400, // Remove or comment out this line
+    width: '100%',     // Add this line to ensure full width
+    margin: 0          // Remove '0 auto' to avoid centering with a fixed width
+  }}
+>
           <div className={`row w-100 justify-content-center align-items-start ${isMobile ? '' : 'gx-5'}`}>
             {/* Left: New Connection */}
             <div className="col-12 col-md-6 col-lg-5 mb-4">

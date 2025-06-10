@@ -451,7 +451,6 @@ export default function DatabaseExplorer() {
   };
   const tableContainerStyle = {
     width: '100%',
-    maxWidth: 980,
     background: 'rgba(255,255,255,0.95)',
     boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.13)',
     border: '1.5px solid #e0e7ff',
