@@ -29,15 +29,16 @@ function useIsMobile() {
 
 // Custom hook to get screen size category
 function useScreenCategory() {
-  const [category, setCategory] = useState(
-    window.innerWidth >= 1920 ? 'large' : window.innerWidth <= 768 ? 'mobile' : 'normal'
-  );
+  // 24" = 1920px, 32" = 2560px (approx)
+  const getCategory = () => {
+    if (window.innerWidth >= 2560) return 'xlarge'; // 32" and above
+    if (window.innerWidth >= 1920) return 'large';  // 24" to <32"
+    if (window.innerWidth <= 768) return 'mobile';
+    return 'normal';
+  };
+  const [category, setCategory] = useState(getCategory());
   useEffect(() => {
-    const onResize = () => {
-      if (window.innerWidth >= 1920) setCategory('large');
-      else if (window.innerWidth <= 768) setCategory('mobile');
-      else setCategory('normal');
-    };
+    const onResize = () => setCategory(getCategory());
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
@@ -88,10 +89,11 @@ export default function DatabaseExplorer() {
   const screenCategory = useScreenCategory();
   const isMobile = screenCategory === 'mobile';
   const isLargeScreen = screenCategory === 'large';
+  const isXLargeScreen = screenCategory === 'xlarge';
 
   // Responsive: records per page
-  // 40 per page on large screens (TVs, big monitors), 10 per page on normal PC and mobile
-  const recordsPerPage = isLargeScreen ? 40 : 10;
+  // 40 per page on 32" and above, 15 per page on 24-32", 10 per page otherwise
+  const recordsPerPage = isXLargeScreen ? 40 : isLargeScreen ? 15 : 10;
 
   const dbsPerPage = isMobile ? 3 : 5;
   const colsPerPage = isMobile ? 3 : 3;
