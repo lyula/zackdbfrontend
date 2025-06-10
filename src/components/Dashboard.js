@@ -620,7 +620,7 @@ export default function Dashboard({ user: userProp }) {
                         style={{
                           height: 54,
                           fontSize: 16,
-                          border: '2px solid #6366f1', // Add a visible border
+                          border: '2px solid #6366f1',
                           boxShadow: '0 1px 6px #6366f122'
                         }}
                       />
@@ -647,27 +647,25 @@ export default function Dashboard({ user: userProp }) {
                         ? `Saving${'.'.repeat(saveDots)}`
                         : (loading ? 'Connecting...' : 'Save & Connect')}
                     </button>
-                    {/* Show error or example connection string */}
-                    <div
-                      className={`text-center rounded-3 shadow-none mt-2`}
-                      style={{
-                        maxWidth: 480,
-                        width: '100%',
-                        fontSize: 14,
-                        minHeight: 22,
-                        color: error ? '#dc3545' : '#888',
-                        opacity: error ? 1 : 0.7,
-                        transition: 'color 0.2s, opacity 0.2s'
-                      }}
-                    >
-                      {error
-                        ? error
-                        : <>Example: <span style={{ fontFamily: 'monospace', color: '#aaa' }}>mongodb+srv://username:password@cluster0.abcde.mongodb.net/</span></>
-                      }
-                    </div>
-                    {error && (
+                    {/* Show only the alert for error, otherwise show the example */}
+                    {error ? (
                       <div className="alert alert-danger text-center rounded-3 shadow-sm" style={{ maxWidth: 480, width: '100%', fontSize: 14 }}>
                         {error}
+                      </div>
+                    ) : (
+                      <div
+                        className={`text-center rounded-3 shadow-none mt-2`}
+                        style={{
+                          maxWidth: 480,
+                          width: '100%',
+                          fontSize: 14,
+                          minHeight: 22,
+                          color: '#888',
+                          opacity: 0.7,
+                          transition: 'color 0.2s, opacity 0.2s'
+                        }}
+                      >
+                        Example: <span style={{ fontFamily: 'monospace', color: '#aaa' }}>mongodb+srv://username:password@cluster0.abcde.mongodb.net/</span>
                       </div>
                     )}
                   </div>
