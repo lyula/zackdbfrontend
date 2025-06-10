@@ -22,6 +22,17 @@ function truncateName(name, maxLength = 10) {
   return name;
 }
 
+// Utility to get shortest word from a name string
+function getShortestName(name) {
+  if (!name) return '';
+  const words = name.trim().split(/\s+/);
+  if (words.length === 1) return words[0];
+  // Return the shortest word
+  return words.reduce((shortest, word) =>
+    word.length < shortest.length ? word : shortest
+  );
+}
+
 // Hamburger icon for mobile header (white color for both states)
 const HamburgerIcon = ({ open, ...props }) => (
   <span
@@ -594,14 +605,13 @@ export default function Dashboard({ user: userProp }) {
   {user ? (
     <>
       <span style={{ marginLeft: isMobile ? 6 : 0 }}>
-        , {user.username}!
+        , {getShortestName(user.username)}!
       </span>
       <span
         role="img"
         aria-label="wave"
         style={{
           marginLeft: 6,
-          // Force emoji to use native color by resetting all inherited styles
           color: 'initial',
           background: 'none',
           WebkitBackgroundClip: 'unset',

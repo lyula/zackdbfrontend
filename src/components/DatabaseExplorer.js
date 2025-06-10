@@ -1004,20 +1004,20 @@ export default function DatabaseExplorer() {
                       borderRadius: 6,
                       color: '#fff',
                       fontWeight: 700,
-                      fontSize: 16,
-                      padding: '7px 14px', // Match search input height
+                      fontSize: isMobile ? 14 : 16, // Smaller font on mobile
+                      padding: isMobile ? '5px 10px' : '7px 14px', // Smaller padding on mobile
                       marginLeft: 12,
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
-                      height: 38, // Match search/select height
-                      minHeight: 38,
+                      height: isMobile ? 32 : 38, // Smaller height on mobile
+                      minHeight: isMobile ? 32 : 38,
                       minWidth: 0
                     }}
                     title="Add New Document"
                   >
-                    <span style={{ fontSize: 20, marginRight: 6 }}>➕</span>
-                    Add
+                    <span style={{ fontSize: isMobile ? 16 : 20, marginRight: 6 }}>➕</span>
+                    {isMobile ? '' : 'Add'}
                   </button>
                   <div style={{
                     display: 'flex',
@@ -1095,7 +1095,13 @@ export default function DatabaseExplorer() {
                         >
                           {isLoadingDocuments && refreshingType === 'manual'
                             ? <span><span className="dot-anim">Refreshing</span>...</span>
-                            : '🔄'}
+                            : (
+                              <>
+                                <span role="img" aria-label="refresh" style={{ marginRight: 6 }}>🔄</span>
+                                {!isMobile && 'Manual Refresh'}
+                              </>
+                            )
+                          }
                         </button>
                         <button
                           onClick={startAutoRefresh}
@@ -1113,7 +1119,13 @@ export default function DatabaseExplorer() {
                         >
                           {isLoadingDocuments && refreshingType === 'auto'
                             ? <span><span className="dot-anim">Auto Refreshing</span>...</span>
-                            : '🔁'}
+                            : (
+                              <>
+                                <span role="img" aria-label="autorefresh" style={{ marginRight: 6 }}>🔁</span>
+                                {!isMobile && 'Auto Refresh'}
+                              </>
+                            )
+                          }
                         </button>
                       </>
                     ) : (
@@ -1128,7 +1140,8 @@ export default function DatabaseExplorer() {
                         }}
                         title="Stop Auto Refresh"
                       >
-                        ⏸️
+                        <span role="img" aria-label="pause" style={{ marginRight: 6 }}>⏸️</span>
+                        {!isMobile && 'Stop Auto Refresh'}
                       </button>
                     )}
                   </div>
