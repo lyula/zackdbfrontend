@@ -584,9 +584,21 @@ export default function Dashboard({ user: userProp }) {
   {user ? (
     <>
       <span style={{ marginLeft: isMobile ? 6 : 0 }}>
-        , {user.username}
+        , {user.username}!
       </span>
-      <span role="img" aria-label="wave" style={{ marginLeft: 6 }}>👋</span>
+      <span
+        role="img"
+        aria-label="wave"
+        style={{
+          marginLeft: 6,
+          // Remove background/text color so emoji uses its native color
+          background: 'none',
+          WebkitBackgroundClip: 'initial',
+          backgroundClip: 'initial',
+          color: 'inherit',
+          filter: 'none'
+        }}
+      >👋</span>
     </>
   ) : null}
 </h1>
