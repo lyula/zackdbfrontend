@@ -440,9 +440,11 @@ export default function DatabaseExplorer() {
 
   // --- Styling --- ULTRA MODERN THEME ---
   // Responsive font size helper
-  // Reduce font size for PC (normal screens), keep smaller on mobile, moderate on large
-  const responsiveFont = (base, large) =>
-    isLargeScreen ? large : isMobile ? base - 2 : base - 3;
+  // base: normal PC/mobile, large: base+2, xlarge: base+3 (subtle, not too large)
+  const responsiveFont = (base) =>
+    isXLargeScreen ? base + 3 :
+    isLargeScreen ? base + 2 :
+    base;
 
   const sidebarStyle = {
     width: isMobile ? '100%' : 260,
@@ -458,7 +460,7 @@ export default function DatabaseExplorer() {
     display: 'flex',
     flexDirection: 'column',
     color: '#fff',
-    fontSize: responsiveFont(15, 18)
+    fontSize: responsiveFont(15)
   };
   const cardStyle = {
     display: 'block',
@@ -468,7 +470,7 @@ export default function DatabaseExplorer() {
     padding: '12px 20px',
     margin: '0 0 10px 0',
     fontWeight: 600,
-    fontSize: responsiveFont(15, 18),
+    fontSize: responsiveFont(15),
     color: '#23272f',
     cursor: 'pointer',
     border: '2px solid #6366f1',
@@ -494,7 +496,7 @@ export default function DatabaseExplorer() {
     flexDirection: 'column',
     color: '#23272f',
     padding: isMobile ? '0' : '18px 18px 0 18px',
-    fontSize: responsiveFont(14, 18),
+    fontSize: responsiveFont(14),
     // Only scroll vertically on mobile
     height: isMobile ? 'calc(100vh - 110px)' : 'auto',
     overflowY: isMobile ? 'auto' : 'visible',
@@ -509,7 +511,7 @@ export default function DatabaseExplorer() {
     boxShadow: '0 2px 8px #6366f122',
     marginBottom: 0,
     overflow: 'hidden', // Ensures children from overflowing rounded corners
-    fontSize: responsiveFont(13, 17)
+    fontSize: responsiveFont(13)
   };
   const thStyle = {
     background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
@@ -517,14 +519,14 @@ export default function DatabaseExplorer() {
     padding: '6px 10px',
     fontWeight: 700,
     border: 'none',
-    fontSize: responsiveFont(14, 18),
+    fontSize: responsiveFont(14),
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0
   };
   const tdStyle = {
     padding: '6px 10px',
     border: 'none',
-    fontSize: responsiveFont(13, 17),
+    fontSize: responsiveFont(13),
     background: '#fff',
     color: '#23272f',
     verticalAlign: 'middle',
@@ -532,7 +534,7 @@ export default function DatabaseExplorer() {
   };
   const buttonStyle = {
     padding: '10px 14px',
-    fontSize: responsiveFont(14, 18),
+    fontSize: responsiveFont(14),
     fontWeight: '700',
     borderRadius: '6px',
     border: 'none',
