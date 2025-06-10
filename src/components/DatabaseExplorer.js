@@ -29,9 +29,10 @@ function useIsMobile() {
 
 // Custom hook to get screen size category
 function useScreenCategory() {
-  // 24" = 1920px, 32" = 2560px (approx)
+  // 24" = 1920px, 32" = 2560px, 50"+ = 3840px (approx)
   const getCategory = () => {
-    if (window.innerWidth >= 2560) return 'xlarge'; // 32" and above
+    if (window.innerWidth >= 3840) return 'xxlarge'; // 50" and above
+    if (window.innerWidth >= 2560) return 'xlarge'; // 32" to <50"
     if (window.innerWidth >= 1920) return 'large';  // 24" to <32"
     if (window.innerWidth <= 768) return 'mobile';
     return 'normal';
@@ -92,8 +93,12 @@ export default function DatabaseExplorer() {
   const isXLargeScreen = screenCategory === 'xlarge';
 
   // Responsive: records per page
-  // 40 per page on 32" and above, 15 per page on 24-32", 10 per page otherwise
-  const recordsPerPage = isXLargeScreen ? 40 : isLargeScreen ? 15 : 10;
+  // 45 per page on 50" and above, 40 per page on 32-50", 15 per page on 24-32", 10 per page otherwise
+  const recordsPerPage =
+    screenCategory === 'xxlarge' ? 45 :
+    isXLargeScreen ? 40 :
+    isLargeScreen ? 15 :
+    10;
 
   const dbsPerPage = isMobile ? 3 : 5;
   const colsPerPage = isMobile ? 3 : 3;
