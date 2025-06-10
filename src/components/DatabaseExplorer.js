@@ -1091,14 +1091,14 @@ export default function DatabaseExplorer() {
                             opacity: (isLoadingDocuments || !selectedCollection) ? 0.6 : 1,
                             cursor: (isLoadingDocuments || !selectedCollection) ? 'not-allowed' : 'pointer'
                           }}
-                          title="Manual Refresh"
+                          title="Manual"
                         >
                           {isLoadingDocuments && refreshingType === 'manual'
                             ? <span><span className="dot-anim">Refreshing</span>...</span>
                             : (
                               <>
                                 <span role="img" aria-label="refresh" style={{ marginRight: 6 }}>🔄</span>
-                                {!isMobile && 'Manual Refresh'}
+                                {!isMobile && 'Manual'}
                               </>
                             )
                           }
@@ -1115,14 +1115,14 @@ export default function DatabaseExplorer() {
                             opacity: (isLoadingDocuments || !selectedCollection) ? 0.6 : 1,
                             cursor: (isLoadingDocuments || !selectedCollection) ? 'not-allowed' : 'pointer'
                           }}
-                          title="Start Auto Refresh"
+                          title="Auto mode"
                         >
                           {isLoadingDocuments && refreshingType === 'auto'
                             ? <span><span className="dot-anim">Auto Refreshing</span>...</span>
                             : (
                               <>
                                 <span role="img" aria-label="autorefresh" style={{ marginRight: 6 }}>🔁</span>
-                                {!isMobile && 'Auto Refresh'}
+                                {!isMobile && 'Auto'}
                               </>
                             )
                           }
