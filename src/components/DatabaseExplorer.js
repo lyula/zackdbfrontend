@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = 'https://zackdbbackend.onrender.com';
 
 // Helper to get country flag emoji from country code (works for all ISO 3166-1 alpha-2 codes)
 function getCountryFlag(countryCode) {
@@ -592,7 +592,7 @@ export default function DatabaseExplorer() {
   // Handler to submit new document
   const handleAddDocument = async (newDoc) => {
     try {
-      const res = await fetch('/api/insert-document', {
+      const res = await fetch(`${API_URL}/api/insert-document`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
