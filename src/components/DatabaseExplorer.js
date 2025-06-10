@@ -634,6 +634,14 @@ export default function DatabaseExplorer() {
 
   // Handler to submit new document
   const handleAddDocument = async (newDoc) => {
+    // Add timestamps if not present
+    const now = new Date().toISOString();
+    const docWithTimestamps = {
+      ...newDoc,
+      createdAt: newDoc.createdAt || now,
+      updatedAt: newDoc.updatedAt || now
+    };
+
     try {
       const res = await fetch(`${API_URL}/api/insert-document`, {
         method: 'POST',
@@ -642,7 +650,7 @@ export default function DatabaseExplorer() {
           connectionString,
           dbName: selectedDb,
           collectionName: selectedCollection,
-          document: newDoc
+          document: docWithTimestamps
         })
       });
       const data = await res.json();
@@ -983,16 +991,19 @@ export default function DatabaseExplorer() {
                       borderRadius: 6,
                       color: '#fff',
                       fontWeight: 700,
-                      fontSize: 18,
-                      padding: '6px 14px',
+                      fontSize: 16,
+                      padding: '7px 14px', // Match search input height
                       marginLeft: 12,
                       cursor: 'pointer',
                       display: 'flex',
-                      alignItems: 'center'
+                      alignItems: 'center',
+                      height: 38, // Match search/select height
+                      minHeight: 38,
+                      minWidth: 0
                     }}
                     title="Add New Document"
                   >
-                    <span style={{ fontSize: 22, marginRight: 6 }}>➕</span>
+                    <span style={{ fontSize: 20, marginRight: 6 }}>➕</span>
                     Add
                   </button>
                   <div style={{
@@ -1014,7 +1025,8 @@ export default function DatabaseExplorer() {
                         fontWeight: 'normal',
                         background: '#fff',
                         color: '#23272f',
-                        minWidth: 120
+                        minWidth: 120,
+                        height: 38 // Match input height
                       }}
                     >
                       <option value="">Filter by...</option>
@@ -1045,12 +1057,13 @@ export default function DatabaseExplorer() {
                         fontSize: 15,
                         minWidth: 180,
                         background: '#fff',
-                        color: '#23272f'
+                        color: '#23272f',
+                        height: 38 // Match select height
                       }}
                       disabled={!searchField}
                     />
                   </div>
-                  <div style={{ marginLeft: 16, display: 'flex', gap: 12 }}>
+                  <div style={{ marginLeft: 16, display: 'flex', gap: 8 }}>
                     {!isAutoRefreshing ? (
                       <>
                         <button
@@ -1058,6 +1071,10 @@ export default function DatabaseExplorer() {
                           disabled={isLoadingDocuments || !selectedCollection}
                           style={{
                             ...buttonStyle,
+                            padding: '7px 14px',
+                            fontSize: 15,
+                            height: 38, // Match input height
+                            minWidth: 0,
                             opacity: (isLoadingDocuments || !selectedCollection) ? 0.6 : 1,
                             cursor: (isLoadingDocuments || !selectedCollection) ? 'not-allowed' : 'pointer'
                           }}
@@ -1065,13 +1082,17 @@ export default function DatabaseExplorer() {
                         >
                           {isLoadingDocuments && refreshingType === 'manual'
                             ? <span><span className="dot-anim">Refreshing</span>...</span>
-                            : '🔄 Manual Refresh'}
+                            : '🔄'}
                         </button>
                         <button
                           onClick={startAutoRefresh}
                           disabled={isLoadingDocuments || !selectedCollection}
                           style={{
                             ...buttonStyle,
+                            padding: '7px 14px',
+                            fontSize: 15,
+                            height: 38, // Match input height
+                            minWidth: 0,
                             opacity: (isLoadingDocuments || !selectedCollection) ? 0.6 : 1,
                             cursor: (isLoadingDocuments || !selectedCollection) ? 'not-allowed' : 'pointer'
                           }}
@@ -1079,16 +1100,22 @@ export default function DatabaseExplorer() {
                         >
                           {isLoadingDocuments && refreshingType === 'auto'
                             ? <span><span className="dot-anim">Auto Refreshing</span>...</span>
-                            : '🔁 Auto Refresh'}
+                            : '🔁'}
                         </button>
                       </>
                     ) : (
                       <button
                         onClick={stopAutoRefresh}
-                        style={buttonStyle}
+                        style={{
+                          ...buttonStyle,
+                          padding: '7px 14px',
+                          fontSize: 15,
+                          height: 38,
+                          minWidth: 0
+                        }}
                         title="Stop Auto Refresh"
                       >
-                        ⏸️ Stop Auto Refresh
+                        ⏸️
                       </button>
                     )}
                   </div>
@@ -1153,19 +1180,23 @@ export default function DatabaseExplorer() {
                 </div>
                 {totalPages > 1 && (
                   <div style={{
-                    marginTop: 18,
+                    marginTop: 0, // Remove margin for laptop/PC
+                    marginBottom: 0,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    padding: '8px 0'
+                    padding: 0 // Remove vertical padding
                   }}>
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
                       style={{
                         ...buttonStyle,
-                        padding: '8px 22px',
-                        marginRight: '10px',
+                        padding: '7px 18px',
+                        marginRight: '8px',
+                        fontSize: 15,
+                        height: 38,
+                        minWidth: 0,
                         opacity: currentPage === 1 ? '0.5' : 1,
                         cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
                       }}
@@ -1180,8 +1211,11 @@ export default function DatabaseExplorer() {
                       disabled={currentPage === totalPages}
                       style={{
                         ...buttonStyle,
-                        padding: '8px 22px',
-                        marginLeft: '10px',
+                        padding: '7px 18px',
+                        marginLeft: '8px',
+                        fontSize: 15,
+                        height: 38,
+                        minWidth: 0,
                         opacity: currentPage === totalPages ? '0.5' : 1,
                         cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
                       }}
@@ -1193,8 +1227,8 @@ export default function DatabaseExplorer() {
                 <footer style={{
                   width: '100%',
                   textAlign: 'center',
-                  marginTop: 24,
-                  padding: '18px 0 8px',
+                  marginTop: 0, // Remove margin for laptop/PC
+                  padding: '8px 0 8px',
                   color: '#6366f1',
                   fontWeight: 'bold',
                   fontSize: 15,
