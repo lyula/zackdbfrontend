@@ -708,6 +708,13 @@ export default function DatabaseExplorer() {
             display: inline-block;
             animation: dot-flash 1s infinite linear;
           }
+          /* --- Gradient Table Row Styling --- */
+          .gradient-row-odd td {
+            background: linear-gradient(90deg, #e0e7ff 0%, #f8fafc 100%);
+          }
+          .gradient-row-even td {
+            background: linear-gradient(90deg, #f8fafc 0%, #e0e7ff 100%);
+          }
         `}
       </style>
       <div style={{
@@ -1140,10 +1147,11 @@ export default function DatabaseExplorer() {
                     <tbody>
                       {(searchTerm && searchField ? filteredDocuments : documents).map((doc, idx) => {
                         const descendingNumber = totalDocuments - ((currentPage - 1) * recordsPerPage + idx);
+                        const isEven = ((currentPage - 1) * recordsPerPage + idx) % 2 === 0;
                         return (
                           <tr
                             key={doc._id || `${selectedCollection}-${idx}`}
-                            className={((currentPage - 1) * recordsPerPage + idx) % 2 === 1 ? 'table-row' : ''}
+                            className={isEven ? 'gradient-row-even' : 'gradient-row-odd'}
                             style={{
                               background: 'transparent',
                               transition: 'background-color 0.2s'
