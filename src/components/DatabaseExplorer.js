@@ -27,6 +27,23 @@ function useIsMobile() {
   return isMobile;
 }
 
+// Custom hook to get screen size category
+function useScreenCategory() {
+  const [category, setCategory] = useState(
+    window.innerWidth >= 1200 ? 'large' : window.innerWidth <= 768 ? 'mobile' : 'normal'
+  );
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth >= 1200) setCategory('large');
+      else if (window.innerWidth <= 768) setCategory('mobile');
+      else setCategory('normal');
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return category;
+}
+
 // Remove dbsPerPage/dbPage from sortDatabases, just sort and split
 function getPaginatedDatabases(databases, dbPage, dbsPerPage) {
   const special = ['admin', 'local'];
@@ -69,7 +86,11 @@ export default function DatabaseExplorer() {
   const [colPage, setColPage] = useState(1);
   const recordsPerPage = 10;
   // Responsive: detect mobile
-  const isMobile = useIsMobile();
+  const screenCategory = useScreenCategory();
+  const isMobile = screenCategory === 'mobile';
+  const isLargeScreen = screenCategory === 'large';
+
+  // Responsive: records per page
   const dbsPerPage = isMobile ? 3 : 5;
   const colsPerPage = isMobile ? 3 : 3;
   const [databases, setDatabases] = useState(initialDatabases || []);
@@ -176,8 +197,14 @@ export default function DatabaseExplorer() {
   const [documentsCache, setDocumentsCache] = useState({});
 
   // Prefetch surrounding pages for a given collection
-  const prefetchPages = (dbName, collectionName, centerPage, totalDocs, rangeSmall = 10, rangeLarge = 5, forceBackend = false) => {
-    const range = totalDocs > 5000 ? rangeLarge : rangeSmall;
+  const prefetchPages = (
+    dbName,
+    collectionName,
+    centerPage,
+    totalDocs,
+    range = 10, // Always 10 pages before and after
+    forceBackend = false
+  ) => {
     for (let i = centerPage - range; i <= centerPage + range; i++) {
       if (i > 0) {
         const cacheKey = `${dbName}_${collectionName}_${i}`;
@@ -411,6 +438,10 @@ export default function DatabaseExplorer() {
   };
 
   // --- Styling --- ULTRA MODERN THEME ---
+  // Responsive font size helper
+  const responsiveFont = (base, large) =>
+    isLargeScreen ? large : isMobile ? base - 2 : base;
+
   const sidebarStyle = {
     width: isMobile ? '100%' : 260,
     minWidth: isMobile ? 'unset' : 200,
@@ -424,7 +455,8 @@ export default function DatabaseExplorer() {
     overflowY: 'auto',
     display: 'flex',
     flexDirection: 'column',
-    color: '#fff'
+    color: '#fff',
+    fontSize: responsiveFont(15, 18)
   };
   const cardStyle = {
     display: 'block',
@@ -434,7 +466,7 @@ export default function DatabaseExplorer() {
     padding: '12px 20px',
     margin: '0 0 10px 0',
     fontWeight: 600,
-    fontSize: 15,
+    fontSize: responsiveFont(15, 18),
     color: '#23272f',
     cursor: 'pointer',
     border: '2px solid #6366f1',
@@ -460,6 +492,7 @@ export default function DatabaseExplorer() {
     flexDirection: 'column',
     color: '#23272f',
     padding: isMobile ? '0' : '18px 18px 0 18px',
+    fontSize: responsiveFont(14, 18),
     // Only scroll vertically on mobile
     height: isMobile ? 'calc(100vh - 110px)' : 'auto',
     overflowY: isMobile ? 'auto' : 'visible',
@@ -473,7 +506,8 @@ export default function DatabaseExplorer() {
     borderRadius: 12, // Only here!
     boxShadow: '0 2px 8px #6366f122',
     marginBottom: 0,
-    overflow: 'hidden' // Ensures children from overflowing rounded corners
+    overflow: 'hidden', // Ensures children from overflowing rounded corners
+    fontSize: responsiveFont(13, 17)
   };
   const thStyle = {
     background: 'linear-gradient(90deg, #6366f1 0%, #818cf8 100%)',
@@ -481,14 +515,14 @@ export default function DatabaseExplorer() {
     padding: '6px 10px',
     fontWeight: 700,
     border: 'none',
-    fontSize: 14,
+    fontSize: responsiveFont(14, 18),
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0
   };
   const tdStyle = {
     padding: '6px 10px',
     border: 'none',
-    fontSize: 13,
+    fontSize: responsiveFont(13, 17),
     background: '#fff',
     color: '#23272f',
     verticalAlign: 'middle',
@@ -496,7 +530,7 @@ export default function DatabaseExplorer() {
   };
   const buttonStyle = {
     padding: '10px 14px',
-    fontSize: '14px',
+    fontSize: responsiveFont(14, 18),
     fontWeight: '700',
     borderRadius: '6px',
     border: 'none',
