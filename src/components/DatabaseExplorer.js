@@ -252,7 +252,10 @@ export default function DatabaseExplorer() {
 
         // Set columns and visibility for new collection
         if (forceBackend || columns.length === 0) {
-          const cols = docs.length > 0 ? Object.keys(docs[0]) : [];
+          // Collect all unique keys from all fetched docs
+          const allKeys = new Set();
+          docs.forEach(doc => Object.keys(doc).forEach(key => allKeys.add(key)));
+          const cols = Array.from(allKeys);
           setColumns(cols);
           const initialVisibility = {};
           cols.forEach(col => {

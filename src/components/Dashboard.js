@@ -312,7 +312,10 @@ export default function Dashboard({ user: userProp }) {
           'Content-Type': 'application/json'
         },
         credentials: 'include',
-        body: JSON.stringify({ connectionString: connStr }) // Only send connectionString
+        body: JSON.stringify({
+          connectionString: connStr,
+          username: user?.username // <-- Add this line to send username
+        })
       });
 
       let data = {};
@@ -321,7 +324,7 @@ export default function Dashboard({ user: userProp }) {
       } catch {}
 
       if (!res.ok) {
-        setError(data.message || 'That onnection string already exists, check saved connections list');
+        setError(data.message || 'That connection string already exists, check saved connections list');
         setSaveLoading(false); // <-- Stop saving
         return;
       }
@@ -336,7 +339,8 @@ export default function Dashboard({ user: userProp }) {
       setInput('');
       setError('');
 
-      await handleUseConnection(connStr);
+      // Do NOT redirect to explorer page here
+      // await handleUseConnection(connStr); // <-- Remove or comment out this line
 
     } catch (err) {
       setError(err.message || 'Failed to save connection string.');
