@@ -1,10 +1,40 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Swal from 'sweetalert2'; // <-- Import SweetAlert
 
 const excludedFields = ['password', 'hash', 'createdAt', 'updatedAt', '__v'];
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function LoadingButton() {
+  // Simple animated dots
+  const [dots, setDots] = useState('');
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setDots(prev => (prev.length < 3 ? prev + '.' : ''));
+    }, 400);
+    return () => clearInterval(interval);
+  }, []);
+  return (
+    <button
+      type="button"
+      disabled
+      style={{
+        background: '#6366f1',
+        color: '#fff',
+        border: 'none',
+        borderRadius: 6,
+        padding: '8px 18px',
+        fontWeight: 700,
+        minWidth: 110,
+        opacity: 0.8,
+        cursor: 'not-allowed'
+      }}
+    >
+      Loading{dots}
+    </button>
+  );
 }
 
 export default function CollectionEditModal({
@@ -25,6 +55,8 @@ export default function CollectionEditModal({
   handleDeleteDocument,
   setRefreshing
 }) {
+  const [loading, setLoading] = useState(false);
+
   if (!show) return null;
 
   function validateForm(doc) {
@@ -40,6 +72,11 @@ export default function CollectionEditModal({
     }
     return true;
   }
+
+  // Reset loading state when modalOperation changes
+  React.useEffect(() => {
+    setLoading(false);
+  }, [modalOperation, show]);
 
   return (
     <div style={{
@@ -108,13 +145,18 @@ export default function CollectionEditModal({
         {/* UPDATE */}
         {modalOperation === 'update' && (
           <>
-            {!editDocId ? (
+            {/* Step 1: Ask for ID and fetch data on confirm */}
+            {(!editDocId || !editDoc || Object.keys(editDoc).length === 0) ? (
               <form onSubmit={async e => {
                 e.preventDefault();
+                setLoading(true);
                 try {
                   await handleFetchDocForEdit(editDocId);
+                  // handleFetchDocForEdit should set editDoc with the fetched data
                 } catch (err) {
                   Swal.fire('Error', err.message || 'Failed to fetch document', 'error');
+                } finally {
+                  setLoading(false);
                 }
               }}>
                 <div style={{ marginBottom: 14 }}>
@@ -127,18 +169,26 @@ export default function CollectionEditModal({
                       width: '100%', padding: 8, borderRadius: 6, border: '1px solid #6366f1', marginTop: 4
                     }}
                     required
+                    disabled={loading}
                   />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-                  <button type="button" onClick={onClose} style={{
-                    background: '#e5e7eb', color: '#23272f', border: 'none', borderRadius: 6, padding: '8px 18px'
-                  }}>Cancel</button>
-                  <button type="submit" style={{
-                    background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 700
-                  }}>Confirm</button>
+                  {loading ? (
+                    <LoadingButton />
+                  ) : (
+                    <>
+                      <button type="button" onClick={onClose} style={{
+                        background: '#e5e7eb', color: '#23272f', border: 'none', borderRadius: 6, padding: '8px 18px'
+                      }}>Cancel</button>
+                      <button type="submit" style={{
+                        background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 700
+                      }}>Confirm</button>
+                    </>
+                  )}
                 </div>
               </form>
             ) : (
+              // Step 2: Show populated fields for editing
               <form onSubmit={async e => {
                 e.preventDefault();
                 if (!validateForm(editDoc)) return;
@@ -177,7 +227,7 @@ export default function CollectionEditModal({
           </>
         )}
 
-        {/* DELETE */}
+        {/* DELETE (unchanged) */}
         {modalOperation === 'delete' && (
           <>
             {!deleteDocId || !editDoc || Object.keys(editDoc).length === 0 ? (
