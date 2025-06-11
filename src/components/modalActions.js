@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2'; // <-- Import SweetAlert
 
-const excludedFields = ['_id', 'password', 'hash', 'createdAt', 'updatedAt', '__v'];
+const excludedFields = ['_id', 'password', 'hash', '__v']; // removed 'createdAt', 'updatedAt'
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -154,19 +154,21 @@ export default function CollectionEditModal({
                 Swal.fire('Error', err.message || 'Failed to create document', 'error');
               });
           }}>
-            {columns.filter(col => !excludedFields.includes(col)).map(col => (
-              <div key={col} style={{ marginBottom: 14 }}>
-                <label style={{ fontWeight: 600 }}>{col}:</label>
-                <input
-                  type={col.toLowerCase().includes('email') ? 'email' : 'text'}
-                  value={editDoc[col] || ''}
-                  onChange={e => setEditDoc({ ...editDoc, [col]: e.target.value })}
-                  style={{
-                    width: '100%', padding: 8, borderRadius: 6, border: '1px solid #6366f1', marginTop: 4
-                  }}
-                />
-              </div>
-            ))}
+            {columns
+              .filter(col => !excludedFields.includes(col) && col !== 'createdAt' && col !== 'updatedAt')
+              .map(col => (
+                <div key={col} style={{ marginBottom: 14 }}>
+                  <label style={{ fontWeight: 600 }}>{col}:</label>
+                  <input
+                    type={col.toLowerCase().includes('email') ? 'email' : 'text'}
+                    value={editDoc[col] || ''}
+                    onChange={e => setEditDoc({ ...editDoc, [col]: e.target.value })}
+                    style={{
+                      width: '100%', padding: 8, borderRadius: 6, border: '1px solid #6366f1', marginTop: 4
+                    }}
+                  />
+                </div>
+              ))}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
               <button type="button" onClick={onClose} style={{
                 background: '#e5e7eb', color: '#23272f', border: 'none', borderRadius: 6, padding: '8px 18px'
@@ -252,21 +254,21 @@ export default function CollectionEditModal({
                   setLoading(false);
                 }
               }}>
-                {columns.filter(
-                  col => !excludedFields.includes(col)
-                ).map(col => (
-                  <div key={col} style={{ marginBottom: 14 }}>
-                    <label style={{ fontWeight: 600 }}>{col}:</label>
-                    <input
-                      type={col.toLowerCase().includes('email') ? 'email' : 'text'}
-                      value={editDoc[col] || ''}
-                      onChange={e => setEditDoc({ ...editDoc, [col]: e.target.value })}
-                      style={{
-                        width: '100%', padding: 8, borderRadius: 6, border: '1px solid #6366f1', marginTop: 4
-                      }}
-                    />
-                  </div>
-                ))}
+                {columns
+                  .filter(col => !excludedFields.includes(col) && col !== 'createdAt' && col !== 'updatedAt')
+                  .map(col => (
+                    <div key={col} style={{ marginBottom: 14 }}>
+                      <label style={{ fontWeight: 600 }}>{col}:</label>
+                      <input
+                        type={col.toLowerCase().includes('email') ? 'email' : 'text'}
+                        value={editDoc[col] || ''}
+                        onChange={e => setEditDoc({ ...editDoc, [col]: e.target.value })}
+                        style={{
+                          width: '100%', padding: 8, borderRadius: 6, border: '1px solid #6366f1', marginTop: 4
+                        }}
+                      />
+                    </div>
+                  ))}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
                   <button type="button" onClick={onClose} style={{
                     background: '#e5e7eb', color: '#23272f', border: 'none', borderRadius: 6, padding: '8px 18px'
@@ -337,20 +339,22 @@ export default function CollectionEditModal({
                   Swal.fire('Error', err.message || 'Failed to delete document', 'error');
                 }
               }}>
-                {columns.filter(col => !excludedFields.includes(col)).map(col => (
-                  <div key={col} style={{ marginBottom: 14 }}>
-                    <label style={{ fontWeight: 600 }}>{col}:</label>
-                    <input
-                      type={col.toLowerCase().includes('email') ? 'email' : 'text'}
-                      value={editDoc[col] || ''}
-                      readOnly
-                      style={{
-                        width: '100%', padding: 8, borderRadius: 6, border: '1px solid #6366f1', marginTop: 4, background: '#f3f4f6'
-                      }}
-                      tabIndex={-1}
-                    />
-                  </div>
-                ))}
+                {columns
+                  .filter(col => !excludedFields.includes(col) && col !== 'createdAt' && col !== 'updatedAt')
+                  .map(col => (
+                    <div key={col} style={{ marginBottom: 14 }}>
+                      <label style={{ fontWeight: 600 }}>{col}:</label>
+                      <input
+                        type={col.toLowerCase().includes('email') ? 'email' : 'text'}
+                        value={editDoc[col] || ''}
+                        readOnly
+                        style={{
+                          width: '100%', padding: 8, borderRadius: 6, border: '1px solid #6366f1', marginTop: 4, background: '#f3f4f6'
+                        }}
+                        tabIndex={-1}
+                      />
+                    </div>
+                  ))}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
                   <button type="button" onClick={onClose} style={{
                     background: '#e5e7eb', color: '#23272f', border: 'none', borderRadius: 6, padding: '8px 18px'

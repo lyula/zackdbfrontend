@@ -294,16 +294,26 @@ export default function DatabaseExplorer() {
           docs.forEach(doc => Object.keys(doc).forEach(key => allKeys.add(key)));
           const cols = Array.from(allKeys);
           setColumns(cols);
-          const initialVisibility = {};
-          cols.forEach(col => {
-            initialVisibility[col] = !(
-              col === 'password' ||
-              col === '_V' ||
-              col === '__v' ||
-              col.startsWith('-')
-            );
+
+          // Only add new columns to visibility, preserve existing
+          setColumnVisibility(prev => {
+            const updated = { ...prev };
+            cols.forEach(col => {
+              if (!(col in updated)) {
+                updated[col] = !(
+                  col === 'password' ||
+                  col === '_V' ||
+                  col === '__v' ||
+                  col.startsWith('-')
+                );
+              }
+            });
+            // Optionally, remove columns that no longer exist
+            Object.keys(updated).forEach(col => {
+              if (!cols.includes(col)) delete updated[col];
+            });
+            return updated;
           });
-          setColumnVisibility(initialVisibility);
         }
 
         // Prefetch 10 pages before and after, always force prefetch on refresh
@@ -1369,10 +1379,6 @@ export default function DatabaseExplorer() {
             handleUpdateDocument={handleUpdateDocument}
             handleDeleteDocument={handleDeleteDocument}
             handleRefreshAfterModal={handleRefreshAfterModal}
-            // --- ADD THESE THREE LINES ---
-            connectionString={connectionString}
-            dbName={selectedDb}
-            collectionName={selectedCollection}
           />
         )}
       </div>
@@ -1380,6 +1386,7 @@ export default function DatabaseExplorer() {
   );
 }
 
+// AtlasSpinner should be outside the DatabaseExplorer component
 function AtlasSpinner() {
   return (
     <div style={{
