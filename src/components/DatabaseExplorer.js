@@ -640,6 +640,10 @@ export default function DatabaseExplorer() {
 
   // Handler to submit new document
   const handleAddDocument = async (newDoc) => {
+    // Close modal and reset form immediately
+    setShowAddModal(false);
+    setNewDoc({});
+
     // Add timestamps if not present
     const now = new Date().toISOString();
     const docWithTimestamps = {
@@ -661,12 +665,8 @@ export default function DatabaseExplorer() {
       });
       const data = await res.json();
       if (data.success) {
-        setShowAddModal(false); // Close modal
-        setNewDoc({});          // Reset form state
         fetchDocuments(selectedDb, selectedCollection, 1, true); // Refresh table
       } else {
-        setShowAddModal(false); // Close modal on error
-        setNewDoc({});          // Reset form state
         Swal.fire({
           icon: 'error',
           title: 'Insert Failed',
@@ -674,8 +674,6 @@ export default function DatabaseExplorer() {
         });
       }
     } catch (err) {
-      setShowAddModal(false); // Close modal on error
-      setNewDoc({});          // Reset form state
       Swal.fire({
         icon: 'error',
         title: 'Insert Failed',
