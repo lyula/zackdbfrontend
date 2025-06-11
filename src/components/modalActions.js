@@ -1,10 +1,16 @@
 import React from 'react';
+import Swal from 'sweetalert2'; // <-- Import SweetAlert
+
+const excludedFields = ['password', 'hash', 'createdAt', 'updatedAt', '__v'];
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
 
 export default function CollectionEditModal({
   show,
   onClose,
   columns,
-  excludedFields,
   modalOperation,
   setModalOperation,
   editDocId,
@@ -16,9 +22,24 @@ export default function CollectionEditModal({
   handleAddDocument,
   handleFetchDocForEdit,
   handleUpdateDocument,
-  handleDeleteDocument
+  handleDeleteDocument,
+  setRefreshing
 }) {
   if (!show) return null;
+
+  function validateForm(doc) {
+    for (const col of columns) {
+      if (excludedFields.includes(col)) continue;
+      if (col.toLowerCase().includes('email')) {
+        const value = doc[col] || '';
+        if (!isValidEmail(value)) {
+          Swal.fire('Invalid Email', `Invalid email in field "${col}"`, 'error');
+          return false;
+        }
+      }
+    }
+    return true;
+  }
 
   return (
     <div style={{
@@ -50,7 +71,16 @@ export default function CollectionEditModal({
 
         {/* CREATE */}
         {modalOperation === 'create' && (
-          <form onSubmit={e => { e.preventDefault(); handleAddDocument(editDoc); }}>
+          <form onSubmit={async e => {
+            e.preventDefault();
+            if (!validateForm(editDoc)) return;
+            try {
+              await handleAddDocument(editDoc);
+              if (setRefreshing) setRefreshing(true);
+            } catch (err) {
+              Swal.fire('Error', err.message || 'Failed to create document', 'error');
+            }
+          }}>
             {columns.filter(col => !excludedFields.includes(col)).map(col => (
               <div key={col} style={{ marginBottom: 14 }}>
                 <label style={{ fontWeight: 600 }}>{col}:</label>
@@ -61,7 +91,6 @@ export default function CollectionEditModal({
                   style={{
                     width: '100%', padding: 8, borderRadius: 6, border: '1px solid #6366f1', marginTop: 4
                   }}
-                  required
                 />
               </div>
             ))}
@@ -80,9 +109,13 @@ export default function CollectionEditModal({
         {modalOperation === 'update' && (
           <>
             {!editDocId ? (
-              <form onSubmit={e => {
+              <form onSubmit={async e => {
                 e.preventDefault();
-                handleFetchDocForEdit(editDocId);
+                try {
+                  await handleFetchDocForEdit(editDocId);
+                } catch (err) {
+                  Swal.fire('Error', err.message || 'Failed to fetch document', 'error');
+                }
               }}>
                 <div style={{ marginBottom: 14 }}>
                   <label style={{ fontWeight: 600 }}>Document _id:</label>
@@ -106,8 +139,19 @@ export default function CollectionEditModal({
                 </div>
               </form>
             ) : (
-              <form onSubmit={e => { e.preventDefault(); handleUpdateDocument(editDocId, editDoc); }}>
-                {columns.filter(col => !excludedFields.includes(col)).map(col => (
+              <form onSubmit={async e => {
+                e.preventDefault();
+                if (!validateForm(editDoc)) return;
+                try {
+                  await handleUpdateDocument(editDocId, editDoc);
+                  if (setRefreshing) setRefreshing(true);
+                } catch (err) {
+                  Swal.fire('Error', err.message || 'Failed to update document', 'error');
+                }
+              }}>
+                {columns.filter(
+                  col => !excludedFields.includes(col)
+                ).map(col => (
                   <div key={col} style={{ marginBottom: 14 }}>
                     <label style={{ fontWeight: 600 }}>{col}:</label>
                     <input
@@ -135,28 +179,72 @@ export default function CollectionEditModal({
 
         {/* DELETE */}
         {modalOperation === 'delete' && (
-          <form onSubmit={e => { e.preventDefault(); handleDeleteDocument(deleteDocId); }}>
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ fontWeight: 600 }}>Document _id to delete:</label>
-              <input
-                type="text"
-                value={deleteDocId}
-                onChange={e => setDeleteDocId(e.target.value)}
-                style={{
-                  width: '100%', padding: 8, borderRadius: 6, border: '1px solid #6366f1', marginTop: 4
-                }}
-                required
-              />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-              <button type="button" onClick={onClose} style={{
-                background: '#e5e7eb', color: '#23272f', border: 'none', borderRadius: 6, padding: '8px 18px'
-              }}>Cancel</button>
-              <button type="submit" style={{
-                background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 700
-              }}>Delete</button>
-            </div>
-          </form>
+          <>
+            {!deleteDocId || !editDoc || Object.keys(editDoc).length === 0 ? (
+              <form onSubmit={async e => {
+                e.preventDefault();
+                try {
+                  await handleFetchDocForEdit(deleteDocId);
+                } catch (err) {
+                  Swal.fire('Error', err.message || 'Failed to fetch document', 'error');
+                }
+              }}>
+                <div style={{ marginBottom: 14 }}>
+                  <label style={{ fontWeight: 600 }}>Document _id to delete:</label>
+                  <input
+                    type="text"
+                    value={deleteDocId}
+                    onChange={e => setDeleteDocId(e.target.value)}
+                    style={{
+                      width: '100%', padding: 8, borderRadius: 6, border: '1px solid #6366f1', marginTop: 4
+                    }}
+                    required
+                  />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                  <button type="button" onClick={onClose} style={{
+                    background: '#e5e7eb', color: '#23272f', border: 'none', borderRadius: 6, padding: '8px 18px'
+                  }}>Cancel</button>
+                  <button type="submit" style={{
+                    background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 700
+                  }}>Confirm</button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={async e => {
+                e.preventDefault();
+                try {
+                  await handleDeleteDocument(deleteDocId);
+                  if (setRefreshing) setRefreshing(true);
+                } catch (err) {
+                  Swal.fire('Error', err.message || 'Failed to delete document', 'error');
+                }
+              }}>
+                {columns.filter(col => !excludedFields.includes(col)).map(col => (
+                  <div key={col} style={{ marginBottom: 14 }}>
+                    <label style={{ fontWeight: 600 }}>{col}:</label>
+                    <input
+                      type={col.toLowerCase().includes('email') ? 'email' : 'text'}
+                      value={editDoc[col] || ''}
+                      readOnly
+                      style={{
+                        width: '100%', padding: 8, borderRadius: 6, border: '1px solid #6366f1', marginTop: 4, background: '#f3f4f6'
+                      }}
+                      tabIndex={-1}
+                    />
+                  </div>
+                ))}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                  <button type="button" onClick={onClose} style={{
+                    background: '#e5e7eb', color: '#23272f', border: 'none', borderRadius: 6, padding: '8px 18px'
+                  }}>Cancel</button>
+                  <button type="submit" style={{
+                    background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 700
+                  }}>Delete</button>
+                </div>
+              </form>
+            )}
+          </>
         )}
       </div>
     </div>
