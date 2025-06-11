@@ -656,7 +656,6 @@ export default function DatabaseExplorer() {
         })
       });
       setIsEditModalOpen(false); // Close modal on success
-      setShouldRefreshAfterModal(true); // Only set on successful create
     } catch (err) {
       Swal.fire('Error', err.message || 'Failed to add document', 'error');
     }
@@ -721,7 +720,6 @@ export default function DatabaseExplorer() {
       }
       Swal.fire('Success', 'Document updated successfully!', 'success');
       setIsEditModalOpen(false);
-      setShouldRefreshAfterModal(true); // Only set on successful update
     } catch (err) {
       Swal.fire('Error', err.message || 'Failed to update document', 'error');
     }
@@ -729,9 +727,31 @@ export default function DatabaseExplorer() {
 
   // Delete document handler
   const handleDeleteDocument = async (id) => {
-    // TODO: Implement your delete logic here (API call)
-    setIsEditModalOpen(false);
-    setShouldRefreshAfterModal(true); // Only set on successful delete
+    if (!selectedDb || !selectedCollection || !id) {
+      Swal.fire('Error', 'Missing database, collection, or document ID.', 'error');
+      return;
+    }
+    try {
+      const res = await fetch(`${API_URL}/api/document`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          connectionString,
+          dbName: selectedDb,
+          collectionName: selectedCollection,
+          id
+        })
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`HTTP error! status: ${res.status} - ${text}`);
+      }
+      Swal.fire('Success', 'Document deleted successfully!', 'success');
+      setIsEditModalOpen(false);
+    } catch (err) {
+      Swal.fire('Error', err.message || 'Failed to delete document', 'error');
+    }
   };
 
   // Refresh documents after modal closes
