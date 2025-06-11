@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import CollectionEditModal from './modalActions';
+import MailModal from './mailModal'; // 1. Import the modal
 
 const API_URL = 'https://zackdbbackend.onrender.com';
 
@@ -518,9 +519,16 @@ export default function DatabaseExplorer() {
     padding: '6px 10px',
     fontWeight: 700,
     border: 'none',
-    fontSize: responsiveFont(14),
+    fontSize: responsiveFont(13), // Match tdStyle font size
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
+    verticalAlign: 'middle',
+    height: 32, // Match tdStyle height
+    boxSizing: 'border-box',
+    // Ensure min/max width for alignment
+    minWidth: 0,
+    maxWidth: 'none',
+    whiteSpace: 'nowrap',
   };
   const tdStyle = {
     padding: '6px 10px',
@@ -530,6 +538,10 @@ export default function DatabaseExplorer() {
     color: '#23272f',
     verticalAlign: 'middle',
     height: 32,
+    boxSizing: 'border-box',
+    minWidth: 0,
+    maxWidth: 'none',
+    whiteSpace: 'nowrap',
   };
   const buttonStyle = {
     padding: '10px 14px',
@@ -657,6 +669,7 @@ export default function DatabaseExplorer() {
   const [editDocId, setEditDocId] = useState('');
   const [editDoc, setEditDoc] = useState({});
   const [deleteDocId, setDeleteDocId] = useState('');
+  const [isMailModalOpen, setIsMailModalOpen] = useState(false); // 2. State for modal
   const excludedFields = ['_id', 'password', '__v', '_V'];
 
   // Helper: Poll until table reflects the expected change
@@ -909,9 +922,15 @@ export default function DatabaseExplorer() {
               </button>
             )}
           </div>
-          {/* Insert new icons here for PC/large screens */}
+          {/* Centered icons row */}
           {(isLargeScreen || screenCategory === 'normal') && columns.length > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginRight: 12 }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 16,
+              justifyContent: 'center',
+              flex: 1,
+            }}>
               <button
                 title="Download as CSV"
                 style={{
@@ -923,16 +942,34 @@ export default function DatabaseExplorer() {
                   fontSize: 22,
                   color: '#6366f1',
                 }}
-                onClick={() => {
+                onClick={async () => {
                   // Only download visible columns
                   const visibleCols = columns.filter((col) => columnVisibility[col]);
-                  const dataToDownload = (searchTerm && searchField ? filteredDocuments : documents).map(
-                    (doc) => {
-                      const filtered = {};
-                      visibleCols.forEach((col) => (filtered[col] = doc[col]));
-                      return filtered;
+                  // Fetch all documents for the current collection
+                  let allDocs = [];
+                  try {
+                    const params = new URLSearchParams({
+                      connectionString: encodeURIComponent(connectionString),
+                      dbName: encodeURIComponent(selectedDb),
+                      collectionName: encodeURIComponent(selectedCollection),
+                    });
+                    const res = await fetch(`${API_URL}/api/documents-all?${params.toString()}`, {
+                      method: 'GET',
+                      credentials: 'include',
+                    });
+                    if (res.ok) {
+                      const data = await res.json();
+                      allDocs = Array.isArray(data.documents) ? data.documents : [];
                     }
-                  );
+                  } catch (e) {
+                    // fallback to current page if fetch fails
+                    allDocs = searchTerm && searchField ? filteredDocuments : documents;
+                  }
+                  const dataToDownload = allDocs.map((doc) => {
+                    const filtered = {};
+                    visibleCols.forEach((col) => (filtered[col] = doc[col]));
+                    return filtered;
+                  });
                   downloadCSV(dataToDownload, visibleCols, `${selectedCollection || 'data'}.csv`);
                 }}
               >
@@ -941,15 +978,22 @@ export default function DatabaseExplorer() {
               <button
                 title="Mail"
                 style={{
-                  background: 'none',
+                  background: 'linear-gradient(to right, #6366f1, #818cf8)', // theme background
                   border: 'none',
                   cursor: 'pointer',
                   padding: 0,
                   margin: 0,
                   fontSize: 22,
-                  color: '#6366f1',
+                  color: '#fff', // white icon for contrast
+                  borderRadius: 6, // match button style
+                  boxShadow: '0 2px 8px #6366f133',
+                  minWidth: '44px',
+                  minHeight: '44px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
-                // onClick: logic to be implemented later
+                onClick={() => setIsMailModalOpen(true)} // 3. Open modal on click
               >
                 <span role="img" aria-label="Mail">✉️</span>
               </button>
@@ -1593,6 +1637,16 @@ export default function DatabaseExplorer() {
           dbName={selectedDb}
           collectionName={selectedCollection}
           handleRefreshAfterModal={handleRefreshAfterModal}
+        />
+      )}
+      {isMailModalOpen && (
+        <MailModal
+          show={isMailModalOpen}
+          onClose={() => setIsMailModalOpen(false)}
+          dbName={selectedDb}
+          collectionName={selectedCollection}
+          connectionString={connectionString}
+          userEmail={user?.email}
         />
       )}
     </>
