@@ -636,10 +636,37 @@ export default function DatabaseExplorer() {
   // Add these states for the modal and form
   const [showAddModal, setShowAddModal] = useState(false);
   const [newDoc, setNewDoc] = useState({});
-  const excludedFields = ['_id', 'id', 'userId', 'createdAt', 'updatedAt', '__v'];
+  const excludedFields = ['_id', 'id', 'userId', 'createdAt', 'updatedAt', '__v', 'password'];
 
   // Handler to submit new document
   const handleAddDocument = async (newDoc) => {
+    // Validate all fields (except excluded)
+    const requiredFields = columns.filter(
+      col => !excludedFields.includes(col)
+    );
+    for (let col of requiredFields) {
+      if (!newDoc[col] || newDoc[col].toString().trim() === '') {
+        Swal.fire({
+          icon: 'error',
+          title: 'Missing Field',
+          text: 'All fields must be inserted.'
+        });
+        return;
+      }
+      // Email validation for email input fields
+      if (col.toLowerCase().includes('email')) {
+        const email = newDoc[col];
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Invalid Email',
+            text: `Please enter a valid email for "${col}".`
+          });
+          return;
+        }
+      }
+    }
+
     // Close modal and reset form immediately
     setShowAddModal(false);
     setNewDoc({});
@@ -653,6 +680,7 @@ export default function DatabaseExplorer() {
     };
 
     try {
+      setRefreshingType('manual'); // Show "Refreshing" on manual button
       const res = await fetch(`${API_URL}/api/insert-document`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -665,7 +693,7 @@ export default function DatabaseExplorer() {
       });
       const data = await res.json();
       if (data.success) {
-        fetchDocuments(selectedDb, selectedCollection, 1, true); // Refresh table
+        fetchDocuments(selectedDb, selectedCollection, 1, true, 'manual'); // Refresh table
       } else {
         Swal.fire({
           icon: 'error',
@@ -1285,13 +1313,13 @@ export default function DatabaseExplorer() {
                   <div key={col} style={{ marginBottom: 14 }}>
                     <label style={{ fontWeight: 600 }}>{col}:</label>
                     <input
-                      type={col === 'password' ? 'password' : 'text'}
+                      type={col.toLowerCase().includes('email') ? 'email' : 'text'}
                       value={newDoc[col] || ''}
                       onChange={e => setNewDoc({ ...newDoc, [col]: e.target.value })}
                       style={{
                         width: '100%', padding: 8, borderRadius: 6, border: '1px solid #6366f1', marginTop: 4
                       }}
-                      required={col === 'password'}
+                      required
                     />
                   </div>
                 ))}
