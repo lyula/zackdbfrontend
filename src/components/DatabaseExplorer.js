@@ -68,6 +68,25 @@ function getPaginatedDatabases(databases, dbPage, dbsPerPage) {
   return paginatedDbs;
 }
 
+// Helper: Check if any column in the current documents looks like an email field
+function hasEmailColumn(docs, columns) {
+  if (!Array.isArray(docs) || docs.length === 0) return false;
+  // Simple email regex
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  for (const col of columns) {
+    // Check at least 2 non-empty values for email pattern
+    let emailCount = 0;
+    for (const doc of docs) {
+      const val = doc[col];
+      if (typeof val === 'string' && emailRegex.test(val.trim())) {
+        emailCount++;
+        if (emailCount >= 2) return true;
+      }
+    }
+  }
+  return false;
+}
+
 export default function DatabaseExplorer() {
   const { state } = useLocation();
   const { connectionString, databases: initialDatabases, user } = state || {};
@@ -1003,28 +1022,31 @@ export default function DatabaseExplorer() {
                   <span role="img" aria-label="Download CSV" style={{ fontSize: 22 }}>⬇️</span>
                 )}
               </button>
-              <button
-                title="Mail"
-                style={{
-                  background: 'linear-gradient(to right, #6366f1, #818cf8)', // theme background
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: 0,
-                  margin: 0,
-                  fontSize: 22,
-                  color: '#fff', // white icon for contrast
-                  borderRadius: 6, // match button style
-                  boxShadow: '0 2px 8px #6366f133',
-                  minWidth: '44px',
-                  minHeight: '44px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                onClick={() => setIsMailModalOpen(true)} // 3. Open modal on click
-              >
-                <span role="img" aria-label="Mail">✉️</span>
-              </button>
+              {/* Only show the mail icon if any column contains email-like values */}
+              {showMailIcon && (
+                <button
+                  title="Mail"
+                  style={{
+                    background: 'linear-gradient(to right, #6366f1, #818cf8)', // theme background
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
+                    margin: 0,
+                    fontSize: 22,
+                    color: '#fff', // white icon for contrast
+                    borderRadius: 6, // match button style
+                    boxShadow: '0 2px 8px #6366f133',
+                    minWidth: '44px',
+                    minHeight: '44px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  onClick={() => setIsMailModalOpen(true)} // 3. Open modal on click
+                >
+                  <span role="img" aria-label="Mail">✉️</span>
+                </button>
+              )}
             </div>
           )}
           <div
@@ -1107,89 +1129,150 @@ export default function DatabaseExplorer() {
         {error && (
           <div style={{ color: '#dc3545', marginBottom: 12, fontWeight: 600 }}>{error}</div>
         )}
-        {showSpinner ? (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minHeight: '60vh',
-            }}
-          >
-            <AtlasSpinner />
-          </div>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-            {/* Sidebar */}
-            {(!isMobile || isSidebarVisible) && (
-              <div style={sidebarStyle}>
+        <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+          {/* Sidebar */}
+          {(!isMobile || isSidebarVisible) && (
+            <div style={sidebarStyle}>
+              <div>
+                <h3
+                  style={{
+                    color: '#fff',
+                    marginBottom: 10,
+                    marginTop: 0,
+                    fontSize: 19,
+                    fontWeight: 800,
+                    letterSpacing: '-0.5px',
+                  }}
+                >
+                  Databases
+                </h3>
+                {paginatedDbs.length > 0 ? (
+                  paginatedDbs.map((db) => (
+                    <span
+                      key={db}
+                      style={selectedDb === db ? cardSelected : cardStyle}
+                      onClick={() => handleSelectDb(db)}
+                      title={db}
+                    >
+                      <span
+                        role="img"
+                        aria-label="database"
+                        style={{
+                          marginRight: 10,
+                          fontSize: 18,
+                          verticalAlign: 'middle',
+                        }}
+                      >
+                        📁
+                      </span>
+                      {db}
+                    </span>
+                  ))
+                ) : (
+                  <span style={{ color: '#fff', fontSize: 15 }}>No databases available</span>
+                )}
+                {totalDbPages > 1 && (
+                  <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
+                    <button
+                      onClick={() => setDbPage((p) => Math.max(1, p - 1))}
+                      disabled={dbPage === 1}
+                      style={{
+                        ...buttonStyle,
+                        padding: '4px 14px',
+                        fontSize: 14,
+                        cursor: dbPage === 1 ? 'not-allowed' : 'pointer',
+                        marginRight: 8,
+                        opacity: dbPage === 1 ? 0.5 : 1,
+                      }}
+                    >
+                      Prev
+                    </button>
+                    <span style={{ fontSize: 14, color: '#fff', fontWeight: 700 }}>
+                      {dbPage}/{totalDbPages}
+                    </span>
+                    <button
+                      onClick={() => setDbPage((p) => Math.min(totalDbPages, p + 1))}
+                      disabled={dbPage === totalDbPages}
+                      style={{
+                        ...buttonStyle,
+                        padding: '4px 14px',
+                        fontSize: 14,
+                        cursor: dbPage === totalDbPages ? 'not-allowed' : 'pointer',
+                        marginLeft: 8,
+                        opacity: dbPage === totalDbPages ? 0.5 : 1,
+                      }}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </div>
+              {collections.length > 0 && (
                 <div>
                   <h3
                     style={{
                       color: '#fff',
-                      marginBottom: 10,
-                      marginTop: 0,
+                      margin: '22px 0 10px 0',
                       fontSize: 19,
                       fontWeight: 800,
                       letterSpacing: '-0.5px',
                     }}
                   >
-                    Databases
+                    Collections
                   </h3>
-                  {paginatedDbs.length > 0 ? (
-                    paginatedDbs.map((db) => (
+                  {paginatedCols.map((col) => {
+                    const colName = typeof col === 'string' ? col : col.name || String(col);
+                    return (
                       <span
-                        key={db}
-                        style={selectedDb === db ? cardSelected : cardStyle}
-                        onClick={() => handleSelectDb(db)}
-                        title={db}
+                        key={colName}
+                        style={selectedCollection === colName ? cardSelected : cardStyle}
+                        onClick={() => handleSelectCollection(colName)}
+                        title={colName}
                       >
                         <span
                           role="img"
-                          aria-label="database"
+                          aria-label="collection"
                           style={{
                             marginRight: 10,
                             fontSize: 18,
                             verticalAlign: 'middle',
                           }}
                         >
-                          📁
+                          📂
                         </span>
-                        {db}
+                        {colName}
                       </span>
-                    ))
-                  ) : (
-                    <span style={{ color: '#fff', fontSize: 15 }}>No databases available</span>
-                  )}
-                  {totalDbPages > 1 && (
+                    );
+                  })}
+                  {totalColPages > 1 && (
                     <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
                       <button
-                        onClick={() => setDbPage((p) => Math.max(1, p - 1))}
-                        disabled={dbPage === 1}
+                        onClick={() => setColPage((p) => Math.max(1, p - 1))}
+                        disabled={colPage === 1}
                         style={{
                           ...buttonStyle,
                           padding: '4px 14px',
                           fontSize: 14,
-                          cursor: dbPage === 1 ? 'not-allowed' : 'pointer',
+                          cursor: colPage === 1 ? 'not-allowed' : 'pointer',
                           marginRight: 8,
-                          opacity: dbPage === 1 ? 0.5 : 1,
+                          opacity: colPage === 1 ? 0.5 : 1,
                         }}
                       >
                         Prev
                       </button>
                       <span style={{ fontSize: 14, color: '#fff', fontWeight: 700 }}>
-                        {dbPage}/{totalDbPages}
+                        {colPage}/{totalColPages}
                       </span>
                       <button
-                        onClick={() => setDbPage((p) => Math.min(totalDbPages, p + 1))}
-                        disabled={dbPage === totalDbPages}
+                        onClick={() => setColPage((p) => Math.min(totalColPages, p + 1))}
+                        disabled={colPage === totalColPages}
                         style={{
                           ...buttonStyle,
                           padding: '4px 14px',
                           fontSize: 14,
-                          cursor: dbPage === totalDbPages ? 'not-allowed' : 'pointer',
+                          cursor: colPage === totalColPages ? 'not-allowed' : 'pointer',
                           marginLeft: 8,
-                          opacity: dbPage === totalDbPages ? 0.5 : 1,
+                          opacity: colPage === totalColPages ? 0.5 : 1,
                         }}
                       >
                         Next
@@ -1197,468 +1280,394 @@ export default function DatabaseExplorer() {
                     </div>
                   )}
                 </div>
-                {collections.length > 0 && (
-                  <div>
-                    <h3
+              )}
+            </div>
+          )}
+          {/* Main Table Area */}
+          <div
+            style={{
+              flex: 1,
+              width: '100%',
+              maxWidth: '100%',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <div style={{ position: 'relative', width: '100%' }}>
+              {showSpinner ? (
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: '60vh',
+                    width: '100%',
+                  }}
+                >
+                  <AtlasSpinner />
+                </div>
+              ) : (
+                columns.length > 0 && (
+                  <div style={tableContainerStyle}>
+                    <div
                       style={{
-                        color: '#fff',
-                        margin: '22px 0 10px 0',
-                        fontSize: 19,
-                        fontWeight: 800,
-                        letterSpacing: '-0.5px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: 10,
+                        marginTop: 0,
+                        width: '100%',
                       }}
                     >
-                      Collections
-                    </h3>
-                    {paginatedCols.map((col) => {
-                      const colName = typeof col === 'string' ? col : col.name || String(col);
-                      return (
+                      <h4
+                        style={{
+                          color: 'transparent',
+                          background: 'linear-gradient(90deg, #6366f1, #818cf8)',
+                          WebkitBackgroundClip: 'text',
+                          margin: 0,
+                          fontWeight: 800,
+                          fontSize: 20,
+                          textAlign: 'left',
+                          width: 'auto',
+                          minWidth: 120,
+                        }}
+                      >
+                        Table:{' '}
                         <span
-                          key={colName}
-                          style={selectedCollection === colName ? cardSelected : cardStyle}
-                          onClick={() => handleSelectCollection(colName)}
-                          title={colName}
-                        >
-                          <span
-                            role="img"
-                            aria-label="collection"
-                            style={{
-                              marginRight: 10,
-                              fontSize: 18,
-                              verticalAlign: 'middle',
-                            }}
-                          >
-                            📂
-                          </span>
-                          {colName}
-                        </span>
-                      );
-                    })}
-                    {totalColPages > 1 && (
-                      <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
-                        <button
-                          onClick={() => setColPage((p) => Math.max(1, p - 1))}
-                          disabled={colPage === 1}
                           style={{
-                            ...buttonStyle,
-                            padding: '4px 14px',
-                            fontSize: 14,
-                            cursor: colPage === 1 ? 'not-allowed' : 'pointer',
-                            marginRight: 8,
-                            opacity: colPage === 1 ? 0.5 : 1,
+                            color: '#6366f1',
+                            background: 'transparent',
+                            WebkitBackgroundClip: 'none',
                           }}
                         >
-                          Prev
-                        </button>
-                        <span style={{ fontSize: 14, color: '#fff', fontWeight: 700 }}>
-                          {colPage}/{totalColPages}
+                          {selectedCollection}
                         </span>
-                        <button
-                          onClick={() => setColPage((p) => Math.min(totalColPages, p + 1))}
-                          disabled={colPage === totalColPages}
-                          style={{
-                            ...buttonStyle,
-                            padding: '4px 14px',
-                            fontSize: 14,
-                            cursor: colPage === totalColPages ? 'not-allowed' : 'pointer',
-                            marginLeft: 8,
-                            opacity: colPage === totalColPages ? 0.5 : 1,
-                          }}
-                        >
-                          Next
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-            {/* Main Table Area */}
-            <div
-              style={{
-                flex: 1,
-                width: '100%',
-                maxWidth: '100%',
-                overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <div style={{ position: 'relative', width: '100%' }}>
-                {showSpinner ? (
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      minHeight: '60vh',
-                      width: '100%',
-                    }}
-                  >
-                    <AtlasSpinner />
-                  </div>
-                ) : (
-                  columns.length > 0 && (
-                    <div style={tableContainerStyle}>
+                      </h4>
+                      <button
+                        onClick={openEditModal}
+                        style={{
+                          ...buttonStyle,
+                          padding: '7px 14px',
+                          fontSize: 15,
+                          height: 38,
+                          minWidth: 0,
+                          marginLeft: 10,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                        }}
+                        title="Edit Table"
+                      >
+                        <span role="img" aria-label="edit">
+                          ✏️
+                        </span>
+                        {!isMobile && 'Edit'}
+                      </button>
                       <div
                         style={{
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'space-between',
-                          marginBottom: 10,
-                          marginTop: 0,
-                          width: '100%',
+                          gap: 10,
+                          marginLeft: 16,
+                          flex: 1,
+                          justifyContent: 'flex-end',
                         }}
                       >
-                        <h4
+                        <select
+                          value={searchField}
+                          onChange={(e) => setSearchField(e.target.value)}
                           style={{
-                            color: 'transparent',
-                            background: 'linear-gradient(90deg, #6366f1, #818cf8)',
-                            WebkitBackgroundClip: 'text',
-                            margin: 0,
-                            fontWeight: 800,
-                            fontSize: 20,
-                            textAlign: 'left',
-                            width: 'auto',
-                            minWidth: 120,
-                          }}
-                        >
-                          Table:{' '}
-                          <span
-                            style={{
-                              color: '#6366f1',
-                              background: 'transparent',
-                              WebkitBackgroundClip: 'none',
-                            }}
-                          >
-                            {selectedCollection}
-                          </span>
-                        </h4>
-                        <button
-                          onClick={openEditModal}
-                          style={{
-                            ...buttonStyle,
                             padding: '7px 14px',
+                            borderRadius: 6,
+                            border: '1px solid #6366f1',
                             fontSize: 15,
+                            fontWeight: 'normal',
+                            background: '#fff',
+                            color: '#23272f',
+                            minWidth: 120,
                             height: 38,
-                            minWidth: 0,
-                            marginLeft: 10,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 6,
                           }}
-                          title="Edit Table"
                         >
-                          <span role="img" aria-label="edit">
-                            ✏️
-                          </span>
-                          {!isMobile && 'Edit'}
-                        </button>
-                        <div
+                          <option value="">Filter by...</option>
+                          {visibleColumns
+                            .filter((col) => col !== 'password')
+                            .map((col) => (
+                              <option key={col} value={col}>
+                                {col}
+                              </option>
+                            ))}
+                        </select>
+                        <input
+                          type="text"
+                          placeholder="Search..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          onFocus={() => {
+                            if (!searchField) {
+                              Swal.fire({
+                                icon: 'info',
+                                title: 'Select a Filter',
+                                text: 'Please select a filter parameter before searching.',
+                              });
+                            }
+                          }}
                           style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 10,
-                            marginLeft: 16,
-                            flex: 1,
-                            justifyContent: 'flex-end',
+                            padding: '7px 14px',
+                            borderRadius: 4,
+                            border: '1px solid #6366f1',
+                            fontSize: 15,
+                            minWidth: 180,
+                            background: '#fff',
+                            color: '#23272f',
+                            height: 38,
                           }}
-                        >
-                          <select
-                            value={searchField}
-                            onChange={(e) => setSearchField(e.target.value)}
-                            style={{
-                              padding: '7px 14px',
-                              borderRadius: 6,
-                              border: '1px solid #6366f1',
-                              fontSize: 15,
-                              fontWeight: 'normal',
-                              background: '#fff',
-                              color: '#23272f',
-                              minWidth: 120,
-                              height: 38,
-                            }}
-                          >
-                            <option value="">Filter by...</option>
-                            {visibleColumns
-                              .filter((col) => col !== 'password')
-                              .map((col) => (
-                                <option key={col} value={col}>
-                                  {col}
-                                </option>
-                              ))}
-                          </select>
-                          <input
-                            type="text"
-                            placeholder="Search..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            onFocus={() => {
-                              if (!searchField) {
-                                Swal.fire({
-                                  icon: 'info',
-                                  title: 'Select a Filter',
-                                  text: 'Please select a filter parameter before searching.',
-                                });
-                              }
-                            }}
-                            style={{
-                              padding: '7px 14px',
-                              borderRadius: 4,
-                              border: '1px solid #6366f1',
-                              fontSize: 15,
-                              minWidth: 180,
-                              background: '#fff',
-                              color: '#23272f',
-                              height: 38,
-                            }}
-                            disabled={!searchField}
-                          />
-                        </div>
-                        <div style={{ marginLeft: 16, display: 'flex', gap: 8 }}>
-                          {!isAutoRefreshing ? (
-                            <>
-                              <button
-                                onClick={() =>
-                                  fetchDocuments(
-                                    selectedDb,
-                                    selectedCollection,
-                                    currentPage,
-                                    true,
-                                    'manual'
-                                  )
-                                }
-                                disabled={isLoadingDocuments || !selectedCollection}
-                                style={{
-                                  ...buttonStyle,
-                                  padding: '7px 14px',
-                                  fontSize: 15,
-                                  height: 38,
-                                  minWidth: 0,
-                                  opacity:
-                                    isLoadingDocuments || !selectedCollection ? 0.6 : 1,
-                                  cursor:
-                                    isLoadingDocuments || !selectedCollection
-                                      ? 'not-allowed'
-                                      : 'pointer',
-                                }}
-                                title="Manual"
-                              >
-                                {isLoadingDocuments && refreshingType === 'manual' ? (
-                                  <span>
-                                    <span className="dot-anim">Refreshing</span>...
-                                  </span>
-                                ) : (
-                                  <>
-                                    <span
-                                      role="img"
-                                      aria-label="refresh"
-                                      style={{ marginRight: 6 }}
-                                    >
-                                      🔄
-                                    </span>
-                                    {!isMobile && 'Manual'}
-                                  </>
-                                )}
-                              </button>
-                              <button
-                                onClick={startAutoRefresh}
-                                disabled={isLoadingDocuments || !selectedCollection}
-                                style={{
-                                  ...buttonStyle,
-                                  padding: '7px 14px',
-                                  fontSize: 15,
-                                  height: 38,
-                                  minWidth: 0,
-                                  opacity:
-                                    isLoadingDocuments || !selectedCollection ? 0.6 : 1,
-                                  cursor:
-                                    isLoadingDocuments || !selectedCollection
-                                      ? 'not-allowed'
-                                      : 'pointer',
-                                }}
-                                title="Auto mode"
-                              >
-                                {isLoadingDocuments && refreshingType === 'auto' ? (
-                                  <span>
-                                    <span className="dot-anim">Auto Refreshing</span>...
-                                  </span>
-                                ) : (
-                                  <>
-                                    <span
-                                      role="img"
-                                      aria-label="autorefresh"
-                                      style={{ marginRight: 6 }}
-                                    >
-                                      🔁
-                                    </span>
-                                    {!isMobile && 'Auto'}
-                                  </>
-                                )}
-                              </button>
-                            </>
-                          ) : (
+                          disabled={!searchField}
+                        />
+                      </div>
+                      <div style={{ marginLeft: 16, display: 'flex', gap: 8 }}>
+                        {!isAutoRefreshing ? (
+                          <>
                             <button
-                              onClick={stopAutoRefresh}
+                              onClick={() =>
+                                fetchDocuments(
+                                  selectedDb,
+                                  selectedCollection,
+                                  currentPage,
+                                  true,
+                                  'manual'
+                                )
+                              }
+                              disabled={isLoadingDocuments || !selectedCollection}
                               style={{
                                 ...buttonStyle,
                                 padding: '7px 14px',
                                 fontSize: 15,
                                 height: 38,
                                 minWidth: 0,
+                                opacity:
+                                  isLoadingDocuments || !selectedCollection ? 0.6 : 1,
+                                cursor:
+                                  isLoadingDocuments || !selectedCollection
+                                    ? 'not-allowed'
+                                    : 'pointer',
                               }}
-                              title="Stop Auto Refresh"
+                              title="Manual"
                             >
-                              <span role="img" aria-label="pause" style={{ marginRight: 6 }}>
-                                ⏸️
-                              </span>
-                              {!isMobile && 'Stop Auto Refresh'}
+                              {isLoadingDocuments && refreshingType === 'manual' ? (
+                                <span>
+                                  <span className="dot-anim">Refreshing</span>...
+                                </span>
+                              ) : (
+                                <>
+                                  <span
+                                    role="img"
+                                    aria-label="refresh"
+                                    style={{ marginRight: 6 }}
+                                  >
+                                    🔄
+                                  </span>
+                                  {!isMobile && 'Manual'}
+                                </>
+                              )}
                             </button>
-                          )}
-                        </div>
+                            <button
+                              onClick={startAutoRefresh}
+                              disabled={isLoadingDocuments || !selectedCollection}
+                              style={{
+                                ...buttonStyle,
+                                padding: '7px 14px',
+                                fontSize: 15,
+                                height: 38,
+                                minWidth: 0,
+                                opacity:
+                                  isLoadingDocuments || !selectedCollection ? 0.6 : 1,
+                                cursor:
+                                  isLoadingDocuments || !selectedCollection
+                                    ? 'not-allowed'
+                                    : 'pointer',
+                              }}
+                              title="Auto mode"
+                            >
+                              {isLoadingDocuments && refreshingType === 'auto' ? (
+                                <span>
+                                  <span className="dot-anim">Auto Refreshing</span>...
+                                </span>
+                              ) : (
+                                <>
+                                  <span
+                                    role="img"
+                                    aria-label="autorefresh"
+                                    style={{ marginRight: 6 }}
+                                  >
+                                    🔁
+                                  </span>
+                                  {!isMobile && 'Auto'}
+                                </>
+                              )}
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={stopAutoRefresh}
+                            style={{
+                              ...buttonStyle,
+                              padding: '7px 14px',
+                              fontSize: 15,
+                              height: 38,
+                              minWidth: 0,
+                            }}
+                            title="Stop Auto Refresh"
+                          >
+                            <span role="img" aria-label="pause" style={{ marginRight: 6 }}>
+                              ⏸️
+                            </span>
+                            {!isMobile && 'Stop Auto Refresh'}
+                          </button>
+                        )}
                       </div>
+                    </div>
+                    <div
+                      style={{
+                        flex: 1,
+                        overflowY: 'auto',
+                        overflowX: 'auto',
+                        width: '100%',
+                        maxHeight: '100%',
+                      }}
+                    >
+                      <table className="bootstrap-table" style={tableStyle}>
+                        <thead>
+                          <tr>
+                            <th style={thStyle}>#</th>
+                            {visibleColumns.map((col) => (
+                              <th key={col} style={thStyle}>
+                                {col}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(searchTerm && searchField ? filteredDocuments : documents).map(
+                            (doc, idx) => {
+                              const descendingNumber =
+                                totalDocuments - ((currentPage - 1) * recordsPerPage + idx);
+                              const isEven = idx % 2 === 0;
+                              return (
+                                <tr
+                                  key={doc._id || `${selectedCollection}-${idx}`}
+                                  className={isEven ? 'alt-row-even' : 'alt-row-odd'}
+                                  style={{
+                                    transition: 'background-color 0.2s',
+                                    display: 'table-row', // Ensure rows display correctly
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = '#f0f0f5';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = '';
+                                  }}
+                                >
+                                  <td style={tdStyle}>{descendingNumber}</td>
+                                  {visibleColumns.map((col) => (
+                                    <td key={col} style={tdStyle}>
+                                      {col === 'createdAt' || col === 'updatedAt'
+                                        ? doc[col]
+                                          ? new Date(doc[col]).toLocaleString(undefined, {
+                                              year: 'numeric',
+                                              month: 'short',
+                                              day: 'numeric',
+                                              hour: '2-digit',
+                                              minute: '2-digit',
+                                              second: '2-digit',
+                                              hour12: false,
+                                              timeZoneName: 'short',
+                                            })
+                                          : ''
+                                        : String(doc[col]?.toString() || '')}
+                                    </td>
+                                  ))}
+                                </tr>
+                              );
+                            }
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                    {totalPages > 1 && (
                       <div
                         style={{
-                          flex: 1,
-                          overflowY: 'auto',
-                          overflowX: 'auto',
-                          width: '100%',
-                          maxHeight: '100%',
+                          marginTop: 6, // Reduced margin top for pagination controls
+                          marginBottom: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: 0,
                         }}
                       >
-                        <table className="bootstrap-table" style={tableStyle}>
-                          <thead>
-                            <tr>
-                              <th style={thStyle}>#</th>
-                              {visibleColumns.map((col) => (
-                                <th key={col} style={thStyle}>
-                                  {col}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {(searchTerm && searchField ? filteredDocuments : documents).map(
-                              (doc, idx) => {
-                                const descendingNumber =
-                                  totalDocuments - ((currentPage - 1) * recordsPerPage + idx);
-                                const isEven = idx % 2 === 0;
-                                return (
-                                  <tr
-                                    key={doc._id || `${selectedCollection}-${idx}`}
-                                    className={isEven ? 'alt-row-even' : 'alt-row-odd'}
-                                    style={{
-                                      transition: 'background-color 0.2s',
-                                      display: 'table-row', // Ensure rows display correctly
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      e.currentTarget.style.backgroundColor = '#f0f0f5';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      e.currentTarget.style.backgroundColor = '';
-                                    }}
-                                  >
-                                    <td style={tdStyle}>{descendingNumber}</td>
-                                    {visibleColumns.map((col) => (
-                                      <td key={col} style={tdStyle}>
-                                        {col === 'createdAt' || col === 'updatedAt'
-                                          ? doc[col]
-                                            ? new Date(doc[col]).toLocaleString(undefined, {
-                                                year: 'numeric',
-                                                month: 'short',
-                                                day: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                                second: '2-digit',
-                                                hour12: false,
-                                                timeZoneName: 'short',
-                                              })
-                                            : ''
-                                          : String(doc[col]?.toString() || '')}
-                                      </td>
-                                    ))}
-                                  </tr>
-                                );
-                              }
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                      {totalPages > 1 && (
-                        <div
+                        <button
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
                           style={{
-                            marginTop: 6, // Reduced margin top for pagination controls
-                            marginBottom: 0,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: 0,
+                            ...buttonStyle,
+                            padding: '3px 10px', // Reduced height
+                            marginRight: '8px',
+                            fontSize: 14,
+                            height: 28, // Reduced height
+                            minWidth: 0,
+                            opacity: currentPage === 1 ? '0.5' : 1,
+                            cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
                           }}
                         >
-                          <button
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                            style={{
-                              ...buttonStyle,
-                              padding: '3px 10px', // Reduced height
-                              marginRight: '8px',
-                              fontSize: 14,
-                              height: 28, // Reduced height
-                              minWidth: 0,
-                              opacity: currentPage === 1 ? '0.5' : 1,
-                              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                            }}
-                          >
-                            Prev
-                          </button>
-                          <span
-                            style={{
-                              fontWeight: 'bold',
-                              color: '#6366f1',
-                              fontSize: 15,
-                            }}
-                          >
-                            {currentPage} of {totalPages}
-                          </span>
-                          <button
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                            style={{
-                              ...buttonStyle,
-                              padding: '3px 10px', // Reduced height
-                              marginLeft: '8px',
-                              fontSize: 14,
-                              height: 28, // Reduced height
-                              minWidth: 0,
-                              opacity: currentPage === totalPages ? '0.5' : 1,
-                              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                            }}
-                          >
-                            Next
-                          </button>
-                        </div>
-                      )}
-                      <footer
-                        style={{
-                          textAlign: 'center',
-                          marginTop: 0,
-                          padding: '8px 0 8px',
-                          color: '#6366f1',
-                          fontWeight: 'bold',
-                          fontSize: 15,
-                          opacity: 0.85,
-                          letterSpacing: '0.5px',
-                        }}
-                      >
-                        © {new Date().getFullYear()} All Rights Reserved | ZACKDB
-                      </footer>
-                    </div>
-                  )
-                )}
-              </div>
+                          Prev
+                        </button>
+                        <span
+                          style={{
+                            fontWeight: 'bold',
+                            color: '#6366f1',
+                            fontSize: 15,
+                          }}
+                        >
+                          {currentPage} of {totalPages}
+                        </span>
+                        <button
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                          style={{
+                            ...buttonStyle,
+                            padding: '3px 10px', // Reduced height
+                            marginLeft: '8px',
+                            fontSize: 14,
+                            height: 28, // Reduced height
+                            minWidth: 0,
+                            opacity: currentPage === totalPages ? '0.5' : 1,
+                            cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                          }}
+                        >
+                          Next
+                        </button>
+                      </div>
+                    )}
+                    <footer
+                      style={{
+                        textAlign: 'center',
+                        marginTop: 0,
+                        padding: '8px 0 8px',
+                        color: '#6366f1',
+                        fontWeight: 'bold',
+                        fontSize: 15,
+                        opacity: 0.85,
+                        letterSpacing: '0.5px',
+                      }}
+                    >
+                      © {new Date().getFullYear()} All Rights Reserved | ZACKDB
+                    </footer>
+                  </div>
+                )
+              )}
             </div>
           </div>
-        )}
+        </div>
       </div>
       {isEditModalOpen && (
         <CollectionEditModal
