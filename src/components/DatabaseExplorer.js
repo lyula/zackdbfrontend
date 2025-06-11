@@ -644,7 +644,6 @@ export default function DatabaseExplorer() {
   // Add document handler
   const handleAddDocument = async (doc) => {
     try {
-      // Call your API to add the document
       await fetch(`${API_URL}/api/document`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -657,8 +656,7 @@ export default function DatabaseExplorer() {
         })
       });
       setIsEditModalOpen(false); // Close modal on success
-      // Optionally reset modal state here
-      fetchDocuments(selectedDb, selectedCollection, 1, true, 'manual'); // Refresh to first page
+      setShouldRefreshAfterModal(true); // Only set on successful create
     } catch (err) {
       Swal.fire('Error', err.message || 'Failed to add document', 'error');
     }
@@ -723,8 +721,7 @@ export default function DatabaseExplorer() {
       }
       Swal.fire('Success', 'Document updated successfully!', 'success');
       setIsEditModalOpen(false);
-      // Refresh documents
-      fetchDocuments(selectedDb, selectedCollection, currentPage, true, 'manual');
+      setShouldRefreshAfterModal(true); // Only set on successful update
     } catch (err) {
       Swal.fire('Error', err.message || 'Failed to update document', 'error');
     }
@@ -734,8 +731,18 @@ export default function DatabaseExplorer() {
   const handleDeleteDocument = async (id) => {
     // TODO: Implement your delete logic here (API call)
     setIsEditModalOpen(false);
-    fetchDocuments(selectedDb, selectedCollection, currentPage, true, 'manual');
+    setShouldRefreshAfterModal(true); // Only set on successful delete
   };
+
+  // Refresh documents after modal closes
+  const [shouldRefreshAfterModal, setShouldRefreshAfterModal] = useState(false);
+
+  useEffect(() => {
+    if (!isEditModalOpen && shouldRefreshAfterModal) {
+      fetchDocuments(selectedDb, selectedCollection, 1, true, 'manual');
+      setShouldRefreshAfterModal(false);
+    }
+  }, [isEditModalOpen, shouldRefreshAfterModal]);
 
   return (
     <>
