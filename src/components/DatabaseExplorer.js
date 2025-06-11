@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import CollectionEditModal from './modalActions';
 
 const API_URL = 'https://zackdbbackend.onrender.com';
 
@@ -633,81 +634,42 @@ export default function DatabaseExplorer() {
       )
     : documents;
 
-  // Add these states for the modal and form
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [newDoc, setNewDoc] = useState({});
-  const excludedFields = ['_id', 'id', 'userId', 'createdAt', 'updatedAt', '__v', 'password'];
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [modalOperation, setModalOperation] = useState('create');
+  const [editDocId, setEditDocId] = useState('');
+  const [editDoc, setEditDoc] = useState({});
+  const [deleteDocId, setDeleteDocId] = useState('');
+  const excludedFields = ['_id', 'password', '__v', '_V']; // adjust as needed
 
-  // Handler to submit new document
-  const handleAddDocument = async (newDoc) => {
-    // Validate all fields (except excluded)
-    const requiredFields = columns.filter(
-      col => !excludedFields.includes(col)
-    );
-    for (let col of requiredFields) {
-      if (!newDoc[col] || newDoc[col].toString().trim() === '') {
-        Swal.fire({
-          icon: 'error',
-          title: 'Missing Field',
-          text: 'All fields must be inserted.'
-        });
-        return;
-      }
-      // Email validation for email input fields
-      if (col.toLowerCase().includes('email')) {
-        const email = newDoc[col];
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Invalid Email',
-            text: `Please enter a valid email for "${col}".`
-          });
-          return;
-        }
-      }
-    }
+  // Add document handler
+  const handleAddDocument = async (doc) => {
+    // TODO: Implement your add logic here (API call)
+    setIsEditModalOpen(false);
+    // Optionally refresh data
+    fetchDocuments(selectedDb, selectedCollection, currentPage, true, 'manual');
+  };
 
-    // Close modal and reset form immediately
-    setShowAddModal(false);
-    setNewDoc({});
+  // Fetch document for edit
+  const handleFetchDocForEdit = async (id) => {
+    // TODO: Fetch doc by id and setEditDoc
+    // Example:
+    // const res = await fetch(`${API_URL}/api/document/${id}`);
+    // const doc = await res.json();
+    // setEditDoc(doc);
+  };
 
-    // Add timestamps if not present
-    const now = new Date().toISOString();
-    const docWithTimestamps = {
-      ...newDoc,
-      createdAt: newDoc.createdAt || now,
-      updatedAt: newDoc.updatedAt || now
-    };
+  // Update document handler
+  const handleUpdateDocument = async (id, doc) => {
+    // TODO: Implement your update logic here (API call)
+    setIsEditModalOpen(false);
+    fetchDocuments(selectedDb, selectedCollection, currentPage, true, 'manual');
+  };
 
-    try {
-      setRefreshingType('manual'); // Show "Refreshing" on manual button
-      const res = await fetch(`${API_URL}/api/insert-document`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          connectionString,
-          dbName: selectedDb,
-          collectionName: selectedCollection,
-          document: docWithTimestamps
-        })
-      });
-      const data = await res.json();
-      if (data.success) {
-        fetchDocuments(selectedDb, selectedCollection, 1, true, 'manual'); // Refresh table
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Insert Failed',
-          text: data.error || 'Insert failed.'
-        });
-      }
-    } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Insert Failed',
-        text: err.message || 'Insert failed.'
-      });
-    }
+  // Delete document handler
+  const handleDeleteDocument = async (id) => {
+    // TODO: Implement your delete logic here (API call)
+    setIsEditModalOpen(false);
+    fetchDocuments(selectedDb, selectedCollection, currentPage, true, 'manual');
   };
 
   return (
@@ -1021,31 +983,32 @@ export default function DatabaseExplorer() {
                       WebkitBackgroundClip: 'none'
                     }}>{selectedCollection}</span>
                   </h4>
-                  {/* Green Plus Button */}
+                  {/* --- Add this block for the Edit button --- */}
                   <button
-                    onClick={() => setShowAddModal(true)}
+                    onClick={() => {
+                      setIsEditModalOpen(true);
+                      setModalOperation('create'); // or 'update'/'delete' as needed
+                      setEditDocId('');
+                      setEditDoc({});
+                      setDeleteDocId('');
+                    }}
                     style={{
-                      background: isMobile ? 'transparent' : '#22c55e',
-                      border: isMobile ? 'none' : 'none',
-                      borderRadius: 6,
-                      color: isMobile ? '#fff' : '#fff',
-                      fontWeight: 700,
-                      fontSize: isMobile ? 14 : 16,
-                      padding: isMobile ? '5px 10px' : '7px 14px',
-                      marginLeft: 12,
-                      cursor: 'pointer',
+                      ...buttonStyle,
+                      padding: '7px 14px',
+                      fontSize: 15,
+                      height: 38,
+                      minWidth: 0,
+                      marginLeft: 10,
                       display: 'flex',
                       alignItems: 'center',
-                      height: isMobile ? 32 : 38,
-                      minHeight: isMobile ? 32 : 38,
-                      minWidth: 0,
-                      boxShadow: isMobile ? 'none' : undefined
+                      gap: 6
                     }}
-                    title="Add New Document"
+                    title="Edit Table"
                   >
-                    <span style={{ fontSize: isMobile ? 16 : 20, marginRight: 6, color: isMobile ? '#fff' : undefined }}>➕</span>
-                    {isMobile ? '' : 'Add'}
+                    <span role="img" aria-label="edit">✏️</span>
+                    {!isMobile && 'Edit'}
                   </button>
+                  {/* --- End Edit button --- */}
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -1298,42 +1261,25 @@ export default function DatabaseExplorer() {
             )}
           </div>
         </div>
-        {/* Add Modal */}
-        {showAddModal && (
-          <div style={{
-            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-            background: 'rgba(0,0,0,0.25)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
-            <div style={{
-              background: '#fff', borderRadius: 12, padding: 32, minWidth: 320, boxShadow: '0 4px 24px #6366f144'
-            }}>
-              <h3 style={{ marginTop: 0 }}>Add New Document</h3>
-              <form onSubmit={e => { e.preventDefault(); handleAddDocument(newDoc); }}>
-                {columns.filter(col => !excludedFields.includes(col)).map(col => (
-                  <div key={col} style={{ marginBottom: 14 }}>
-                    <label style={{ fontWeight: 600 }}>{col}:</label>
-                    <input
-                      type={col.toLowerCase().includes('email') ? 'email' : 'text'}
-                      value={newDoc[col] || ''}
-                      onChange={e => setNewDoc({ ...newDoc, [col]: e.target.value })}
-                      style={{
-                        width: '100%', padding: 8, borderRadius: 6, border: '1px solid #6366f1', marginTop: 4
-                      }}
-                      required
-                    />
-                  </div>
-                ))}
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-                  <button type="button" onClick={() => setShowAddModal(false)} style={{
-                    background: '#e5e7eb', color: '#23272f', border: 'none', borderRadius: 6, padding: '8px 18px'
-                  }}>Cancel</button>
-                  <button type="submit" style={{
-                    background: '#22c55e', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 700
-                  }}>Add</button>
-                </div>
-              </form>
-            </div>
-          </div>
+        {isEditModalOpen && (
+          <CollectionEditModal
+            show={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            columns={columns}
+            excludedFields={excludedFields}
+            modalOperation={modalOperation}
+            setModalOperation={setModalOperation}
+            editDocId={editDocId}
+            setEditDocId={setEditDocId}
+            editDoc={editDoc}
+            setEditDoc={setEditDoc}
+            deleteDocId={deleteDocId}
+            setDeleteDocId={setDeleteDocId}
+            handleAddDocument={handleAddDocument}
+            handleFetchDocForEdit={handleFetchDocForEdit}
+            handleUpdateDocument={handleUpdateDocument}
+            handleDeleteDocument={handleDeleteDocument}
+          />
         )}
       </div>
     </>
