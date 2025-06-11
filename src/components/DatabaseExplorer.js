@@ -150,6 +150,8 @@ export default function DatabaseExplorer() {
   useEffect(() => {
     if (isMobile) {
       setIsSidebarVisible(!selectedCollection);
+    } else {
+      setIsSidebarVisible(true);
     }
   }, [selectedCollection, isMobile]);
 
@@ -626,10 +628,27 @@ export default function DatabaseExplorer() {
   const [deleteDocId, setDeleteDocId] = useState('');
   const excludedFields = ['_id', 'password', '__v', '_V'];
 
+  // Helper: Poll until table reflects the expected change
+  const pollUntilTableReflects = async (checkFn, maxAttempts = 10, interval = 1000) => {
+    setRefreshingType('manual');
+    setIsLoadingDocuments(true);
+    let attempts = 0;
+    while (attempts < maxAttempts) {
+      await fetchDocuments(selectedDb, selectedCollection, 1, true, 'manual');
+      if (checkFn()) {
+        break;
+      }
+      await new Promise((res) => setTimeout(res, interval));
+      attempts++;
+    }
+    setRefreshingType('');
+    setIsLoadingDocuments(false);
+  };
+
   const handleAddDocument = async (doc) => {
     try {
       setIsPostingDocument(true);
-      await fetch(`${API_URL}/api/document`, {
+      const res = await fetch(`${API_URL}/api/document`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -640,16 +659,14 @@ export default function DatabaseExplorer() {
           doc,
         }),
       });
+      const result = await res.json();
       setIsEditModalOpen(false);
 
-      const cacheKey = `${selectedDb}_${selectedCollection}_1_${recordsPerPage}`;
-      setDocumentsCache((prev) => {
-        const newCache = { ...prev };
-        delete newCache[cacheKey];
-        return newCache;
-      });
-
-      await fetchDocuments(selectedDb, selectedCollection, 1, true, 'manual');
+      // Use the returned _id if available, otherwise fallback to doc._id
+      const newId = result._id || doc._id;
+      await pollUntilTableReflects(
+        () => documents.some((d) => d._id === newId)
+      );
     } catch (err) {
       Swal.fire('Error', err.message || 'Failed to add document', 'error');
     } finally {
@@ -714,6 +731,9 @@ export default function DatabaseExplorer() {
       }
       Swal.fire('Success', 'Document updated successfully!', 'success');
       setIsEditModalOpen(false);
+      await pollUntilTableReflects(
+        () => documents.some((d) => d._id === id && d.name === doc.name) // adjust fields as needed
+      );
     } catch (err) {
       Swal.fire('Error', err.message || 'Failed to update document', 'error');
     }
@@ -742,6 +762,9 @@ export default function DatabaseExplorer() {
       }
       Swal.fire('Success', 'Document deleted successfully!', 'success');
       setIsEditModalOpen(false);
+      await pollUntilTableReflects(
+        () => !documents.some((d) => d._id === id)
+      );
     } catch (err) {
       Swal.fire('Error', err.message || 'Failed to delete document', 'error');
     }
@@ -833,34 +856,36 @@ export default function DatabaseExplorer() {
                 Home
               </button>
             )}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                fontWeight: 'bold',
-                fontSize: 16,
-                color: '#23272f',
-                background: 'rgba(255, 255, 255, 0.7)',
-                borderRadius: 10,
-                padding: '7px 18px',
-                boxShadow: '0 2px 8px rgba(99, 102, 241, 0.1)',
-              }}
-            >
-              <span style={{ fontSize: 22 }}>{getCountryFlag(country)}</span>
-              <span>
-                {now.toLocaleString(undefined, {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  second: '2-digit',
-                  hour12: false,
-                  timeZone: userTimezone,
-                })}
-              </span>
-            </div>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              fontWeight: 'bold',
+              fontSize: 16,
+              color: '#23272f',
+              background: 'rgba(255, 255, 255, 0.7)',
+              borderRadius: 10,
+              padding: '7px 18px',
+              boxShadow: '0 2px 8px rgba(99, 102, 241, 0.1)',
+              marginLeft: 'auto',
+              marginTop: isMobile ? 10 : 0,
+            }}
+          >
+            <span style={{ fontSize: 22 }}>{getCountryFlag(country)}</span>
+            <span>
+              {now.toLocaleString(undefined, {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+                timeZone: userTimezone,
+              })}
+            </span>
           </div>
         </div>
         <div
@@ -1090,25 +1115,6 @@ export default function DatabaseExplorer() {
               }}
             >
               <div style={{ position: 'relative', width: '100%' }}>
-                {isLoadingDocuments && !isInitialDocumentsLoad && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      background: 'rgba(255,255,255,0.7)',
-                      zIndex: 10,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: 18,
-                    }}
-                  >
-                    <AtlasSpinner />
-                  </div>
-                )}
                 {columns.length > 0 && (
                   <div style={tableContainerStyle}>
                     <div

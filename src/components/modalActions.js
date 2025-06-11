@@ -76,6 +76,7 @@ export default function CollectionEditModal({
   }, [show, connectionString, dbName, collectionName]);
 
   const [loading, setLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false); // <-- Add this
 
   // Persist connection info in local state when modal opens
   const [localConn, setLocalConn] = useState({ connectionString: '', dbName: '', collectionName: '' });
@@ -251,8 +252,17 @@ export default function CollectionEditModal({
                 setLoading(true);
                 try {
                   const { _id, _original, ...docToUpdate } = editDoc;
+                  // Set updatedAt to now before sending
+                  const now = new Date().toISOString();
+                  docToUpdate.updatedAt = now;
                   await handleUpdateDocument(localConn.connectionString, localConn.dbName, localConn.collectionName, editDocId, docToUpdate);
-                  if (handleRefreshAfterModal) handleRefreshAfterModal(); // <-- ADD THIS
+                  // Update local editDoc state to reflect new updatedAt
+                  setEditDoc(prev => ({
+                    ...prev,
+                    updatedAt: now,
+                    _original: { ...prev._original, ...docToUpdate, updatedAt: now }
+                  }));
+                  if (handleRefreshAfterModal) handleRefreshAfterModal();
                   onClose();
                 } catch (err) {
                   onClose();
@@ -300,8 +310,8 @@ export default function CollectionEditModal({
               <form onSubmit={async e => {
                 e.preventDefault();
                 if (!checkConnInfo()) return;
+                setDeleteLoading(true); // <-- Start loading
                 try {
-                  // Pass all required params!
                   const fetchedDoc = await handleFetchDocForEdit(localConn.connectionString, localConn.dbName, localConn.collectionName, deleteDocId);
                   if (fetchedDoc) {
                     setEditDoc(fetchedDoc);
@@ -309,6 +319,8 @@ export default function CollectionEditModal({
                 } catch (err) {
                   onClose();
                   Swal.fire('Error', err.message || 'Failed to fetch document', 'error');
+                } finally {
+                  setDeleteLoading(false); // <-- End loading
                 }
               }}>
                 <div style={{ marginBottom: 14 }}>
@@ -321,15 +333,20 @@ export default function CollectionEditModal({
                       width: '100%', padding: 8, borderRadius: 6, border: '1px solid #6366f1', marginTop: 4
                     }}
                     required
+                    disabled={deleteLoading} // <-- Disable input while loading
                   />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
                   <button type="button" onClick={onClose} style={{
                     background: '#e5e7eb', color: '#23272f', border: 'none', borderRadius: 6, padding: '8px 18px'
                   }}>Cancel</button>
-                  <button type="submit" style={{
-                    background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 700
-                  }}>Confirm</button>
+                  {deleteLoading ? (
+                    <LoadingButton />
+                  ) : (
+                    <button type="submit" style={{
+                      background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 700
+                    }}>Confirm</button>
+                  )}
                 </div>
               </form>
             ) : (
