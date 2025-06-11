@@ -670,6 +670,7 @@ export default function DatabaseExplorer() {
   const [editDoc, setEditDoc] = useState({});
   const [deleteDocId, setDeleteDocId] = useState('');
   const [isMailModalOpen, setIsMailModalOpen] = useState(false); // 2. State for modal
+  const [isDownloadingCSV, setIsDownloadingCSV] = useState(false);
   const excludedFields = ['_id', 'password', '__v', '_V'];
 
   // Helper: Poll until table reflects the expected change
@@ -852,15 +853,13 @@ export default function DatabaseExplorer() {
             border-radius: 12px;
             box-shadow: 0 2px 8px #6366f122;
             margin-bottom: 0;
-            overflow: hidden;
+            /* display: block;  REMOVE this line */
             font-size: 13px;
-            display: block; /* Make table block for sticky header */
+            /* display: block;  REMOVE this line */
           }
           .bootstrap-table thead {
-            display: block; /* Sticky header */
-            width: 100%;
-            /* position: sticky; */ /* REMOVE or comment out */
-            /* top: 0; */           /* REMOVE or comment out */
+            /* display: block;  REMOVE this line */
+            /* width: 100%;     REMOVE this line */
           }
           .bootstrap-table th {
             /* position: sticky; */ /* REMOVE or comment out */
@@ -934,46 +933,77 @@ export default function DatabaseExplorer() {
               <button
                 title="Download as CSV"
                 style={{
-                  background: 'none',
+                  background: 'linear-gradient(to right, #6366f1, #818cf8)',
                   border: 'none',
-                  cursor: 'pointer',
+                  cursor: isDownloadingCSV ? 'wait' : 'pointer',
                   padding: 0,
                   margin: 0,
                   fontSize: 22,
-                  color: '#6366f1',
+                  color: '#fff',
+                  borderRadius: 6,
+                  boxShadow: '0 2px 8px #6366f133',
+                  minWidth: '44px',
+                  minHeight: '44px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  opacity: isDownloadingCSV ? 0.7 : 1,
+                  pointerEvents: isDownloadingCSV ? 'none' : 'auto',
                 }}
+                disabled={isDownloadingCSV}
                 onClick={async () => {
-                  // Only download visible columns
-                  const visibleCols = columns.filter((col) => columnVisibility[col]);
-                  // Fetch all documents for the current collection
-                  let allDocs = [];
+                  setIsDownloadingCSV(true);
                   try {
-                    const params = new URLSearchParams({
-                      connectionString: encodeURIComponent(connectionString),
-                      dbName: encodeURIComponent(selectedDb),
-                      collectionName: encodeURIComponent(selectedCollection),
-                    });
-                    const res = await fetch(`${API_URL}/api/documents-all?${params.toString()}`, {
-                      method: 'GET',
-                      credentials: 'include',
-                    });
-                    if (res.ok) {
-                      const data = await res.json();
-                      allDocs = Array.isArray(data.documents) ? data.documents : [];
+                    const visibleCols = columns.filter((col) => columnVisibility[col]);
+                    let allDocs = [];
+                    try {
+                      const params = new URLSearchParams({
+                        connectionString: encodeURIComponent(connectionString),
+                        dbName: encodeURIComponent(selectedDb),
+                        collectionName: encodeURIComponent(selectedCollection),
+                      });
+                      const res = await fetch(`${API_URL}/api/documents-all?${params.toString()}`, {
+                        method: 'GET',
+                        credentials: 'include',
+                      });
+                      if (res.ok) {
+                        const data = await res.json();
+                        allDocs = Array.isArray(data.documents) ? data.documents : [];
+                      }
+                    } catch (e) {
+                      allDocs = searchTerm && searchField ? filteredDocuments : documents;
                     }
-                  } catch (e) {
-                    // fallback to current page if fetch fails
-                    allDocs = searchTerm && searchField ? filteredDocuments : documents;
+                    const dataToDownload = allDocs.map((doc) => {
+                      const filtered = {};
+                      visibleCols.forEach((col) => (filtered[col] = doc[col]));
+                      return filtered;
+                    });
+                    // Simulate a short delay for UX (optional)
+                    await new Promise((res) => setTimeout(res, 400));
+                    downloadCSV(dataToDownload, visibleCols, `${selectedCollection || 'data'}.csv`);
+                  } finally {
+                    setIsDownloadingCSV(false);
                   }
-                  const dataToDownload = allDocs.map((doc) => {
-                    const filtered = {};
-                    visibleCols.forEach((col) => (filtered[col] = doc[col]));
-                    return filtered;
-                  });
-                  downloadCSV(dataToDownload, visibleCols, `${selectedCollection || 'data'}.csv`);
                 }}
               >
-                <span role="img" aria-label="Download CSV">⬇️</span>
+                {isDownloadingCSV ? (
+                  <>
+                    <span
+                      className="dot-anim"
+                      style={{
+                        marginRight: 8,
+                        fontSize: 20,
+                        display: 'inline-block',
+                      }}
+                    >
+                      ⏬
+                    </span>
+                    <span style={{ fontSize: 15, fontWeight: 600 }}>Downloading...</span>
+                  </>
+                ) : (
+                  <span role="img" aria-label="Download CSV" style={{ fontSize: 22 }}>⬇️</span>
+                )}
               </button>
               <button
                 title="Mail"
