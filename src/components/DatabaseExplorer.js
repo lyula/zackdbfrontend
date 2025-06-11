@@ -67,16 +67,6 @@ function getPaginatedDatabases(databases, dbPage, dbsPerPage) {
   return paginatedDbs;
 }
 
-// 1. Update recordsPerPage logic:
-const recordsPerPage =
-  screenCategory === 'xxlarge'
-    ? 39
-    : isXLargeScreen
-    ? 40
-    : isLargeScreen || screenCategory === 'normal'
-    ? 6
-    : 10;
-
 export default function DatabaseExplorer() {
   const { state } = useLocation();
   const { connectionString, databases: initialDatabases, user } = state || {};
@@ -103,6 +93,15 @@ export default function DatabaseExplorer() {
   const isMobile = screenCategory === 'mobile';
   const isLargeScreen = screenCategory === 'large';
   const isXLargeScreen = screenCategory === 'xlarge';
+
+  const recordsPerPage =
+    screenCategory === 'xxlarge'
+      ? 39
+      : isXLargeScreen
+      ? 40
+      : isLargeScreen || screenCategory === 'normal'
+      ? 6
+      : 10;
 
   const dbsPerPage = isMobile ? 3 : 5;
   const colsPerPage = isMobile ? 3 : 3;
