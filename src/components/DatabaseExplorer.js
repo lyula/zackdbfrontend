@@ -1329,6 +1329,10 @@ export default function DatabaseExplorer() {
             handleFetchDocForEdit={handleFetchDocForEdit}
             handleUpdateDocument={handleUpdateDocument}
             handleDeleteDocument={handleDeleteDocument}
+            // --- ADD THESE THREE LINES ---
+            connectionString={connectionString}
+            dbName={selectedDb}
+            collectionName={selectedCollection}
           />
         )}
       </div>

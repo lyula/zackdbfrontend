@@ -34,6 +34,11 @@ function LoadingButton() {
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
+// Helper to validate MongoDB connection string
+function isValidMongoConnectionString(str) {
+  return typeof str === 'string' && (str.startsWith('mongodb://') || str.startsWith('mongodb+srv://'));
+}
+
 export default function CollectionEditModal({
   show,
   onClose,
@@ -47,16 +52,23 @@ export default function CollectionEditModal({
   deleteDocId,
   setDeleteDocId,
   setRefreshing,
-  connectionString, // <-- add these
+  connectionString,
   dbName,
   collectionName,
   // ...other props
 }) {
   const [loading, setLoading] = useState(false);
 
+  // Persist connection info in local state when modal opens
+  const [localConn, setLocalConn] = useState({ connectionString: '', dbName: '', collectionName: '' });
+
   React.useEffect(() => {
+    // Only set when modal opens and all values are present
+    if (show && connectionString && dbName && collectionName) {
+      setLocalConn({ connectionString, dbName, collectionName });
+    }
     setLoading(false);
-  }, [modalOperation, show]);
+  }, [show, connectionString, dbName, collectionName, modalOperation]);
 
   function validateForm(doc) {
     for (const col of columns) {
@@ -68,6 +80,23 @@ export default function CollectionEditModal({
           return false;
         }
       }
+    }
+    return true;
+  }
+
+  // Defensive check before any API call
+  function checkConnInfo() {
+    if (
+      !localConn.connectionString ||
+      !localConn.dbName ||
+      !localConn.collectionName
+    ) {
+      Swal.fire('Error', 'Missing database connection information.', 'error');
+      return false;
+    }
+    if (!isValidMongoConnectionString(localConn.connectionString)) {
+      Swal.fire('Invalid Connection String', 'Expected connection string to start with "mongodb://" or "mongodb+srv://"', 'error');
+      return false;
     }
     return true;
   }
@@ -104,13 +133,14 @@ export default function CollectionEditModal({
         {modalOperation === 'create' && (
           <form onSubmit={async e => {
             e.preventDefault();
+            if (!checkConnInfo()) return;
             if (!validateForm(editDoc)) return;
             try {
-              await handleAddDocument(connectionString, dbName, collectionName, editDoc);
+              await handleAddDocument(localConn.connectionString, localConn.dbName, localConn.collectionName, editDoc);
               if (setRefreshing) setRefreshing(true);
-              onClose(); // Close modal on success
+              onClose();
             } catch (err) {
-              onClose(); // Close modal on error
+              onClose();
               Swal.fire('Error', err.message || 'Failed to create document', 'error');
             }
           }}>
@@ -146,9 +176,10 @@ export default function CollectionEditModal({
               <form
                 onSubmit={async e => {
                   e.preventDefault();
+                  if (!checkConnInfo()) return;
                   setLoading(true);
                   try {
-                    const fetchedDoc = await handleFetchDocForEdit(connectionString, dbName, collectionName, editDocId);
+                    const fetchedDoc = await handleFetchDocForEdit(localConn.connectionString, localConn.dbName, localConn.collectionName, editDocId);
                     if (fetchedDoc) {
                       setEditDoc(fetchedDoc);
                     }
@@ -192,9 +223,10 @@ export default function CollectionEditModal({
               // Step 2: Show populated fields for editing
               <form onSubmit={async e => {
                 e.preventDefault();
+                if (!checkConnInfo()) return;
                 if (!validateForm(editDoc)) return;
                 try {
-                  await handleUpdateDocument(connectionString, dbName, collectionName, editDocId, editDoc);
+                  await handleUpdateDocument(localConn.connectionString, localConn.dbName, localConn.collectionName, editDocId, editDoc);
                   if (setRefreshing) setRefreshing(true);
                   onClose(); // Close modal on success
                 } catch (err) {
@@ -236,9 +268,10 @@ export default function CollectionEditModal({
             {!deleteDocId || !editDoc || Object.keys(editDoc).length === 0 ? (
               <form onSubmit={async e => {
                 e.preventDefault();
+                if (!checkConnInfo()) return;
                 try {
                   // Pass all required params!
-                  const fetchedDoc = await handleFetchDocForEdit(connectionString, dbName, collectionName, deleteDocId);
+                  const fetchedDoc = await handleFetchDocForEdit(localConn.connectionString, localConn.dbName, localConn.collectionName, deleteDocId);
                   if (fetchedDoc) {
                     setEditDoc(fetchedDoc);
                   }
@@ -271,9 +304,10 @@ export default function CollectionEditModal({
             ) : (
               <form onSubmit={async e => {
                 e.preventDefault();
+                if (!checkConnInfo()) return;
                 try {
                   // Pass all required params!
-                  await handleDeleteDocument(connectionString, dbName, collectionName, deleteDocId);
+                  await handleDeleteDocument(localConn.connectionString, localConn.dbName, localConn.collectionName, deleteDocId);
                   if (setRefreshing) setRefreshing(true);
                   onClose(); // Close modal on success
                 } catch (err) {
