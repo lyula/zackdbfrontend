@@ -771,6 +771,18 @@ export default function DatabaseExplorer() {
     fetchDocuments(selectedDb, selectedCollection, 1, true, 'manual');
   };
 
+  const openEditModal = () => {
+    if (!connectionString || !selectedDb || !selectedCollection) {
+      Swal.fire('Error', 'Please select a database and collection first.', 'error');
+      return;
+    }
+    setIsEditModalOpen(true);
+    setModalOperation('create');
+    setEditDocId('');
+    setEditDoc({});
+    setDeleteDocId('');
+  };
+
   return (
     <>
       <style>
@@ -1084,13 +1096,7 @@ export default function DatabaseExplorer() {
                   </h4>
                   {/* --- Add this block for the Edit button --- */}
                   <button
-                    onClick={() => {
-                      setIsEditModalOpen(true);
-                      setModalOperation('create'); // or 'update'/'delete' as needed
-                      setEditDocId('');
-                      setEditDoc({});
-                      setDeleteDocId('');
-                    }}
+                    onClick={openEditModal}
                     style={{
                       ...buttonStyle,
                       padding: '7px 14px',
@@ -1365,7 +1371,6 @@ export default function DatabaseExplorer() {
             show={isEditModalOpen}
             onClose={() => setIsEditModalOpen(false)}
             columns={columns}
-            excludedFields={excludedFields}
             modalOperation={modalOperation}
             setModalOperation={setModalOperation}
             editDocId={editDocId}
@@ -1374,10 +1379,10 @@ export default function DatabaseExplorer() {
             setEditDoc={setEditDoc}
             deleteDocId={deleteDocId}
             setDeleteDocId={setDeleteDocId}
-            handleAddDocument={handleAddDocument}
-            handleFetchDocForEdit={handleFetchDocForEdit}
-            handleUpdateDocument={handleUpdateDocument}
-            handleDeleteDocument={handleDeleteDocument}
+            setRefreshing={setIsLoadingDocuments}
+            connectionString={connectionString}
+            dbName={selectedDb}
+            collectionName={selectedCollection}
             handleRefreshAfterModal={handleRefreshAfterModal}
           />
         )}

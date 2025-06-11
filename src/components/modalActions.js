@@ -65,9 +65,16 @@ export default function CollectionEditModal({
   connectionString,
   dbName,
   collectionName,
-  handleRefreshAfterModal, // <-- Add this prop
+  handleRefreshAfterModal,
   // ...other props
 }) {
+  // Add this for debugging:
+  React.useEffect(() => {
+    if (show) {
+      console.log('Modal connection info:', { connectionString, dbName, collectionName });
+    }
+  }, [show, connectionString, dbName, collectionName]);
+
   const [loading, setLoading] = useState(false);
 
   // Persist connection info in local state when modal opens
