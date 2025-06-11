@@ -8,7 +8,6 @@ function isValidEmail(email) {
 }
 
 function LoadingButton() {
-  // Simple animated dots
   const [dots, setDots] = useState('');
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -17,21 +16,17 @@ function LoadingButton() {
     return () => clearInterval(interval);
   }, []);
   return (
-    <button
-      type="button"
-      disabled
-      style={{
-        background: '#6366f1',
-        color: '#fff',
-        border: 'none',
-        borderRadius: 6,
-        padding: '8px 18px',
-        fontWeight: 700,
-        minWidth: 110,
-        opacity: 0.8,
-        cursor: 'not-allowed'
-      }}
-    >
+    <button type="button" disabled style={{
+      background: '#6366f1',
+      color: '#fff',
+      border: 'none',
+      borderRadius: 6,
+      padding: '8px 18px',
+      fontWeight: 700,
+      minWidth: 110,
+      opacity: 0.8,
+      cursor: 'not-allowed'
+    }}>
       Loading{dots}
     </button>
   );
@@ -57,7 +52,9 @@ export default function CollectionEditModal({
 }) {
   const [loading, setLoading] = useState(false);
 
-  if (!show) return null;
+  React.useEffect(() => {
+    setLoading(false);
+  }, [modalOperation, show]);
 
   function validateForm(doc) {
     for (const col of columns) {
@@ -72,11 +69,6 @@ export default function CollectionEditModal({
     }
     return true;
   }
-
-  // Reset loading state when modalOperation changes
-  React.useEffect(() => {
-    setLoading(false);
-  }, [modalOperation, show]);
 
   return (
     <div style={{
