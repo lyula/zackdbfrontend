@@ -65,6 +65,7 @@ export default function CollectionEditModal({
   connectionString,
   dbName,
   collectionName,
+  handleRefreshAfterModal, // <-- Add this prop
   // ...other props
 }) {
   const [loading, setLoading] = useState(false);
@@ -145,11 +146,9 @@ export default function CollectionEditModal({
             e.preventDefault();
             if (!checkConnInfo()) return;
             if (!validateForm(editDoc)) return;
-            // Trigger refresh and close modal immediately
-            if (setRefreshing) setRefreshing(true);
             onClose();
-            setEditDoc({}); // Optionally reset form state
-            // Fire and forget the API call
+            if (handleRefreshAfterModal) handleRefreshAfterModal();
+            setEditDoc({});
             handleAddDocument(localConn.connectionString, localConn.dbName, localConn.collectionName, editDoc)
               .catch(err => {
                 Swal.fire('Error', err.message || 'Failed to create document', 'error');
@@ -236,20 +235,18 @@ export default function CollectionEditModal({
                 e.preventDefault();
                 if (!checkConnInfo()) return;
                 if (!validateForm(editDoc)) return;
-                // Prevent update if no changes
                 if (!isDocChanged(editDoc._original, editDoc)) {
                   Swal.fire('No Change Detected', 'You have not made any changes to the document.', 'error');
                   return;
                 }
                 setLoading(true);
                 try {
-                  // Remove _id from payload
                   const { _id, _original, ...docToUpdate } = editDoc;
                   await handleUpdateDocument(localConn.connectionString, localConn.dbName, localConn.collectionName, editDocId, docToUpdate);
-                  if (setRefreshing) setRefreshing(true);
-                  onClose(); // Close modal on success
+                  if (handleRefreshAfterModal) handleRefreshAfterModal(); // <-- ADD THIS
+                  onClose();
                 } catch (err) {
-                  onClose(); // Close modal on error
+                  onClose();
                   Swal.fire('Error', err.message || 'Failed to update document', 'error');
                 } finally {
                   setLoading(false);
@@ -333,10 +330,10 @@ export default function CollectionEditModal({
                 try {
                   // Pass all required params!
                   await handleDeleteDocument(localConn.connectionString, localConn.dbName, localConn.collectionName, deleteDocId);
-                  if (setRefreshing) setRefreshing(true);
-                  onClose(); // Close modal on success
+                  if (handleRefreshAfterModal) handleRefreshAfterModal(); // <-- ADD THIS
+                  onClose();
                 } catch (err) {
-                  onClose(); // Close modal on error
+                  onClose();
                   Swal.fire('Error', err.message || 'Failed to delete document', 'error');
                 }
               }}>

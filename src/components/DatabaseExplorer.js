@@ -735,14 +735,9 @@ export default function DatabaseExplorer() {
   };
 
   // Refresh documents after modal closes
-  const [shouldRefreshAfterModal, setShouldRefreshAfterModal] = useState(false);
-
-  useEffect(() => {
-    if (!isEditModalOpen && shouldRefreshAfterModal) {
-      fetchDocuments(selectedDb, selectedCollection, 1, true, 'manual');
-      setShouldRefreshAfterModal(false);
-    }
-  }, [isEditModalOpen, shouldRefreshAfterModal]);
+  const handleRefreshAfterModal = () => {
+    fetchDocuments(selectedDb, selectedCollection, 1, true, 'manual');
+  };
 
   return (
     <>
@@ -1351,6 +1346,7 @@ export default function DatabaseExplorer() {
             handleFetchDocForEdit={handleFetchDocForEdit}
             handleUpdateDocument={handleUpdateDocument}
             handleDeleteDocument={handleDeleteDocument}
+            handleRefreshAfterModal={handleRefreshAfterModal}
             // --- ADD THESE THREE LINES ---
             connectionString={connectionString}
             dbName={selectedDb}
