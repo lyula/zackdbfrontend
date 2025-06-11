@@ -848,6 +848,9 @@ export default function DatabaseExplorer() {
     setDeleteDocId('');
   };
 
+  // Add this line before the return statement:
+  const showMailIcon = hasEmailColumn(documents, columns);
+
   return (
     <>
       <style>
