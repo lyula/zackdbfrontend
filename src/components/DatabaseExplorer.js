@@ -651,18 +651,68 @@ export default function DatabaseExplorer() {
 
   // Fetch document for edit
   const handleFetchDocForEdit = async (id) => {
-    // TODO: Fetch doc by id and setEditDoc
-    // Example:
-    // const res = await fetch(`${API_URL}/api/document/${id}`);
-    // const doc = await res.json();
-    // setEditDoc(doc);
+    if (!selectedDb || !selectedCollection || !id) {
+      Swal.fire('Error', 'Missing database, collection, or document ID.', 'error');
+      return null;
+    }
+    try {
+      const params = new URLSearchParams({
+        connectionString: encodeURIComponent(connectionString),
+        dbName: encodeURIComponent(selectedDb),
+        collectionName: encodeURIComponent(selectedCollection),
+        id: encodeURIComponent(id)
+      });
+      const res = await fetch(`${API_URL}/api/document?${params.toString()}`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`HTTP error! status: ${res.status} - ${text}`);
+      }
+      const doc = await res.json();
+      if (!doc || typeof doc !== 'object') {
+        throw new Error('Document not found');
+      }
+      setEditDoc(doc);
+      return doc;
+    } catch (err) {
+      Swal.fire('Error', err.message || 'Failed to fetch document', 'error');
+      setEditDoc({});
+      return null;
+    }
   };
 
   // Update document handler
   const handleUpdateDocument = async (id, doc) => {
-    // TODO: Implement your update logic here (API call)
-    setIsEditModalOpen(false);
-    fetchDocuments(selectedDb, selectedCollection, currentPage, true, 'manual');
+    if (!selectedDb || !selectedCollection || !id) {
+      Swal.fire('Error', 'Missing database, collection, or document ID.', 'error');
+      return;
+    }
+    try {
+      const res = await fetch(`${API_URL}/api/document`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          connectionString,
+          dbName: selectedDb,
+          collectionName: selectedCollection,
+          id,
+          update: doc
+        })
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`HTTP error! status: ${res.status} - ${text}`);
+      }
+      Swal.fire('Success', 'Document updated successfully!', 'success');
+      setIsEditModalOpen(false);
+      // Refresh documents
+      fetchDocuments(selectedDb, selectedCollection, currentPage, true, 'manual');
+    } catch (err) {
+      Swal.fire('Error', err.message || 'Failed to update document', 'error');
+    }
   };
 
   // Delete document handler

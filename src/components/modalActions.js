@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2'; // <-- Import SweetAlert
 
-const excludedFields = ['password', 'hash', 'createdAt', 'updatedAt', '__v'];
+const excludedFields = ['_id', 'password', 'hash', 'createdAt', 'updatedAt', '__v'];
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -139,18 +139,23 @@ export default function CollectionEditModal({
           <>
             {/* Step 1: Ask for ID and fetch data on confirm */}
             {(!editDocId || !editDoc || Object.keys(editDoc).length === 0) ? (
-              <form onSubmit={async e => {
-                e.preventDefault();
-                setLoading(true);
-                try {
-                  await handleFetchDocForEdit(editDocId);
-                  // handleFetchDocForEdit should set editDoc with the fetched data
-                } catch (err) {
-                  Swal.fire('Error', err.message || 'Failed to fetch document', 'error');
-                } finally {
-                  setLoading(false);
-                }
-              }}>
+              <form
+                onSubmit={async e => {
+                  e.preventDefault();
+                  setLoading(true);
+                  try {
+                    // Await the fetch and ensure it sets editDoc
+                    const fetchedDoc = await handleFetchDocForEdit(editDocId);
+                    if (fetchedDoc) {
+                      setEditDoc(fetchedDoc); // Ensure this updates the state
+                    }
+                  } catch (err) {
+                    Swal.fire('Error', err.message || 'Failed to fetch document', 'error');
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              >
                 <div style={{ marginBottom: 14 }}>
                   <label style={{ fontWeight: 600 }}>Document _id:</label>
                   <input
