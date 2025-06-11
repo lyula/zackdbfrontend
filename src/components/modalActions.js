@@ -44,11 +44,11 @@ export default function CollectionEditModal({
   setEditDoc,
   deleteDocId,
   setDeleteDocId,
-  handleAddDocument,
-  handleFetchDocForEdit,
-  handleUpdateDocument,
-  handleDeleteDocument,
-  setRefreshing
+  setRefreshing,
+  connectionString, // <-- add these
+  dbName,
+  collectionName,
+  // ...other props
 }) {
   const [loading, setLoading] = useState(false);
 
@@ -104,9 +104,11 @@ export default function CollectionEditModal({
             e.preventDefault();
             if (!validateForm(editDoc)) return;
             try {
-              await handleAddDocument(editDoc);
+              await handleAddDocument(connectionString, dbName, collectionName, editDoc);
               if (setRefreshing) setRefreshing(true);
+              onClose(); // Close modal on success
             } catch (err) {
+              onClose(); // Close modal on error
               Swal.fire('Error', err.message || 'Failed to create document', 'error');
             }
           }}>
@@ -144,12 +146,12 @@ export default function CollectionEditModal({
                   e.preventDefault();
                   setLoading(true);
                   try {
-                    // Await the fetch and ensure it sets editDoc
-                    const fetchedDoc = await handleFetchDocForEdit(editDocId);
+                    const fetchedDoc = await handleFetchDocForEdit(connectionString, dbName, collectionName, editDocId);
                     if (fetchedDoc) {
-                      setEditDoc(fetchedDoc); // Ensure this updates the state
+                      setEditDoc(fetchedDoc);
                     }
                   } catch (err) {
+                    onClose();
                     Swal.fire('Error', err.message || 'Failed to fetch document', 'error');
                   } finally {
                     setLoading(false);
@@ -190,9 +192,11 @@ export default function CollectionEditModal({
                 e.preventDefault();
                 if (!validateForm(editDoc)) return;
                 try {
-                  await handleUpdateDocument(editDocId, editDoc);
+                  await handleUpdateDocument(connectionString, dbName, collectionName, editDocId, editDoc);
                   if (setRefreshing) setRefreshing(true);
+                  onClose(); // Close modal on success
                 } catch (err) {
+                  onClose(); // Close modal on error
                   Swal.fire('Error', err.message || 'Failed to update document', 'error');
                 }
               }}>
@@ -233,6 +237,7 @@ export default function CollectionEditModal({
                 try {
                   await handleFetchDocForEdit(deleteDocId);
                 } catch (err) {
+                  onClose();
                   Swal.fire('Error', err.message || 'Failed to fetch document', 'error');
                 }
               }}>
@@ -263,7 +268,9 @@ export default function CollectionEditModal({
                 try {
                   await handleDeleteDocument(deleteDocId);
                   if (setRefreshing) setRefreshing(true);
+                  onClose(); // Close modal on success
                 } catch (err) {
+                  onClose(); // Close modal on error
                   Swal.fire('Error', err.message || 'Failed to delete document', 'error');
                 }
               }}>
@@ -296,4 +303,63 @@ export default function CollectionEditModal({
       </div>
     </div>
   );
+}
+
+async function handleAddDocument(connectionString, dbName, collectionName, doc) {
+  const res = await fetch('/api/documents', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({
+      connectionString, dbName, collectionName, ...doc
+    })
+  });
+  if (!res.ok) throw new Error((await res.json()).error || 'Failed to create document');
+  return await res.json();
+}
+
+async function handleFetchDocForEdit(connectionString, dbName, collectionName, id) {
+  const params = new URLSearchParams({
+    connectionString,
+    dbName,
+    collectionName,
+    id
+  });
+  const res = await fetch(`/api/document?${params.toString()}`, {
+    credentials: 'include'
+  });
+  if (!res.ok) throw new Error((await res.json()).error || 'Failed to fetch document');
+  return await res.json();
+}
+
+async function handleUpdateDocument(connectionString, dbName, collectionName, id, doc) {
+  const params = new URLSearchParams({
+    connectionString,
+    dbName,
+    collectionName,
+    id
+  });
+  const res = await fetch(`/api/document?${params.toString()}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(doc)
+  });
+  if (!res.ok) throw new Error((await res.json()).error || 'Failed to update document');
+  return await res.json();
+}
+
+async function handleDeleteDocument(connectionString, dbName, collectionName, id) {
+  const params = new URLSearchParams({
+    connectionString,
+    dbName,
+    collectionName,
+    id
+  });
+  const res = await fetch(`/api/document?${params.toString()}`, {
+    method: 'DELETE',
+    credentials: 'include'
+  });
+  if (!res.ok) throw new Error((await res.json()).error || 'Failed to delete document');
+  return await res.json();
 }
