@@ -643,10 +643,25 @@ export default function DatabaseExplorer() {
 
   // Add document handler
   const handleAddDocument = async (doc) => {
-    // TODO: Implement your add logic here (API call)
-    setIsEditModalOpen(false);
-    // Optionally refresh data
-    fetchDocuments(selectedDb, selectedCollection, currentPage, true, 'manual');
+    try {
+      // Call your API to add the document
+      await fetch(`${API_URL}/api/document`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          connectionString,
+          dbName: selectedDb,
+          collectionName: selectedCollection,
+          doc
+        })
+      });
+      setIsEditModalOpen(false); // Close modal on success
+      // Optionally reset modal state here
+      fetchDocuments(selectedDb, selectedCollection, 1, true, 'manual'); // Refresh to first page
+    } catch (err) {
+      Swal.fire('Error', err.message || 'Failed to add document', 'error');
+    }
   };
 
   // Fetch document for edit
