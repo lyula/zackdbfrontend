@@ -39,6 +39,16 @@ function isValidMongoConnectionString(str) {
   return typeof str === 'string' && (str.startsWith('mongodb://') || str.startsWith('mongodb+srv://'));
 }
 
+// Helper to deep compare two objects (shallow for this use-case)
+function isDocChanged(original, edited) {
+  if (!original || !edited) return false;
+  const keys = Object.keys(edited).filter(k => k !== '_id');
+  for (const key of keys) {
+    if (original[key] !== edited[key]) return true;
+  }
+  return false;
+}
+
 export default function CollectionEditModal({
   show,
   onClose,
@@ -135,14 +145,15 @@ export default function CollectionEditModal({
             e.preventDefault();
             if (!checkConnInfo()) return;
             if (!validateForm(editDoc)) return;
-            try {
-              await handleAddDocument(localConn.connectionString, localConn.dbName, localConn.collectionName, editDoc);
-              if (setRefreshing) setRefreshing(true);
-              onClose();
-            } catch (err) {
-              onClose();
-              Swal.fire('Error', err.message || 'Failed to create document', 'error');
-            }
+            // Trigger refresh and close modal immediately
+            if (setRefreshing) setRefreshing(true);
+            onClose();
+            setEditDoc({}); // Optionally reset form state
+            // Fire and forget the API call
+            handleAddDocument(localConn.connectionString, localConn.dbName, localConn.collectionName, editDoc)
+              .catch(err => {
+                Swal.fire('Error', err.message || 'Failed to create document', 'error');
+              });
           }}>
             {columns.filter(col => !excludedFields.includes(col)).map(col => (
               <div key={col} style={{ marginBottom: 14 }}>
@@ -225,13 +236,23 @@ export default function CollectionEditModal({
                 e.preventDefault();
                 if (!checkConnInfo()) return;
                 if (!validateForm(editDoc)) return;
+                // Prevent update if no changes
+                if (!isDocChanged(editDoc._original, editDoc)) {
+                  Swal.fire('No Change Detected', 'You have not made any changes to the document.', 'error');
+                  return;
+                }
+                setLoading(true);
                 try {
-                  await handleUpdateDocument(localConn.connectionString, localConn.dbName, localConn.collectionName, editDocId, editDoc);
+                  // Remove _id from payload
+                  const { _id, _original, ...docToUpdate } = editDoc;
+                  await handleUpdateDocument(localConn.connectionString, localConn.dbName, localConn.collectionName, editDocId, docToUpdate);
                   if (setRefreshing) setRefreshing(true);
                   onClose(); // Close modal on success
                 } catch (err) {
                   onClose(); // Close modal on error
                   Swal.fire('Error', err.message || 'Failed to update document', 'error');
+                } finally {
+                  setLoading(false);
                 }
               }}>
                 {columns.filter(
@@ -253,9 +274,13 @@ export default function CollectionEditModal({
                   <button type="button" onClick={onClose} style={{
                     background: '#e5e7eb', color: '#23272f', border: 'none', borderRadius: 6, padding: '8px 18px'
                   }}>Cancel</button>
-                  <button type="submit" style={{
-                    background: '#22c55e', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 700
-                  }}>Update</button>
+                  {loading ? (
+                    <LoadingButton />
+                  ) : (
+                    <button type="submit" style={{
+                      background: '#22c55e', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 700
+                    }}>Update</button>
+                  )}
                 </div>
               </form>
             )}
@@ -362,6 +387,7 @@ async function handleAddDocument(connectionString, dbName, collectionName, doc) 
   return await res.json();
 }
 
+// When fetching doc for edit, store original for comparison
 async function handleFetchDocForEdit(connectionString, dbName, collectionName, id) {
   const params = new URLSearchParams({
     connectionString,
@@ -373,7 +399,9 @@ async function handleFetchDocForEdit(connectionString, dbName, collectionName, i
     credentials: 'include'
   });
   if (!res.ok) throw new Error((await res.json()).error || 'Failed to fetch document');
-  return await res.json();
+  const doc = await res.json();
+  // Store a copy for change detection
+  return { ...doc, _original: { ...doc } };
 }
 
 async function handleUpdateDocument(connectionString, dbName, collectionName, id, doc) {
