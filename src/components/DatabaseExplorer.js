@@ -67,6 +67,16 @@ function getPaginatedDatabases(databases, dbPage, dbsPerPage) {
   return paginatedDbs;
 }
 
+// 1. Update recordsPerPage logic:
+const recordsPerPage =
+  screenCategory === 'xxlarge'
+    ? 39
+    : isXLargeScreen
+    ? 40
+    : isLargeScreen || screenCategory === 'normal'
+    ? 6
+    : 10;
+
 export default function DatabaseExplorer() {
   const { state } = useLocation();
   const { connectionString, databases: initialDatabases, user } = state || {};
@@ -93,15 +103,6 @@ export default function DatabaseExplorer() {
   const isMobile = screenCategory === 'mobile';
   const isLargeScreen = screenCategory === 'large';
   const isXLargeScreen = screenCategory === 'xlarge';
-
-  const recordsPerPage =
-    screenCategory === 'xxlarge'
-      ? 39
-      : isXLargeScreen
-      ? 40
-      : isLargeScreen
-      ? 15
-      : 10;
 
   const dbsPerPage = isMobile ? 3 : 5;
   const colsPerPage = isMobile ? 3 : 3;
@@ -545,6 +546,36 @@ export default function DatabaseExplorer() {
     minWidth: '130px',
   };
 
+  function downloadCSV(data, columns, filename = 'data.csv') {
+    if (!data.length) return;
+    const csvRows = [];
+    // Header
+    csvRows.push(columns.join(','));
+    // Rows
+    for (const row of data) {
+      csvRows.push(
+        columns
+          .map((col) => {
+            let val = row[col];
+            if (val === undefined || val === null) return '';
+            val = String(val).replace(/"/g, '""');
+            return `"${val}"`;
+          })
+          .join(',')
+      );
+    }
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   const handleFetchDatabases = async (connectionString) => {
     setError('');
     try {
@@ -816,21 +847,12 @@ export default function DatabaseExplorer() {
           .bootstrap-table thead {
             display: block; /* Sticky header */
             width: 100%;
-          }
-          .bootstrap-table tbody {
-            display: block;
-            width: 100%;
-            max-height: 60vh; /* Adjust as needed */
-            overflow-y: auto;
-          }
-          .bootstrap-table th, .bootstrap-table td {
-            border-bottom: 1px solid #e0e7ff;
-            min-width: 120px;
-            box-sizing: border-box;
+            /* position: sticky; */ /* REMOVE or comment out */
+            /* top: 0; */           /* REMOVE or comment out */
           }
           .bootstrap-table th {
-            position: sticky;
-            top: 0;
+            /* position: sticky; */ /* REMOVE or comment out */
+            /* top: 0; */           /* REMOVE or comment out */
             z-index: 2;
             background: linear-gradient(90deg, #6366f1 0%, #818cf8 100%);
           }
@@ -888,6 +910,52 @@ export default function DatabaseExplorer() {
               </button>
             )}
           </div>
+          {/* Insert new icons here for PC/large screens */}
+          {(isLargeScreen || screenCategory === 'normal') && columns.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginRight: 12 }}>
+              <button
+                title="Download as CSV"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  margin: 0,
+                  fontSize: 22,
+                  color: '#6366f1',
+                }}
+                onClick={() => {
+                  // Only download visible columns
+                  const visibleCols = columns.filter((col) => columnVisibility[col]);
+                  const dataToDownload = (searchTerm && searchField ? filteredDocuments : documents).map(
+                    (doc) => {
+                      const filtered = {};
+                      visibleCols.forEach((col) => (filtered[col] = doc[col]));
+                      return filtered;
+                    }
+                  );
+                  downloadCSV(dataToDownload, visibleCols, `${selectedCollection || 'data'}.csv`);
+                }}
+              >
+                <span role="img" aria-label="Download CSV">⬇️</span>
+              </button>
+              <button
+                title="Mail"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  margin: 0,
+                  fontSize: 22,
+                  color: '#6366f1',
+                }}
+                // onClick: logic to be implemented later
+              >
+                <span role="img" aria-label="Mail">✉️</span>
+              </button>
+            </div>
+          )}
           <div
             style={{
               display: 'flex',
