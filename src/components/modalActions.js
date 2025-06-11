@@ -380,15 +380,22 @@ export default function CollectionEditModal({
 }
 
 async function handleAddDocument(connectionString, dbName, collectionName, doc) {
+  // Add timestamps before sending to backend
+  const now = new Date().toISOString();
+  const docWithTimestamps = {
+    ...doc,
+    createdAt: now,
+    updatedAt: now
+  };
   const res = await fetch(`${API_URL}/api/documents`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify({
       connectionString,
-      dbName,            // <-- use parameter
-      collectionName,    // <-- use parameter
-      document: doc
+      dbName,
+      collectionName,
+      document: docWithTimestamps
     })
   });
   if (!res.ok) throw new Error((await res.json()).error || 'Failed to create document');
