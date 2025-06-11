@@ -347,15 +347,15 @@ export default function CollectionEditModal({
 }
 
 async function handleAddDocument(connectionString, dbName, collectionName, doc) {
-  const res = await fetch(`${API_URL}/api/document`, { // <-- Fix endpoint
+  const res = await fetch(`${API_URL}/api/documents`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify({
       connectionString,
-      dbName,
-      collectionName,
-      doc // <-- Fix payload key
+      dbName,            // <-- use parameter
+      collectionName,    // <-- use parameter
+      document: doc
     })
   });
   if (!res.ok) throw new Error((await res.json()).error || 'Failed to create document');
