@@ -318,7 +318,10 @@ async function handleAddDocument(connectionString, dbName, collectionName, doc) 
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify({
-      connectionString, dbName, collectionName, ...doc
+      connectionString,
+      dbName,
+      collectionName,
+      document: doc // <-- NEST the document here!
     })
   });
   if (!res.ok) throw new Error((await res.json()).error || 'Failed to create document');
