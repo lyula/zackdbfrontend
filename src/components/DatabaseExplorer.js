@@ -254,6 +254,8 @@ export default function DatabaseExplorer() {
     setRefreshingType(refreshType);
     setError('');
     try {
+      // Always force backend fetch for manual refresh
+      const shouldForceBackend = forceBackend || refreshType === 'manual';
       const params = new URLSearchParams({
         connectionString: encodeURIComponent(connectionString),
         dbName: encodeURIComponent(dbName),
@@ -262,7 +264,7 @@ export default function DatabaseExplorer() {
         limit: recordsPerPage
       });
       const cacheKey = `${dbName}_${collectionName}_${page}_${recordsPerPage}`;
-      if (forceBackend || !documentsCache[cacheKey]) {
+      if (shouldForceBackend || !documentsCache[cacheKey]) {
         const res = await fetch(`${API_URL}/api/documents?${params.toString()}`, {
           method: 'GET',
           credentials: 'include'
@@ -287,7 +289,7 @@ export default function DatabaseExplorer() {
         }));
 
         // Set columns and visibility for new collection
-        if (forceBackend || columns.length === 0) {
+        if (shouldForceBackend || columns.length === 0) {
           const allKeys = new Set();
           docs.forEach(doc => Object.keys(doc).forEach(key => allKeys.add(key)));
           const cols = Array.from(allKeys);
