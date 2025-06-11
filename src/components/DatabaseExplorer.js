@@ -496,9 +496,10 @@ export default function DatabaseExplorer() {
     color: '#23272f',
     padding: isMobile ? '0' : '18px 18px 0 18px',
     fontSize: responsiveFont(14),
-    height: isMobile ? 'calc(100vh - 110px)' : 'auto',
-    overflowY: isMobile ? 'auto' : 'visible',
-    overflowX: 'auto',
+    // Set height to match sidebar (calc(100vh - 110px))
+    height: 'calc(100vh - 110px)',
+    maxHeight: 'calc(100vh - 110px)',
+    overflow: 'hidden', // Prevent outer scroll
   };
   const tableStyle = {
     borderCollapse: 'separate',
@@ -822,6 +823,12 @@ export default function DatabaseExplorer() {
             display: inline-block;
             animation: dot-flash 1s infinite linear;
           }
+          .bootstrap-table th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: linear-gradient(90deg, #6366f1 0%, #818cf8 100%);
+          }
         `}
       </style>
       <div
@@ -1107,11 +1114,11 @@ export default function DatabaseExplorer() {
             <div
               style={{
                 flex: 1,
-                minWidth: 0,
+                width: '100%',
+                maxWidth: '100%',
+                overflow: 'hidden', // Prevent outer scroll
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'flex-start',
-                height: 'calc(100vh - 110px)',
               }}
             >
               <div style={{ position: 'relative', width: '100%' }}>
@@ -1337,10 +1344,10 @@ export default function DatabaseExplorer() {
                     <div
                       style={{
                         flex: 1,
+                        overflowY: 'auto',
                         overflowX: 'auto',
-                        marginBottom: 12,
                         width: '100%',
-                        maxWidth: '100%',
+                        maxHeight: '100%',
                       }}
                     >
                       <table className="bootstrap-table" style={tableStyle}>

@@ -7,7 +7,8 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-function LoadingButton() {
+// Modify LoadingButton to accept custom text
+function LoadingButton({ text = "Loading" }) {
   const [dots, setDots] = useState('');
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -27,7 +28,7 @@ function LoadingButton() {
       opacity: 0.8,
       cursor: 'not-allowed'
     }}>
-      Loading{dots}
+      {text}{dots}
     </button>
   );
 }
@@ -77,6 +78,7 @@ export default function CollectionEditModal({
 
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false); // <-- Add this
+  const [deleting, setDeleting] = useState(false); // <-- Add this state
 
   // Persist connection info in local state when modal opens
   const [localConn, setLocalConn] = useState({ connectionString: '', dbName: '', collectionName: '' });
@@ -353,14 +355,16 @@ export default function CollectionEditModal({
               <form onSubmit={async e => {
                 e.preventDefault();
                 if (!checkConnInfo()) return;
+                setDeleting(true); // <-- Start deleting
                 try {
-                  // Pass all required params!
                   await handleDeleteDocument(localConn.connectionString, localConn.dbName, localConn.collectionName, deleteDocId);
-                  if (handleRefreshAfterModal) handleRefreshAfterModal(); // <-- ADD THIS
+                  if (handleRefreshAfterModal) handleRefreshAfterModal();
                   onClose();
                 } catch (err) {
                   onClose();
                   Swal.fire('Error', err.message || 'Failed to delete document', 'error');
+                } finally {
+                  setDeleting(false); // <-- End deleting
                 }
               }}>
                 {columns
@@ -383,9 +387,13 @@ export default function CollectionEditModal({
                   <button type="button" onClick={onClose} style={{
                     background: '#e5e7eb', color: '#23272f', border: 'none', borderRadius: 6, padding: '8px 18px'
                   }}>Cancel</button>
-                  <button type="submit" style={{
-                    background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 700
-                  }}>Delete</button>
+                  {deleting ? (
+                    <LoadingButton text="Deleting" /> // <-- Show "Deleting..." animation
+                  ) : (
+                    <button type="submit" style={{
+                      background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 700
+                    }}>Delete</button>
+                  )}
                 </div>
               </form>
             )}
