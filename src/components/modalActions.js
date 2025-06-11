@@ -32,6 +32,8 @@ function LoadingButton() {
   );
 }
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 export default function CollectionEditModal({
   show,
   onClose,
@@ -228,14 +230,18 @@ export default function CollectionEditModal({
           </>
         )}
 
-        {/* DELETE (unchanged) */}
+        {/* DELETE (fetch doc for delete) */}
         {modalOperation === 'delete' && (
           <>
             {!deleteDocId || !editDoc || Object.keys(editDoc).length === 0 ? (
               <form onSubmit={async e => {
                 e.preventDefault();
                 try {
-                  await handleFetchDocForEdit(deleteDocId);
+                  // Pass all required params!
+                  const fetchedDoc = await handleFetchDocForEdit(connectionString, dbName, collectionName, deleteDocId);
+                  if (fetchedDoc) {
+                    setEditDoc(fetchedDoc);
+                  }
                 } catch (err) {
                   onClose();
                   Swal.fire('Error', err.message || 'Failed to fetch document', 'error');
@@ -266,7 +272,8 @@ export default function CollectionEditModal({
               <form onSubmit={async e => {
                 e.preventDefault();
                 try {
-                  await handleDeleteDocument(deleteDocId);
+                  // Pass all required params!
+                  await handleDeleteDocument(connectionString, dbName, collectionName, deleteDocId);
                   if (setRefreshing) setRefreshing(true);
                   onClose(); // Close modal on success
                 } catch (err) {
@@ -306,7 +313,7 @@ export default function CollectionEditModal({
 }
 
 async function handleAddDocument(connectionString, dbName, collectionName, doc) {
-  const res = await fetch('/api/documents', {
+  const res = await fetch(`${API_URL}/api/documents`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -325,7 +332,7 @@ async function handleFetchDocForEdit(connectionString, dbName, collectionName, i
     collectionName,
     id
   });
-  const res = await fetch(`/api/document?${params.toString()}`, {
+  const res = await fetch(`${API_URL}/api/document?${params.toString()}`, {
     credentials: 'include'
   });
   if (!res.ok) throw new Error((await res.json()).error || 'Failed to fetch document');
@@ -339,7 +346,7 @@ async function handleUpdateDocument(connectionString, dbName, collectionName, id
     collectionName,
     id
   });
-  const res = await fetch(`/api/document?${params.toString()}`, {
+  const res = await fetch(`${API_URL}/api/document?${params.toString()}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -356,7 +363,7 @@ async function handleDeleteDocument(connectionString, dbName, collectionName, id
     collectionName,
     id
   });
-  const res = await fetch(`/api/document?${params.toString()}`, {
+  const res = await fetch(`${API_URL}/api/document?${params.toString()}`, {
     method: 'DELETE',
     credentials: 'include'
   });
