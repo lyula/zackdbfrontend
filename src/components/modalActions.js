@@ -8,7 +8,7 @@ function isValidEmail(email) {
 }
 
 // Modify LoadingButton to accept custom text
-function LoadingButton({ text = "Loading" }) {
+function LoadingButton({ text = "Loading", color = "#6366f1" }) {
   const [dots, setDots] = useState('');
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -17,18 +17,23 @@ function LoadingButton({ text = "Loading" }) {
     return () => clearInterval(interval);
   }, []);
   return (
-    <button type="button" disabled style={{
-      background: '#6366f1',
-      color: '#fff',
-      border: 'none',
-      borderRadius: 6,
-      padding: '8px 18px',
-      fontWeight: 700,
-      minWidth: 110,
-      opacity: 0.8,
-      cursor: 'not-allowed'
-    }}>
-      {text}{dots}
+    <button
+      type="button"
+      disabled
+      style={{
+        background: color,
+        color: '#fff',
+        border: 'none',
+        borderRadius: 6,
+        padding: '8px 18px',
+        fontWeight: 700,
+        minWidth: 110,
+        opacity: 0.8,
+        cursor: 'not-allowed'
+      }}
+    >
+      <span>{text}</span>
+      <span style={{ display: 'inline-block', minWidth: 16 }}>{dots}</span>
     </button>
   );
 }
@@ -388,7 +393,7 @@ export default function CollectionEditModal({
                     background: '#e5e7eb', color: '#23272f', border: 'none', borderRadius: 6, padding: '8px 18px'
                   }}>Cancel</button>
                   {deleting ? (
-                    <LoadingButton text="Deleting" /> // <-- Show "Deleting..." animation
+                    <LoadingButton text="Deleting" color="#ef4444" /> // <-- Red color for deleting
                   ) : (
                     <button type="submit" style={{
                       background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 700

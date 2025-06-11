@@ -801,8 +801,38 @@ export default function DatabaseExplorer() {
             66% { opacity: 0.2; }
             100% { opacity: 1; }
           }
+          .bootstrap-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px #6366f122;
+            margin-bottom: 0;
+            overflow: hidden;
+            font-size: 13px;
+            display: block; /* Make table block for sticky header */
+          }
+          .bootstrap-table thead {
+            display: block; /* Sticky header */
+            width: 100%;
+          }
+          .bootstrap-table tbody {
+            display: block;
+            width: 100%;
+            max-height: 60vh; /* Adjust as needed */
+            overflow-y: auto;
+          }
           .bootstrap-table th, .bootstrap-table td {
             border-bottom: 1px solid #e0e7ff;
+            min-width: 120px;
+            box-sizing: border-box;
+          }
+          .bootstrap-table th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: linear-gradient(90deg, #6366f1 0%, #818cf8 100%);
           }
           .bootstrap-table tr:last-child td {
             border-bottom: none;
@@ -822,12 +852,6 @@ export default function DatabaseExplorer() {
           .dot-anim {
             display: inline-block;
             animation: dot-flash 1s infinite linear;
-          }
-          .bootstrap-table th {
-            position: sticky;
-            top: 0;
-            z-index: 2;
-            background: linear-gradient(90deg, #6366f1 0%, #818cf8 100%);
           }
         `}
       </style>
@@ -1373,6 +1397,7 @@ export default function DatabaseExplorer() {
                                   className={isEven ? 'alt-row-even' : 'alt-row-odd'}
                                   style={{
                                     transition: 'background-color 0.2s',
+                                    display: 'table-row', // Ensure rows display correctly
                                   }}
                                   onMouseEnter={(e) => {
                                     e.currentTarget.style.backgroundColor = '#f0f0f5';
@@ -1410,7 +1435,7 @@ export default function DatabaseExplorer() {
                     {totalPages > 1 && (
                       <div
                         style={{
-                          marginTop: 0,
+                          marginTop: 6, // Reduced margin top for pagination controls
                           marginBottom: 0,
                           display: 'flex',
                           alignItems: 'center',
@@ -1423,10 +1448,10 @@ export default function DatabaseExplorer() {
                           disabled={currentPage === 1}
                           style={{
                             ...buttonStyle,
-                            padding: '7px 18px',
+                            padding: '3px 10px', // Reduced height
                             marginRight: '8px',
-                            fontSize: 15,
-                            height: 38,
+                            fontSize: 14,
+                            height: 28, // Reduced height
                             minWidth: 0,
                             opacity: currentPage === 1 ? '0.5' : 1,
                             cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
@@ -1448,10 +1473,10 @@ export default function DatabaseExplorer() {
                           disabled={currentPage === totalPages}
                           style={{
                             ...buttonStyle,
-                            padding: '7px 18px',
+                            padding: '3px 10px', // Reduced height
                             marginLeft: '8px',
-                            fontSize: 15,
-                            height: 38,
+                            fontSize: 14,
+                            height: 28, // Reduced height
                             minWidth: 0,
                             opacity: currentPage === totalPages ? '0.5' : 1,
                             cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
